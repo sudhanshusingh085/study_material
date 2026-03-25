@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python — Deep Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--surface:#161b27;--surface2:#1d2235;--surface3:#232840;
+  --border:#2c3354;--border2:#38406b;
+  --yellow:#f0c040;--cyan:#38bdf8;--green:#4ade80;--purple:#a78bfa;
+  --orange:#fb923c;--red:#f87171;--pink:#f472b6;
+  --text:#e2e8f7;--muted:#7882a4;--dim:#3d4570;
+  --code:#111827;
+  --kw:#c084fc;--fn:#60a5fa;--str:#86efac;--num:#fb923c;
+  --cm:#4b5563;--cl:#fbbf24;--dec:#67e8f9;--op:#67e8f9;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;line-height:1.6}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:200;height:54px;
+  background:rgba(15,17,23,0.94);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+}
+.brand{font-family:'Fira Code',monospace;font-size:.95rem;font-weight:600;color:var(--yellow);display:flex;align-items:center;gap:.5rem}
+.brand-icon{background:var(--yellow);color:#000;border-radius:5px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.hbar-right{display:flex;align-items:center;gap:1rem}
+.prog-wrap{display:flex;align-items:center;gap:.5rem;font-family:'Fira Code',monospace;font-size:.65rem;color:var(--muted)}
+.prog-track{width:110px;height:3px;background:var(--dim);border-radius:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--cyan));width:0%;transition:width .5s ease;border-radius:9px}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:258px 1fr;min-height:calc(100vh - 54px)}
+
+/* ── SIDEBAR ── */
+aside{
+  position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:1rem 0 3rem;
+}
+aside::-webkit-scrollbar{width:3px}
+.sb-group{padding:.6rem 1.2rem .2rem;font-size:.58rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sb-link{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.38rem .9rem;margin:.1rem .4rem;border-radius:6px;
+  cursor:pointer;font-size:.78rem;color:var(--muted);
+  transition:all .16s;border:1px solid transparent;
+}
+.sb-link:hover{color:var(--text);background:var(--surface2)}
+.sb-link.active{color:var(--yellow);background:rgba(240,192,64,.07);border-color:rgba(240,192,64,.18)}
+.sb-link.done .dot{background:var(--green)!important}
+.sb-link.active .dot{background:var(--yellow)!important}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .2s}
+.tag{margin-left:auto;font-size:.55rem;padding:1px 5px;border-radius:3px;font-family:'Fira Code',monospace;font-weight:600}
+.t-b{background:rgba(74,222,128,.1);color:var(--green)}
+.t-m{background:rgba(56,189,248,.1);color:var(--cyan)}
+.t-a{background:rgba(167,139,250,.1);color:var(--purple)}
+.t-e{background:rgba(240,192,64,.1);color:var(--yellow)}
+
+/* ── MAIN ── */
+main{padding:2.5rem 3rem;max-width:960px}
+.sec{display:none;animation:fadeup .3s ease}
+.sec.active{display:block}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{padding-bottom:2.5rem;border-bottom:1px solid var(--border);margin-bottom:2.5rem}
+.hero-eye{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:'Fira Code',monospace;font-size:.65rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);
+  background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.2);
+  padding:3px 10px;border-radius:4px;margin-bottom:1.2rem;
+}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:900;line-height:1.05;letter-spacing:-.02em;margin-bottom:1rem}
+.hero h1 em{font-style:italic;color:var(--yellow)}
+.hero-sub{font-size:1rem;color:var(--muted);line-height:1.75;max-width:540px;margin-bottom:1.75rem}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-top:1.5rem}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center}
+.stat-box .n{font-family:'Fira Code',monospace;font-size:1.5rem;font-weight:700;color:var(--yellow)}
+.stat-box .l{font-size:.7rem;color:var(--muted);margin-top:.2rem}
+
+/* ── SECTION HEADER ── */
+.sec-head{margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+.sec-label{font-family:'Fira Code',monospace;font-size:.62rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.sec-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;margin-bottom:.6rem;letter-spacing:-.01em}
+.sec-intro{font-size:.95rem;color:var(--muted);line-height:1.75;max-width:720px}
+.sec-intro strong{color:var(--text)}
+.sec-intro code{font-family:'Fira Code',monospace;background:var(--code);padding:1px 5px;border-radius:3px;font-size:.82rem;color:var(--str)}
+
+/* ── EXPLANATION BLOCKS ── */
+.explain{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:1.4rem 1.5rem;margin-bottom:1.5rem;
+}
+.explain-title{
+  font-size:.82rem;font-weight:700;margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.5rem;color:var(--text);
+}
+.explain-body{font-size:.9rem;color:var(--muted);line-height:1.8}
+.explain-body p{margin-bottom:.75rem}
+.explain-body p:last-child{margin-bottom:0}
+.explain-body strong{color:var(--text)}
+.explain-body em{color:var(--cyan);font-style:normal}
+.explain-body code{font-family:'Fira Code',monospace;background:var(--code);padding:1px 5px;border-radius:3px;font-size:.8rem;color:var(--str)}
+.explain-body ul{padding-left:1.2rem;margin:.5rem 0}
+.explain-body li{margin:.35rem 0}
+.explain-body .highlight{color:var(--yellow)}
+
+/* ── CALLOUT BOXES ── */
+.callout{border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:1rem 0;font-size:.875rem;line-height:1.75;color:var(--muted)}
+.callout strong{color:var(--text)}
+.callout code{font-family:'Fira Code',monospace;background:var(--code);padding:1px 5px;border-radius:3px;font-size:.78rem}
+.c-info{border-left:3px solid var(--cyan);background:rgba(56,189,248,.05)}
+.c-warn{border-left:3px solid var(--orange);background:rgba(251,146,60,.05)}
+.c-tip{border-left:3px solid var(--green);background:rgba(74,222,128,.05)}
+.c-deep{border-left:3px solid var(--purple);background:rgba(167,139,250,.05)}
+.c-gotcha{border-left:3px solid var(--red);background:rgba(248,113,113,.05)}
+
+/* ── CODE ── */
+.cw{background:var(--code);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:1rem 0}
+.cw-bar{display:flex;align-items:center;justify-content:space-between;padding:.5rem .9rem;background:var(--surface2);border-bottom:1px solid var(--border)}
+.cw-dots{display:flex;gap:5px}
+.cw-dots span{width:9px;height:9px;border-radius:50%}
+.cw-dots span:nth-child(1){background:#ff5f57}
+.cw-dots span:nth-child(2){background:#febc2e}
+.cw-dots span:nth-child(3){background:#28c840}
+.cw-name{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--muted)}
+.cb{font-family:'Fira Code',monospace;font-size:.79rem;line-height:1.9;padding:1.1rem 1.2rem;overflow-x:auto;white-space:pre;color:#d4d8f0}
+.kw{color:var(--kw);font-weight:500}
+.fn{color:var(--fn)}
+.str{color:var(--str)}
+.nm{color:var(--num)}
+.cm{color:var(--cm);font-style:italic}
+.cl{color:var(--cl)}
+.dc{color:var(--dec)}
+.bi{color:#34d399}
+.op{color:var(--op)}
+
+/* ── PLAYGROUND ── */
+.pg{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:1.5rem 0}
+.pg-bar{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.1rem;background:var(--surface2);border-bottom:1px solid var(--border)}
+.pg-label{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--green);display:flex;align-items:center;gap:.4rem}
+.pg-label::before{content:'▶ '}
+.code-ed{font-family:'Fira Code',monospace;font-size:.78rem;line-height:1.9;padding:1rem 1.1rem;background:var(--code);border:none;color:#d4d8f0;width:100%;min-height:130px;resize:vertical;outline:none;tab-size:4}
+.pg-foot{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;background:var(--surface2);border-top:1px solid var(--border)}
+.run-btn{background:var(--green);color:#000;border:none;border-radius:6px;padding:.42rem 1rem;font-family:'Fira Code',monospace;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s}
+.run-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.rst-btn{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:.42rem .85rem;font-family:'Fira Code',monospace;font-size:.72rem;cursor:pointer;transition:all .15s}
+.rst-btn:hover{color:var(--text);border-color:var(--muted)}
+.out{border-top:1px solid var(--border);background:#070c12;padding:.85rem 1.1rem;font-family:'Fira Code',monospace;font-size:.78rem;color:var(--green);white-space:pre-wrap;display:none}
+.out.on{display:block}
+.out.err{color:var(--red)}
+
+/* ── QUIZ ── */
+.quiz{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem;margin:1.5rem 0}
+.quiz-q{font-size:.9rem;font-weight:600;margin-bottom:1rem;line-height:1.55}
+.quiz-q code{font-family:'Fira Code',monospace;background:var(--code);padding:1px 5px;border-radius:3px;font-size:.8rem;color:var(--str)}
+.quiz-opts{display:flex;flex-direction:column;gap:.4rem}
+.qo{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem .85rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.82rem;transition:all .18s;background:var(--surface2);line-height:1.5}
+.qo:hover{border-color:var(--cyan);color:var(--cyan)}
+.qo.correct{border-color:var(--green);background:rgba(74,222,128,.08);color:var(--green)}
+.qo.wrong{border-color:var(--red);background:rgba(248,113,113,.08);color:var(--red)}
+.ql{font-family:'Fira Code',monospace;width:20px;height:20px;border-radius:4px;background:var(--dim);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.qfb{margin-top:.85rem;padding:.65rem .9rem;border-radius:7px;font-size:.82rem;line-height:1.6;display:none}
+.qfb.on{display:block}
+.qfb.ok{background:rgba(74,222,128,.08);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.qfb.no{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem;margin:1rem 0;border-radius:8px;overflow:hidden}
+.tbl th{background:var(--surface2);padding:.55rem .9rem;text-align:left;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border)}
+.tbl td{padding:.55rem .9rem;border:1px solid var(--border);font-family:'Fira Code',monospace;font-size:.76rem;vertical-align:top;line-height:1.6}
+.tbl tr:hover td{background:var(--surface2)}
+.tbl td.desc{font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--muted)}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:.6rem;margin-top:1.5rem;flex-wrap:wrap}
+.btn-primary{background:linear-gradient(135deg,var(--yellow),#d4a017);color:#000;border:none;border-radius:8px;padding:.55rem 1.3rem;font-family:'Fira Code',monospace;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .18s}
+.btn-primary:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.55rem 1.1rem;font-family:'Fira Code',monospace;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:.4rem}
+.btn-sec:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* ── CHEAT SHEET ── */
+.cheat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin:1rem 0}
+.ci{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:.9rem}
+.ci .ct{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem;font-family:'DM Sans',sans-serif}
+.ci pre{font-family:'Fira Code',monospace;font-size:.72rem;color:#d4d8f0;line-height:1.8;overflow-x:auto}
+
+/* ── MODULE CARDS ── */
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;transition:border-color .2s}
+.mc:hover{border-color:var(--cyan)}
+.mc-name{font-family:'Fira Code',monospace;font-size:.82rem;font-weight:600;color:var(--cyan);margin-bottom:.35rem}
+.mc-desc{font-size:.82rem;color:var(--muted);line-height:1.6}
+
+/* ── DIVIDER ── */
+.div-label{display:flex;align-items:center;gap:.75rem;margin:1.75rem 0 1.25rem;font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.div-label::before,.div-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+@media(max-width:768px){
+  .layout{grid-template-columns:1fr}
+  aside{display:none}
+  main{padding:1.5rem}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .cheat-grid,.mod-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+ <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+<header>
+  <div class="brand"><div class="brand-icon">🐍</div>python<span style="color:var(--muted)">.deep</span></div>
+  <div class="hbar-right">
+    <div class="prog-wrap">
+      <span id="plbl">0/18</span>
+      <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="sb-group">🟢 Fundamentals</div>
+  <div class="sb-link active" onclick="go('home')" id="n-home"><div class="dot"></div>Overview</div>
+  <div class="sb-link" onclick="go('syntax')" id="n-syntax"><div class="dot"></div>Syntax &amp; Structure<span class="tag t-b">01</span></div>
+  <div class="sb-link" onclick="go('vars')" id="n-vars"><div class="dot"></div>Variables &amp; Types<span class="tag t-b">02</span></div>
+  <div class="sb-link" onclick="go('ops')" id="n-ops"><div class="dot"></div>Operators<span class="tag t-b">03</span></div>
+  <div class="sb-link" onclick="go('strings')" id="n-strings"><div class="dot"></div>Strings<span class="tag t-b">04</span></div>
+
+  <div class="sb-group">🟡 Core</div>
+  <div class="sb-link" onclick="go('ctrl')" id="n-ctrl"><div class="dot"></div>Control Flow<span class="tag t-m">05</span></div>
+  <div class="sb-link" onclick="go('fns')" id="n-fns"><div class="dot"></div>Functions<span class="tag t-m">06</span></div>
+  <div class="sb-link" onclick="go('scope')" id="n-scope"><div class="dot"></div>Scope &amp; Closures<span class="tag t-m">07</span></div>
+  <div class="sb-link" onclick="go('ds')" id="n-ds"><div class="dot"></div>Data Structures<span class="tag t-m">08</span></div>
+  <div class="sb-link" onclick="go('oop')" id="n-oop"><div class="dot"></div>OOP &amp; Classes<span class="tag t-m">09</span></div>
+  <div class="sb-link" onclick="go('errors')" id="n-errors"><div class="dot"></div>Error Handling<span class="tag t-m">10</span></div>
+
+  <div class="sb-group">🔴 Advanced</div>
+  <div class="sb-link" onclick="go('deco')" id="n-deco"><div class="dot"></div>Decorators &amp; Gen.<span class="tag t-a">11</span></div>
+  <div class="sb-link" onclick="go('async')" id="n-async"><div class="dot"></div>Async / Await<span class="tag t-a">12</span></div>
+  <div class="sb-link" onclick="go('meta')" id="n-meta"><div class="dot"></div>Metaclasses &amp; Dunder<span class="tag t-a">13</span></div>
+  <div class="sb-link" onclick="go('stdlib')" id="n-stdlib"><div class="dot"></div>Std Library Deep Dive<span class="tag t-a">14</span></div>
+
+  <div class="sb-group">🤖 Ecosystem</div>
+  <div class="sb-link" onclick="go('numpy')" id="n-numpy"><div class="dot"></div>NumPy &amp; Pandas<span class="tag t-e">15</span></div>
+  <div class="sb-link" onclick="go('ml')" id="n-ml"><div class="dot"></div>ML Libraries<span class="tag t-e">16</span></div>
+  <div class="sb-link" onclick="go('nlp')" id="n-nlp"><div class="dot"></div>NLP &amp; Transformers<span class="tag t-e">17</span></div>
+  <div class="sb-link" onclick="go('cheat')" id="n-cheat"><div class="dot"></div>📋 Cheat Sheet</div>
+</aside>
+
+<main>
+
+<!-- ══════ HOME ══════ -->
+<div class="sec active" id="s-home">
+  <div class="hero">
+    <div class="hero-eye">✦ Intermediate → Advanced</div>
+    <h1>Python <em>Deep</em><br>Reference</h1>
+    <p class="hero-sub">Not another syntax walkthrough. Every section explains the <strong>why</strong>, the internals, the gotchas, and the mental models that actually matter — from closures to <code>SentenceTransformer</code>.</p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="n">18</div><div class="l">Topics</div></div>
+      <div class="stat-box"><div class="n">Deep</div><div class="l">Explanations</div></div>
+      <div class="stat-box"><div class="n">Real</div><div class="l">Code Patterns</div></div>
+      <div class="stat-box"><div class="n">No</div><div class="l">Hand-holding</div></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="go('syntax')">Start →</button>
+    <button class="btn-sec" onclick="go('scope')">Jump to Scope</button>
+    <button class="btn-sec" onclick="go('nlp')">SentenceTransformer</button>
+    <button class="btn-sec" onclick="go('cheat')">📋 Cheat Sheet</button>
+  </div>
+</div>
+
+<!-- ══════ 01 SYNTAX ══════ -->
+<div class="sec" id="s-syntax">
+  <div class="sec-head">
+    <div class="sec-label">Fundamentals · 01</div>
+    <div class="sec-title">Syntax &amp; Structure</div>
+    <div class="sec-intro">The grammar of Python — how the interpreter tokenises and parses your source code before execution even begins.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🧱 Why Indentation-as-Syntax?</div>
+    <div class="explain-body">
+      <p>Most languages use <code>{}</code> braces to delimit blocks. Python uses <strong>whitespace indentation</strong> as the actual syntax — not just a style choice. The Python tokeniser generates <code>INDENT</code> and <code>DEDENT</code> tokens when indentation changes, so the grammar sees them the same as <code>{</code> and <code>}</code> in other languages.</p>
+      <p>This was a deliberate design decision by Guido van Rossum: if indentation is mandatory for readability anyway, why not make it the syntax? The result is code where visual structure <em>is</em> logical structure — they can never diverge.</p>
+      <p><strong>The rule:</strong> Python 3 requires <em>consistent</em> indentation within a block — all lines must use the same character (spaces <em>or</em> tabs, never mixed). PEP 8 mandates 4 spaces. The interpreter doesn't care how many spaces you use, only that you're consistent.</p>
+    </div>
+  </div>
+
+  <div class="callout c-gotcha"><strong>⚠️ TabError:</strong> Mixing tabs and spaces in Python 3 raises <code>TabError</code> immediately during tokenisation — before any code runs. In Python 2, tabs were treated as 8 spaces which caused silent bugs. Python 3 made it a hard error.</div>
+
+  <div class="explain">
+    <div class="explain-title">🔤 Comments, Docstrings &amp; the Tokeniser</div>
+    <div class="explain-body">
+      <p><code>#</code> comments are stripped by the tokeniser — they never reach the parser. <strong>Docstrings</strong> are different: they are actual string literals placed as the first statement of a module, function, class, or method, and they get stored in the object's <code>__doc__</code> attribute at runtime.</p>
+      <p>This means <code>help(func)</code>, IDE tooltips, and documentation generators like Sphinx all read docstrings from the live object. They are not comments — they are data.</p>
+      <p><strong>Line continuation:</strong> Inside any bracket type (<code>()</code>, <code>[]</code>, <code>{}</code>), line breaks are implicit. Outside brackets, use <code>\</code> at line end. The implicit form is preferred because <code>\</code> is fragile — a trailing space after <code>\</code> breaks it silently.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">syntax_internals.py</div></div>
+    <div class="cb"><span class="cm"># The tokeniser strips this — never reaches the AST</span>
+
+<span class="kw">def</span> <span class="fn">calculate</span>(x, y):
+    <span class="str">"""
+    This IS code — stored in calculate.__doc__
+    Tools, help(), and Sphinx read this at runtime.
+    """</span>
+    <span class="cm"># INDENT/DEDENT tokens are generated here by the tokeniser</span>
+    result = (x * <span class="nm">2</span>        <span class="cm"># implicit continuation — preferred</span>
+              + y * <span class="nm">3</span>
+              - <span class="nm">10</span>)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(calculate.__doc__)   <span class="cm"># docstring is live data</span>
+
+<span class="cm"># pass — syntactic placeholder, produces no bytecode</span>
+<span class="kw">class</span> <span class="cl">Stub</span>:
+    <span class="kw">pass</span>   <span class="cm"># needed: class body can't be empty</span>
+
+<span class="cm"># Ellipsis (...) is also used as a body placeholder in type stubs</span>
+<span class="kw">def</span> <span class="fn">not_implemented</span>() -> <span class="cl">None</span>: ...</div>
+  </div>
+
+  <div class="callout c-deep"><strong>🔬 Under the hood:</strong> Run <code>import ast; print(ast.dump(ast.parse("x = 1 + 2")))</code> to see the AST Python builds from your code. Every Python construct maps to an AST node. The compiler then converts the AST to bytecode (<code>.pyc</code> files), which the CPython VM executes.</div>
+
+  <div class="pg">
+    <div class="pg-bar"><div class="pg-label">Playground — try it</div></div>
+    <textarea class="code-ed" id="pe-syntax">def greet(name):
+    """Greet by name."""
+    msg = (
+        "Hello, " + name
+        + "! Welcome."
+    )
+    return msg
+
+print(greet("World"))
+print(greet.__doc__)</textarea>
+    <div class="pg-foot">
+      <span style="font-size:.65rem;color:var(--muted);font-family:monospace">simulated runtime</span>
+      <div style="display:flex;gap:.5rem"><button class="rst-btn" onclick="rst('syntax')">Reset</button><button class="run-btn" onclick="run('syntax')">▶ Run</button></div>
+    </div>
+    <div class="out" id="o-syntax"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('vars')">Next: Variables & Types →</button></div>
+</div>
+
+<!-- ══════ 02 VARIABLES ══════ -->
+<div class="sec" id="s-vars">
+  <div class="sec-head">
+    <div class="sec-label">Fundamentals · 02</div>
+    <div class="sec-title">Variables &amp; Types</div>
+    <div class="sec-intro">Python's type system is <strong>dynamic</strong> and <strong>strong</strong>. Variables are names — not boxes. Understanding this distinction is foundational.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🏷️ Names, Objects, and References — The Core Mental Model</div>
+    <div class="explain-body">
+      <p>In Python, <strong>variables are not containers</strong>. They are <em>names</em> (labels) that are <em>bound</em> to objects living in the heap. When you write <code>x = 42</code>, you are creating an integer object <code>42</code> in memory and binding the name <code>x</code> to it in the current namespace (a dict).</p>
+      <p><strong>Assignment never copies data.</strong> <code>y = x</code> makes <code>y</code> point to the <em>same</em> object as <code>x</code>. You can verify with <code>id(x) == id(y)</code> — <code>id()</code> returns the memory address. This is called <em>aliasing</em>.</p>
+      <p>This matters enormously for <strong>mutable vs immutable</strong> objects. If two names point to the same <em>mutable</em> object (like a list), modifying through one name affects the other. Immutable objects (int, str, tuple, frozenset) cannot be changed, so aliasing is safe.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">references.py</div></div>
+    <div class="cb"><span class="cm"># Aliasing mutable objects — classic gotcha</span>
+a = [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]
+b = a                  <span class="cm"># b is NOT a copy — same list object</span>
+b.append(<span class="nm">4</span>)
+<span class="fn">print</span>(a)               <span class="cm"># [1, 2, 3, 4]  ← a is also changed!</span>
+
+<span class="cm"># To actually copy:</span>
+b = a[:]               <span class="cm"># shallow copy via slice</span>
+b = a.copy()           <span class="cm"># explicit shallow copy</span>
+<span class="kw">import</span> copy
+b = copy.deepcopy(a)   <span class="cm"># deep copy — copies nested objects too</span>
+
+<span class="cm"># Immutable objects — aliasing is safe</span>
+x = <span class="str">"hello"</span>
+y = x
+y += <span class="str">" world"</span>   <span class="cm"># creates a NEW string object, rebinds y</span>
+<span class="fn">print</span>(x)         <span class="cm"># "hello"  ← x is unchanged</span>
+
+<span class="cm"># Small int / string interning (CPython implementation detail)</span>
+a = <span class="nm">256</span>;  b = <span class="nm">256</span>
+<span class="fn">print</span>(a <span class="kw">is</span> b)    <span class="cm"># True — CPython caches small ints -5..256</span>
+a = <span class="nm">257</span>;  b = <span class="nm">257</span>
+<span class="fn">print</span>(a <span class="kw">is</span> b)    <span class="cm"># False in most contexts (not guaranteed!)</span>
+
+<span class="cm"># Always use == for value equality, not 'is'</span>
+<span class="cm"># 'is' tests identity (same object), not equality</span></div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">📦 Dynamic &amp; Strong Typing</div>
+    <div class="explain-body">
+      <p><strong>Dynamic</strong> means types are checked at runtime, not compile time. A variable can hold an int now and a string later — the name has no type, only the object does. This is why <code>type(x)</code> exists: it interrogates the object, not the variable.</p>
+      <p><strong>Strong</strong> means Python does not silently coerce types. <code>"1" + 1</code> raises <code>TypeError</code>. Unlike JavaScript, Python will not guess what you meant. This makes bugs explicit rather than silent.</p>
+      <p><strong>Type hints</strong> (PEP 484) are annotations on variables and functions. At runtime they are <em>completely ignored</em> — Python doesn't enforce them. Their value is for static analysis tools (<code>mypy</code>, <code>pyright</code>, IDEs). Think of them as machine-readable documentation.</p>
+    </div>
+  </div>
+
+  <div class="callout c-tip"><strong>✅ Professional practice:</strong> Use type hints everywhere in production code. They make <code>mypy --strict</code> possible, which catches entire classes of bugs before runtime. The <code>typing</code> module provides <code>Optional</code>, <code>Union</code>, <code>Literal</code>, <code>TypeVar</code>, <code>Protocol</code>, <code>TypedDict</code> etc.</div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">type_system.py</div></div>
+    <div class="cb"><span class="kw">from</span> typing <span class="kw">import</span> Optional, Union, TypeVar, overload
+
+<span class="cm"># Type hints — zero runtime cost, maximum IDE/mypy value</span>
+name: <span class="cl">str</span>         = <span class="str">"Alice"</span>
+scores: <span class="cl">list</span>[<span class="cl">float</span>] = [<span class="nm">9.5</span>, <span class="nm">8.1</span>]
+config: <span class="cl">dict</span>[<span class="cl">str</span>, <span class="cl">int</span>] = {}
+
+<span class="kw">def</span> <span class="fn">process</span>(value: <span class="cl">int</span> | <span class="cl">str</span>) -> <span class="cl">str</span>:   <span class="cm"># union with | (Python 3.10+)</span>
+    <span class="kw">return</span> <span class="fn">str</span>(value)
+
+<span class="cm"># isinstance() is the correct runtime type check</span>
+<span class="kw">def</span> <span class="fn">safe_add</span>(x, y):
+    <span class="kw">if</span> <span class="kw">not</span> <span class="fn">isinstance</span>(x, (int, float)):
+        <span class="kw">raise</span> <span class="cl">TypeError</span>(f<span class="str">"expected numeric, got {type(x).__name__}"</span>)
+    <span class="kw">return</span> x + y
+
+<span class="cm"># Number literals — Python's flexibility</span>
+million  = <span class="nm">1_000_000</span>     <span class="cm"># underscores for readability (3.6+)</span>
+hex_val  = <span class="nm">0xFF</span>          <span class="cm"># 255</span>
+bin_val  = <span class="nm">0b1010_1010</span>   <span class="cm"># 170</span>
+oct_val  = <span class="nm">0o777</span>         <span class="cm"># 511</span>
+sci      = <span class="nm">1.5e-10</span>       <span class="cm"># 1.5 × 10⁻¹⁰</span>
+
+<span class="cm"># Python ints have ARBITRARY precision — no overflow</span>
+big = <span class="nm">2</span> ** <span class="nm">1000</span>          <span class="cm"># works perfectly</span>
+<span class="fn">print</span>(big % <span class="nm">100</span>)          <span class="cm"># last two digits of 2^1000</span></div>
+  </div>
+
+  <div class="callout c-info"><strong>💡 Why no int overflow?</strong> CPython stores small integers as C <code>long</code>, but automatically promotes to arbitrary-precision Python integers (backed by a C array of digits) when values exceed ~30 bits. This is transparent to you — <code>2**1000</code> just works. The cost is that big integer arithmetic is slower than C <code>int</code> ops.</div>
+
+  <div class="pg">
+    <div class="pg-bar"><div class="pg-label">Playground</div></div>
+    <textarea class="code-ed" id="pe-vars">a = [1, 2, 3]
+b = a          # alias
+b.append(99)
+print("a:", a)  # both changed
+
+c = a.copy()   # shallow copy
+c.append(999)
+print("a:", a)  # a unchanged
+print("c:", c)</textarea>
+    <div class="pg-foot"><span></span><div style="display:flex;gap:.5rem"><button class="rst-btn" onclick="rst('vars')">Reset</button><button class="run-btn" onclick="run('vars')">▶ Run</button></div></div>
+    <div class="out" id="o-vars"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('syntax')">← Back</button><button class="btn-sec" onclick="go('ops')">Next: Operators →</button></div>
+</div>
+
+<!-- ══════ 03 OPERATORS ══════ -->
+<div class="sec" id="s-ops">
+  <div class="sec-head">
+    <div class="sec-label">Fundamentals · 03</div>
+    <div class="sec-title">Operators</div>
+    <div class="sec-intro">Operators in Python are <strong>syntactic sugar for method calls</strong>. Understanding this unlocks operator overloading in your own classes.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">⚙️ Operators Are Dunder Method Calls</div>
+    <div class="explain-body">
+      <p>Every operator dispatches to a special method on the object. <code>a + b</code> calls <code>a.__add__(b)</code>. If that returns <code>NotImplemented</code>, Python tries <code>b.__radd__(a)</code> (the reflected version). This is how <code>1 + MyClass()</code> can work even though <code>int</code> doesn't know about your class.</p>
+      <p><strong>Short-circuit evaluation:</strong> <code>and</code> and <code>or</code> do <em>not</em> return <code>True</code>/<code>False</code>. They return one of their <em>operands</em>. <code>x or default</code> returns <code>x</code> if truthy, else <code>default</code>. This is a common Python idiom for default values — but be careful: <code>0 or 5</code> returns <code>5</code>, which may not be what you want when <code>0</code> is a valid value.</p>
+      <p><strong><code>is</code> vs <code>==</code>:</strong> <code>is</code> checks identity (same memory address via <code>id()</code>). <code>==</code> checks value equality (calls <code>__eq__</code>). <em>Never</em> use <code>is</code> for comparing values — only for singletons like <code>None</code>, <code>True</code>, <code>False</code>.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">operators_deep.py</div></div>
+    <div class="cb"><span class="cm"># Arithmetic operators → dunder methods</span>
+<span class="nm">5</span> + <span class="nm">3</span>    <span class="cm"># int.__add__(5, 3)      → 8</span>
+<span class="nm">5</span> / <span class="nm">2</span>    <span class="cm"># int.__truediv__(5, 2) → 2.5  (always float!)</span>
+<span class="nm">5</span> // <span class="nm">2</span>   <span class="cm"># int.__floordiv__(5, 2) → 2   (floor toward -∞)</span>
+-<span class="nm">7</span> // <span class="nm">2</span>  <span class="cm"># → -4  NOT -3! (floors toward -inf, not toward 0)</span>
+<span class="nm">5</span> % <span class="nm">2</span>    <span class="cm"># int.__mod__(5, 2)     → 1</span>
+<span class="nm">2</span> ** <span class="nm">32</span>  <span class="cm"># int.__pow__(2, 32)    → 4294967296</span>
+
+<span class="cm"># Short-circuit — returns an OPERAND, not bool</span>
+<span class="fn">print</span>(<span class="nm">0</span> <span class="kw">or</span>  <span class="str">"fallback"</span>)  <span class="cm"># "fallback"  (0 is falsy)</span>
+<span class="fn">print</span>(<span class="nm">5</span> <span class="kw">or</span>  <span class="str">"fallback"</span>)  <span class="cm"># 5           (5 is truthy — stops)</span>
+<span class="fn">print</span>(<span class="nm">5</span> <span class="kw">and</span> <span class="str">"ok"</span>)        <span class="cm"># "ok"        (both truthy — returns last)</span>
+<span class="fn">print</span>(<span class="nm">0</span> <span class="kw">and</span> <span class="str">"ok"</span>)        <span class="cm"># 0           (0 falsy — short-circuits)</span>
+
+<span class="cm"># Falsy values: 0, 0.0, 0j, "", b"", [], {}, set(), None, False</span>
+<span class="cm"># Everything else is truthy</span>
+
+<span class="cm"># Walrus operator := (assignment expression, Python 3.8+)</span>
+<span class="cm"># Assigns AND returns the value in one expression</span>
+data = [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>]
+<span class="kw">if</span> (n := <span class="fn">len</span>(data)) > <span class="nm">3</span>:
+    <span class="fn">print</span>(f<span class="str">"Large dataset: {n} items"</span>)
+<span class="cm"># Without walrus, you'd need: n = len(data); if n > 3: ...</span>
+
+<span class="cm"># Common use: avoid calling expensive function twice</span>
+<span class="kw">while</span> chunk := f.read(<span class="nm">8192</span>):   <span class="cm"># read() called once per iteration</span>
+    process(chunk)</div>
+  </div>
+
+  <div class="callout c-warn"><strong>⚠️ Floor division gotcha:</strong> <code>-7 // 2</code> is <code>-4</code>, not <code>-3</code>. Python always floors toward <em>negative infinity</em>. C and Java truncate toward zero. If you need truncation (C-style), use <code>int(-7 / 2)</code> → <code>-3</code>. This affects modulo too: <code>-7 % 2</code> is <code>1</code> in Python (not <code>-1</code>) because <code>floor(-7/2) = -4</code> and <code>-7 - (-4*2) = 1</code>.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('vars')">← Back</button><button class="btn-sec" onclick="go('strings')">Next: Strings →</button></div>
+</div>
+
+<!-- ══════ 04 STRINGS ══════ -->
+<div class="sec" id="s-strings">
+  <div class="sec-head">
+    <div class="sec-label">Fundamentals · 04</div>
+    <div class="sec-title">Strings</div>
+    <div class="sec-intro">Strings are <strong>immutable sequences of Unicode code points</strong>. Python 3 strings are always Unicode — there is no "byte string" confusion from Python 2.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🌐 Unicode, Encoding, and What Strings Actually Are</div>
+    <div class="explain-body">
+      <p>A Python <code>str</code> is a sequence of <em>Unicode code points</em> (integers 0–1,114,111). It is <em>not</em> a sequence of bytes. The character <code>'é'</code> is code point U+00E9. <code>len('é')</code> is <code>1</code> — one code point.</p>
+      <p><strong>Encoding</strong> converts a string to bytes for storage/transmission. <code>'hello'.encode('utf-8')</code> returns a <code>bytes</code> object. <code>b'hello'.decode('utf-8')</code> converts back. You <em>must</em> know the encoding to decode bytes into text — guessing is a bug.</p>
+      <p>CPython stores short strings using either Latin-1, UCS-2, or UCS-4 internally depending on the highest code point present (PEP 393 "flexible string representation"). This is an implementation detail — the API is always Unicode.</p>
+      <p><strong>f-strings</strong> (Python 3.6+) are the fastest and most readable formatting method. They are compiled at parse time — the expression inside <code>{}</code> is evaluated and converted at runtime. They outperform <code>%</code> and <code>.format()</code> because there's no string parsing at call time.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">strings_deep.py</div></div>
+    <div class="cb"><span class="cm"># f-string format spec mini-language</span>
+value = <span class="nm">1234567.891</span>
+<span class="fn">print</span>(f<span class="str">"{value:,.2f}"</span>)        <span class="cm"># 1,234,567.89</span>
+<span class="fn">print</span>(f<span class="str">"{value:e}"</span>)           <span class="cm"># 1.234568e+06</span>
+<span class="fn">print</span>(f<span class="str">"{0.375:.2%}"</span>)         <span class="cm"># 37.50%</span>
+<span class="fn">print</span>(f<span class="str">"{42:08b}"</span>)            <span class="cm"># 00101010  (binary, zero-padded)</span>
+<span class="fn">print</span>(f<span class="str">"{value!r}"</span>)           <span class="cm"># repr() — good for debugging</span>
+<span class="fn">print</span>(f<span class="str">"{value = }"</span>)          <span class="cm"># value = 1234567.891  (debug =)</span>
+
+<span class="cm"># Encoding / decoding</span>
+text  = <span class="str">"café"</span>
+raw   = text.encode(<span class="str">"utf-8"</span>)  <span class="cm"># b'caf\xc3\xa9'  — 5 bytes, 4 chars</span>
+back  = raw.decode(<span class="str">"utf-8"</span>)  <span class="cm"># "café"</span>
+<span class="fn">print</span>(<span class="fn">len</span>(text), <span class="fn">len</span>(raw))    <span class="cm"># 4 chars, 5 bytes</span>
+
+<span class="cm"># str.join is O(n) — NEVER concatenate in a loop with +=</span>
+<span class="cm"># Bad: s = ""; for w in words: s += w  (creates new string each time)</span>
+words = [<span class="str">"hello"</span>, <span class="str">"world"</span>, <span class="str">"from"</span>, <span class="str">"python"</span>]
+good = <span class="str">" "</span>.join(words)         <span class="cm"># allocates once — use this</span>
+
+<span class="cm"># Interning: CPython may intern string literals that look like identifiers</span>
+a = <span class="str">"hello"</span>; b = <span class="str">"hello"</span>
+<span class="fn">print</span>(a <span class="kw">is</span> b)                 <span class="cm"># probably True (interned at compile time)</span>
+a = <span class="str">" hi"</span>; b = <span class="str">" hi"</span>
+<span class="fn">print</span>(a <span class="kw">is</span> b)                 <span class="cm"># probably False (space → not interned)</span></div>
+  </div>
+
+  <div class="pg">
+    <div class="pg-bar"><div class="pg-label">Playground</div></div>
+    <textarea class="code-ed" id="pe-strings">name = "python"
+print(name[::-1])
+print(f"{'=' * 20}")
+
+words = "the quick brown fox"
+result = "-".join(w.capitalize() for w in words.split())
+print(result)
+
+text = "café"
+print(len(text))           # 4 code points
+print(len(text.encode()))  # 5 bytes (UTF-8)</textarea>
+    <div class="pg-foot"><span></span><div style="display:flex;gap:.5rem"><button class="rst-btn" onclick="rst('strings')">Reset</button><button class="run-btn" onclick="run('strings')">▶ Run</button></div></div>
+    <div class="out" id="o-strings"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('ops')">← Back</button><button class="btn-sec" onclick="go('ctrl')">Next: Control Flow →</button></div>
+</div>
+
+<!-- ══════ 05 CONTROL FLOW ══════ -->
+<div class="sec" id="s-ctrl">
+  <div class="sec-head">
+    <div class="sec-label">Core · 05</div>
+    <div class="sec-title">Control Flow</div>
+    <div class="sec-intro">Python's control structures have subtleties that trip up developers coming from other languages — especially <code>for-else</code>, pattern matching, and the walrus operator.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔀 for-else: The Most Misunderstood Feature</div>
+    <div class="explain-body">
+      <p>Python's <code>for</code> and <code>while</code> loops have an <code>else</code> clause that most developers don't know about. The <code>else</code> block runs when the loop completes <em>normally</em> — meaning it was <strong>not</strong> terminated by a <code>break</code>.</p>
+      <p>The canonical use case is searching: if you break out of the loop because you found something, the <code>else</code> does not run. If the loop exhausts without a break (nothing found), the <code>else</code> runs. This eliminates the common "found flag" pattern:</p>
+      <p><code>found = False; for x in items: if cond: found=True; break</code> → replaced by a clean <code>for...else</code>.</p>
+      <p><strong>match/case</strong> (Python 3.10+) is structural pattern matching — far more powerful than a switch statement. It matches on the <em>structure</em> of data: you can match tuples, dicts, objects by attribute, and use guards. It uses a different kind of equality — it's pattern matching, not just <code>==</code>.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">control_flow_deep.py</div></div>
+    <div class="cb"><span class="cm"># for-else: else runs only if no break occurred</span>
+<span class="kw">def</span> <span class="fn">find_prime</span>(numbers):
+    <span class="kw">for</span> n <span class="kw">in</span> numbers:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2</span>, <span class="fn">int</span>(n**<span class="nm">0.5</span>) + <span class="nm">1</span>):
+            <span class="kw">if</span> n % i == <span class="nm">0</span>:
+                <span class="kw">break</span>        <span class="cm"># composite — inner else skipped</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> n         <span class="cm"># inner loop completed → n is prime</span>
+    <span class="kw">return</span> <span class="nm">None</span>
+
+<span class="fn">print</span>(<span class="fn">find_prime</span>([<span class="nm">4</span>, <span class="nm">6</span>, <span class="nm">7</span>, <span class="nm">10</span>]))   <span class="cm"># 7</span>
+
+<span class="cm"># match/case — structural pattern matching (3.10+)</span>
+<span class="kw">def</span> <span class="fn">handle_command</span>(command):
+    <span class="kw">match</span> command.split():
+        <span class="kw">case</span> [<span class="str">"quit"</span>]:
+            <span class="kw">return</span> <span class="str">"Quitting"</span>
+        <span class="kw">case</span> [<span class="str">"go"</span>, direction] <span class="kw">if</span> direction <span class="kw">in</span> (<span class="str">"north"</span>,<span class="str">"south"</span>,<span class="str">"east"</span>,<span class="str">"west"</span>):
+            <span class="kw">return</span> f<span class="str">"Moving {direction}"</span>
+        <span class="kw">case</span> [<span class="str">"pick"</span>, <span class="str">"up"</span>, item]:
+            <span class="kw">return</span> f<span class="str">"Picked up {item}"</span>
+        <span class="kw">case</span> _:
+            <span class="kw">return</span> <span class="str">"Unknown command"</span>
+
+<span class="fn">print</span>(<span class="fn">handle_command</span>(<span class="str">"go north"</span>))     <span class="cm"># Moving north</span>
+<span class="fn">print</span>(<span class="fn">handle_command</span>(<span class="str">"pick up sword"</span>)) <span class="cm"># Picked up sword</span>
+
+<span class="cm"># range() is a lazy sequence object, not a list</span>
+r = <span class="fn">range</span>(<span class="nm">0</span>, <span class="nm">10_000_000</span>)   <span class="cm"># instant — no allocation</span>
+<span class="fn">print</span>(<span class="nm">9_999_999</span> <span class="kw">in</span> r)        <span class="cm"># O(1) membership test via __contains__</span></div>
+  </div>
+
+  <div class="callout c-deep"><strong>🔬 range() internals:</strong> <code>range</code> is a <em>class</em> (not a function) that implements <code>__len__</code>, <code>__getitem__</code>, and <code>__contains__</code>. <code>x in range(n)</code> is O(1) — it computes membership arithmetically, never iterating. This is much faster than <code>x in list(range(n))</code>.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('strings')">← Back</button><button class="btn-sec" onclick="go('fns')">Next: Functions →</button></div>
+</div>
+
+<!-- ══════ 06 FUNCTIONS ══════ -->
+<div class="sec" id="s-fns">
+  <div class="sec-head">
+    <div class="sec-label">Core · 06</div>
+    <div class="sec-title">Functions</div>
+    <div class="sec-intro">Functions are <strong>first-class objects</strong> in Python — they have a type (<code>function</code>), attributes (<code>__name__</code>, <code>__doc__</code>, <code>__code__</code>), and can be passed, stored, and returned like any other value.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🎯 Default Argument Gotcha — The Mutable Default Trap</div>
+    <div class="explain-body">
+      <p>This is one of Python's most notorious bugs-in-waiting. <strong>Default argument values are evaluated once at function definition time</strong>, not each time the function is called. If you use a mutable object (list, dict, set) as a default, all calls share the <em>same</em> object.</p>
+      <p>The canonical fix: use <code>None</code> as the default and create a new object inside the function body. This pattern is so common it's idiomatic Python.</p>
+      <p><strong>Argument passing semantics:</strong> Python uses "pass by object reference" (sometimes called "pass by assignment"). The function receives a reference to the same object. You can mutate the object through that reference (and the caller sees it), but you cannot rebind the caller's variable (that only changes your local name).</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">functions_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── Mutable default bug ───────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">bad_append</span>(item, lst=[]):   <span class="cm"># lst created ONCE at def time</span>
+    lst.append(item)
+    <span class="kw">return</span> lst
+
+<span class="fn">bad_append</span>(<span class="nm">1</span>)   <span class="cm"># [1]</span>
+<span class="fn">bad_append</span>(<span class="nm">2</span>)   <span class="cm"># [1, 2]  ← bug! shares the same list</span>
+<span class="fn">bad_append</span>(<span class="nm">3</span>)   <span class="cm"># [1, 2, 3]</span>
+
+<span class="kw">def</span> <span class="fn">good_append</span>(item, lst=<span class="nm">None</span>):  <span class="cm"># correct pattern</span>
+    <span class="kw">if</span> lst <span class="kw">is</span> <span class="nm">None</span>:
+        lst = []
+    lst.append(item)
+    <span class="kw">return</span> lst
+
+<span class="cm"># ── Argument flavors ──────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">strict</span>(
+    pos_only,          <span class="cm"># positional-only (before /)</span>
+    /,
+    normal,            <span class="cm"># positional or keyword</span>
+    *,                 <span class="cm"># everything after * is keyword-only</span>
+    kw_only,           <span class="cm"># must be passed as keyword</span>
+    kw_default = <span class="nm">10</span>,
+):
+    <span class="kw">return</span> pos_only + normal + kw_only + kw_default
+
+<span class="cm"># strict(1, 2, kw_only=3)  → 16</span>
+<span class="cm"># strict(pos_only=1, ...)  → TypeError (pos_only is positional-only)</span>
+
+<span class="cm"># ── *args / **kwargs ──────────────────────────────────</span>
+<span class="cm"># *args collects extra positional args into a TUPLE</span>
+<span class="cm"># **kwargs collects extra keyword args into a DICT</span>
+<span class="kw">def</span> <span class="fn">show</span>(*args, **kwargs):
+    <span class="fn">print</span>(f<span class="str">"args   = {args}"</span>)    <span class="cm"># tuple</span>
+    <span class="fn">print</span>(f<span class="str">"kwargs = {kwargs}"</span>)  <span class="cm"># dict</span>
+
+<span class="fn">show</span>(<span class="nm">1</span>, <span class="nm">2</span>, x=<span class="nm">3</span>, y=<span class="nm">4</span>)
+
+<span class="cm"># Unpacking at call site (inverse of *args/**kwargs)</span>
+<span class="kw">def</span> <span class="fn">add</span>(a, b, c): <span class="kw">return</span> a + b + c
+nums = [<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>]
+<span class="fn">add</span>(*nums)                       <span class="cm"># same as add(1, 2, 3)</span>
+<span class="fn">add</span>(**{<span class="str">"a"</span>:<span class="nm">1</span>,<span class="str">"b"</span>:<span class="nm">2</span>,<span class="str">"c"</span>:<span class="nm">3</span>})      <span class="cm"># same as add(a=1, b=2, c=3)</span></div>
+  </div>
+
+  <div class="callout c-tip"><strong>✅ Design tip:</strong> Use <code>/</code> and <code>*</code> in your APIs. <code>/</code> makes positional-only params work correctly when internal param names might change. <code>*</code> forces keyword-only for params that are optional flags — callers must be explicit about what they're setting, making call sites self-documenting.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('ctrl')">← Back</button><button class="btn-sec" onclick="go('scope')">Next: Scope →</button></div>
+</div>
+
+<!-- ══════ 07 SCOPE ══════ -->
+<div class="sec" id="s-scope">
+  <div class="sec-head">
+    <div class="sec-label">Core · 07</div>
+    <div class="sec-title">Scope &amp; Closures</div>
+    <div class="sec-intro">Scope in Python is determined <strong>statically at compile time</strong> based on where names are assigned — not at runtime. This is called <em>lexical scoping</em>.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🗺️ LEGB: How Python Resolves Every Name</div>
+    <div class="explain-body">
+      <p>When Python encounters a name like <code>x</code>, it searches four scopes in order:</p>
+      <ul>
+        <li><strong>Local (L)</strong> — the current function's local namespace (a dict stored in the frame)</li>
+        <li><strong>Enclosing (E)</strong> — the local scope of any enclosing functions (for closures), searched outward</li>
+        <li><strong>Global (G)</strong> — the module-level namespace (<code>globals()</code>)</li>
+        <li><strong>Built-in (B)</strong> — the builtins module (<code>len</code>, <code>print</code>, <code>range</code>, etc.)</li>
+      </ul>
+      <p>If a name isn't found at any level, <code>NameError</code> is raised. The key insight: Python determines <em>at compile time</em> whether a variable in a function is local or not. If <em>any</em> assignment to a name exists in a function, the entire function treats that name as local. This is why code like the example below raises <code>UnboundLocalError</code>.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">scope_deep.py</div></div>
+    <div class="cb"><span class="cm"># UnboundLocalError — the most common scope trap</span>
+x = <span class="nm">10</span>
+<span class="kw">def</span> <span class="fn">broken</span>():
+    <span class="fn">print</span>(x)    <span class="cm"># UnboundLocalError! Python sees x=x+1 below</span>
+    x = x + <span class="nm">1</span>  <span class="cm"># this assignment makes x LOCAL for the WHOLE function</span>
+                <span class="cm"># so print(x) tries to read local x before assignment</span>
+
+<span class="cm"># Fix: declare intent</span>
+<span class="kw">def</span> <span class="fn">fixed_global</span>():
+    <span class="kw">global</span> x    <span class="cm"># now x refers to module-level x</span>
+    x = x + <span class="nm">1</span>
+
+<span class="cm"># ── Closures ─────────────────────────────────────────</span>
+<span class="cm"># A closure is a function that captures (closes over) free variables</span>
+<span class="cm"># from its enclosing scope. Those variables live in a 'cell' object.</span>
+
+<span class="kw">def</span> <span class="fn">make_adder</span>(n):
+    <span class="kw">def</span> <span class="fn">adder</span>(x):
+        <span class="kw">return</span> x + n    <span class="cm"># n is a FREE variable — captured from make_adder</span>
+    <span class="kw">return</span> adder
+
+add5 = <span class="fn">make_adder</span>(<span class="nm">5</span>)
+add5(<span class="nm">10</span>)   <span class="cm"># 15 — make_adder's frame is GONE but n=5 lives in the cell</span>
+
+<span class="cm"># Inspect the closure</span>
+<span class="fn">print</span>(add5.__closure__[<span class="nm">0</span>].cell_contents)   <span class="cm"># 5</span>
+<span class="fn">print</span>(add5.__code__.co_freevars)             <span class="cm"># ('n',)</span>
+
+<span class="cm"># ── Classic closure-in-loop bug ──────────────────────</span>
+funcs = [<span class="kw">lambda</span>: i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">5</span>)]
+[f() <span class="kw">for</span> f <span class="kw">in</span> funcs]   <span class="cm"># [4, 4, 4, 4, 4] — all see i=4!</span>
+<span class="cm"># All lambdas close over the SAME variable i, not its value</span>
+
+<span class="cm"># Fix: capture value as default argument (evaluated at definition)</span>
+funcs = [<span class="kw">lambda</span> i=i: i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">5</span>)]
+[f() <span class="kw">for</span> f <span class="kw">in</span> funcs]   <span class="cm"># [0, 1, 2, 3, 4] — correct</span>
+
+<span class="cm"># ── nonlocal ─────────────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">make_counter</span>(start=<span class="nm">0</span>):
+    n = start
+    <span class="kw">def</span> <span class="fn">tick</span>():
+        <span class="kw">nonlocal</span> n    <span class="cm"># assigns to n in make_counter's frame, not local</span>
+        n += <span class="nm">1</span>
+        <span class="kw">return</span> n
+    <span class="kw">return</span> tick
+
+c1 = <span class="fn">make_counter</span>()
+c2 = <span class="fn">make_counter</span>(<span class="nm">100</span>)
+c1(); c1(); c1()   <span class="cm"># 1, 2, 3</span>
+c2()               <span class="cm"># 101 — independent state</span></div>
+  </div>
+
+  <div class="callout c-gotcha"><strong>⚠️ The loop closure bug</strong> is one of the most common Python interview questions and real-world bugs. Closures capture variables by <em>reference</em>, not by value. In a loop, there's only one loop variable — all closures share it. The fix (<code>lambda i=i: i</code>) uses a default argument, which <em>is</em> evaluated at definition time, capturing the current value.</div>
+
+  <div class="quiz">
+    <div class="quiz-q">Why does <code>lambda: i for i in range(5)</code> produce <code>[4,4,4,4,4]</code> when called?</div>
+    <div class="quiz-opts" id="q0">
+      <div class="qo" onclick="ans(this,'q0','B')"><div class="ql">A</div>lambdas don't support closures in loops</div>
+      <div class="qo" onclick="ans(this,'q0','B')"><div class="ql">B</div>All lambdas close over the same <code>i</code> variable. By call time the loop has finished, so <code>i=4</code></div>
+      <div class="qo" onclick="ans(this,'q0','C')"><div class="ql">C</div>Python evaluates lambda bodies eagerly in list comprehensions</div>
+      <div class="qo" onclick="ans(this,'q0','D')"><div class="ql">D</div>The loop variable is implicitly frozen at 4 for all lambdas</div>
+    </div>
+    <div class="qfb" id="f-q0"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('fns')">← Back</button><button class="btn-sec" onclick="go('ds')">Next: Data Structures →</button></div>
+</div>
+
+<!-- ══════ 08 DATA STRUCTURES ══════ -->
+<div class="sec" id="s-ds">
+  <div class="sec-head">
+    <div class="sec-label">Core · 08</div>
+    <div class="sec-title">Data Structures</div>
+    <div class="sec-intro">Python's built-in data structures are implemented in C and highly optimised. Knowing their <strong>time complexities</strong> is essential for writing performant code.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">⏱️ Complexity You Must Know</div>
+    <div class="explain-body">
+      <ul>
+        <li><strong>list:</strong> append O(1) amortised, insert/delete at index O(n), index access O(1). Under the hood: dynamic array (like C++ vector).</li>
+        <li><strong>dict:</strong> get/set/delete O(1) average, O(n) worst case (hash collisions). Python 3.7+ maintains insertion order. Implementation: open-addressing hash table with a separate compact array for ordering.</li>
+        <li><strong>set:</strong> add/discard/membership O(1) average. Same hash table as dict but stores only keys. Use it for fast membership testing: <code>x in big_set</code> is O(1) vs <code>x in big_list</code> which is O(n).</li>
+        <li><strong>deque:</strong> O(1) append/pop from <em>both ends</em>. Use instead of list when you need a queue — <code>list.pop(0)</code> is O(n), <code>deque.popleft()</code> is O(1).</li>
+      </ul>
+      <p><strong>Comprehension vs loop:</strong> List comprehensions are faster than equivalent for loops because they avoid the overhead of Python's bytecode dispatch for each iteration — the append is done in a tighter C loop internally.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">data_structures_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── dict internals ───────────────────────────────────</span>
+<span class="cm"># dict keys must be HASHABLE (immutable + implement __hash__ + __eq__)</span>
+d = {(<span class="nm">1</span>,<span class="nm">2</span>): <span class="str">"tuple key"</span>}         <span class="cm"># tuples are hashable</span>
+<span class="cm"># d = {[1,2]: "list key"}           # TypeError: unhashable type: 'list'</span>
+
+<span class="cm"># setdefault vs get for grouping</span>
+words = [<span class="str">"apple"</span>, <span class="str">"ant"</span>, <span class="str">"banana"</span>, <span class="str">"blueberry"</span>, <span class="str">"avocado"</span>]
+grouped = {}
+<span class="kw">for</span> w <span class="kw">in</span> words:
+    grouped.setdefault(w[<span class="nm">0</span>], []).append(w)  <span class="cm"># setdefault: set if missing, always return value</span>
+<span class="cm"># {'a': ['apple','ant','avocado'], 'b': ['banana','blueberry']}</span>
+
+<span class="cm"># defaultdict is cleaner for this pattern</span>
+<span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+grouped2 = defaultdict(<span class="fn">list</span>)
+<span class="kw">for</span> w <span class="kw">in</span> words:
+    grouped2[w[<span class="nm">0</span>]].append(w)
+
+<span class="cm"># ── Advanced comprehensions ──────────────────────────</span>
+<span class="cm"># Nested: flatten a 2D matrix</span>
+matrix = [[<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>],[<span class="nm">4</span>,<span class="nm">5</span>,<span class="nm">6</span>],[<span class="nm">7</span>,<span class="nm">8</span>,<span class="nm">9</span>]]
+flat = [x <span class="kw">for</span> row <span class="kw">in</span> matrix <span class="kw">for</span> x <span class="kw">in</span> row]  <span class="cm"># note order: outer for first</span>
+
+<span class="cm"># Dict comprehension — invert a dict</span>
+original = {<span class="str">"a"</span>:<span class="nm">1</span>, <span class="str">"b"</span>:<span class="nm">2</span>, <span class="str">"c"</span>:<span class="nm">3</span>}
+inverted = {v:k <span class="kw">for</span> k,v <span class="kw">in</span> original.items()}
+
+<span class="cm"># ── namedtuple vs dataclass ──────────────────────────</span>
+<span class="kw">from</span> collections <span class="kw">import</span> namedtuple
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+
+Point = namedtuple(<span class="str">"Point"</span>, [<span class="str">"x"</span>, <span class="str">"y"</span>])   <span class="cm"># immutable, tuple subclass</span>
+p = <span class="cl">Point</span>(<span class="nm">1</span>, <span class="nm">2</span>)
+p._asdict()     <span class="cm"># OrderedDict</span>
+p._replace(x=<span class="nm">5</span>)  <span class="cm"># new Point(5, 2)</span>
+
+<span class="dc">@dataclass</span>
+<span class="kw">class</span> <span class="cl">Config</span>:                <span class="cm"># mutable by default, more features</span>
+    host: <span class="cl">str</span>
+    port: <span class="cl">int</span> = <span class="nm">8080</span>
+    debug: <span class="cl">bool</span> = <span class="nm">False</span>
+
+<span class="cm"># @dataclass(frozen=True) makes it immutable (and hashable)</span></div>
+  </div>
+
+  <div class="pg">
+    <div class="pg-bar"><div class="pg-label">Playground</div></div>
+    <textarea class="code-ed" id="pe-ds">words = ["apple", "ant", "banana", "blueberry", "avocado"]
+grouped = {}
+for w in words:
+    grouped.setdefault(w[0], []).append(w)
+print(grouped)
+
+matrix = [[1,2,3],[4,5,6],[7,8,9]]
+flat = [x for row in matrix for x in row]
+print(flat)</textarea>
+    <div class="pg-foot"><span></span><div style="display:flex;gap:.5rem"><button class="rst-btn" onclick="rst('ds')">Reset</button><button class="run-btn" onclick="run('ds')">▶ Run</button></div></div>
+    <div class="out" id="o-ds"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('scope')">← Back</button><button class="btn-sec" onclick="go('oop')">Next: OOP →</button></div>
+</div>
+
+<!-- ══════ 09 OOP ══════ -->
+<div class="sec" id="s-oop">
+  <div class="sec-head">
+    <div class="sec-label">Core · 09</div>
+    <div class="sec-title">OOP &amp; Classes</div>
+    <div class="sec-intro">In Python, <strong>classes are objects too</strong> — instances of <code>type</code>. Understanding this opens up metaclasses, descriptors, and the MRO.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔗 The MRO — Method Resolution Order (C3 Linearisation)</div>
+    <div class="explain-body">
+      <p>When you call a method, Python searches the class hierarchy to find it. For single inheritance this is trivial, but Python supports multiple inheritance. The <strong>MRO</strong> is the ordered list of classes Python searches.</p>
+      <p>Python uses the <strong>C3 linearisation algorithm</strong> to compute the MRO. It guarantees: (1) subclasses appear before parents, (2) parents appear in the order listed in the class definition, (3) consistency across the hierarchy. Violations cause <code>TypeError: Cannot create a consistent method resolution order</code>.</p>
+      <p>Run <code>MyClass.__mro__</code> or <code>MyClass.mro()</code> to inspect it. Always use <code>super()</code> instead of calling parent methods directly — it ensures proper MRO traversal in cooperative multiple inheritance.</p>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔧 Descriptors — The Mechanism Behind Properties</div>
+    <div class="explain-body">
+      <p>A <strong>descriptor</strong> is any object that defines <code>__get__</code>, <code>__set__</code>, or <code>__delete__</code>. When attribute access occurs on a class, Python's attribute lookup checks if the class or any parent has a descriptor for that name — and calls the descriptor's method instead of returning the object directly.</p>
+      <p><code>@property</code> is just a built-in descriptor factory. <code>classmethod</code> and <code>staticmethod</code> are also descriptors. Understanding descriptors explains why <code>obj.method</code> returns a bound method — the function's <code>__get__</code> is called, binding <code>self</code>.</p>
+      <p><strong>Data descriptors</strong> (define both <code>__get__</code> and <code>__set__</code>) take priority over the instance's <code>__dict__</code>. <strong>Non-data descriptors</strong> (define only <code>__get__</code>) are overridden by instance attributes.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">oop_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── MRO example ──────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">A</span>:
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="str">"A"</span>
+<span class="kw">class</span> <span class="cl">B</span>(<span class="cl">A</span>):
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="str">"B"</span> + <span class="fn">super</span>().greet()
+<span class="kw">class</span> <span class="cl">C</span>(<span class="cl">A</span>):
+    <span class="kw">def</span> <span class="fn">greet</span>(self): <span class="kw">return</span> <span class="str">"C"</span> + <span class="fn">super</span>().greet()
+<span class="kw">class</span> <span class="cl">D</span>(<span class="cl">B</span>, <span class="cl">C</span>):  <span class="cm"># Diamond inheritance</span>
+    <span class="kw">pass</span>
+
+<span class="fn">print</span>(<span class="cl">D</span>.__mro__)    <span class="cm"># (D, B, C, A, object)</span>
+<span class="fn">print</span>(<span class="cl">D</span>().greet())  <span class="cm"># "BCA" — super() follows MRO, not just "parent"</span>
+
+<span class="cm"># ── Custom Descriptor ────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">Validated</span>:
+    <span class="str">"""Descriptor that validates value on set."""</span>
+    <span class="kw">def</span> <span class="fn">__set_name__</span>(self, owner, name):
+        self.name = name                    <span class="cm"># called when class is created</span>
+        self.private = f<span class="str">"__{name}"</span>
+
+    <span class="kw">def</span> <span class="fn">__get__</span>(self, obj, objtype=<span class="nm">None</span>):
+        <span class="kw">if</span> obj <span class="kw">is</span> <span class="nm">None</span>: <span class="kw">return</span> self    <span class="cm"># class-level access → return descriptor</span>
+        <span class="kw">return</span> <span class="fn">getattr</span>(obj, self.private, <span class="nm">None</span>)
+
+    <span class="kw">def</span> <span class="fn">__set__</span>(self, obj, value):
+        <span class="kw">if</span> <span class="kw">not</span> <span class="fn">isinstance</span>(value, <span class="cl">str</span>):
+            <span class="kw">raise</span> <span class="cl">TypeError</span>(f<span class="str">"{self.name} must be str"</span>)
+        <span class="fn">setattr</span>(obj, self.private, value.strip())
+
+<span class="kw">class</span> <span class="cl">User</span>:
+    name  = <span class="cl">Validated</span>()   <span class="cm"># descriptor at class level</span>
+    email = <span class="cl">Validated</span>()
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, email):
+        self.name = name      <span class="cm"># triggers Validated.__set__</span>
+        self.email = email
+
+u = <span class="cl">User</span>(<span class="str">"  Alice  "</span>, <span class="str">"alice@example.com"</span>)
+<span class="fn">print</span>(u.name)   <span class="cm"># "Alice" (stripped)</span></div>
+  </div>
+
+  <div class="callout c-deep"><strong>🔬 __slots__:</strong> By default, every instance has a <code>__dict__</code> (a hash table) to store attributes — ~200 bytes overhead per instance. Adding <code>__slots__ = ('x', 'y')</code> replaces the dict with a fixed-size struct, saving 40–60% memory. Essential when creating millions of instances. Trade-off: you lose dynamic attribute assignment.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('ds')">← Back</button><button class="btn-sec" onclick="go('errors')">Next: Error Handling →</button></div>
+</div>
+
+<!-- ══════ 10 ERRORS ══════ -->
+<div class="sec" id="s-errors">
+  <div class="sec-head">
+    <div class="sec-label">Core · 10</div>
+    <div class="sec-title">Error Handling</div>
+    <div class="sec-intro">Python's exception system is part of normal control flow — not just for errors. Understanding exception chaining, context managers, and the <code>else</code> clause separates good Python from great Python.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔗 Exception Chaining &amp; the Traceback</div>
+    <div class="explain-body">
+      <p>Python 3 introduced <strong>implicit exception chaining</strong>: if an exception is raised <em>while handling</em> another exception, both are stored. <code>raise X from Y</code> (explicit chaining) sets <code>X.__cause__ = Y</code>. The traceback shows the full chain. <code>raise X from None</code> suppresses the context.</p>
+      <p>This matters when building library code: catch a low-level exception (e.g. <code>OSError</code>) and raise a domain-specific one. With proper chaining, users see both the high-level problem and the root cause.</p>
+      <p><strong>The <code>else</code> clause</strong> runs only if the <code>try</code> block succeeded without exception — and crucially, any exception raised in <code>else</code> is <em>not</em> caught by the preceding <code>except</code> clauses. Use it to separate "the thing that might fail" from "actions to take on success".</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">exceptions_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── Exception chaining ───────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">DatabaseError</span>(<span class="cl">Exception</span>): <span class="kw">pass</span>
+<span class="kw">class</span> <span class="cl">RecordNotFound</span>(<span class="cl">DatabaseError</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, table, pk):
+        <span class="fn">super</span>().__init__(f<span class="str">"No {table} with pk={pk}"</span>)
+        self.table = table; self.pk = pk
+
+<span class="kw">def</span> <span class="fn">get_user</span>(user_id):
+    <span class="kw">try</span>:
+        raw = db.query(f<span class="str">"SELECT * FROM users WHERE id={user_id}"</span>)
+    <span class="kw">except</span> <span class="cl">ConnectionError</span> <span class="kw">as</span> e:
+        <span class="kw">raise</span> <span class="cl">DatabaseError</span>(<span class="str">"DB unavailable"</span>) <span class="kw">from</span> e  <span class="cm"># explicit chain</span>
+    <span class="kw">if</span> <span class="kw">not</span> raw:
+        <span class="kw">raise</span> <span class="cl">RecordNotFound</span>(<span class="str">"users"</span>, user_id)
+    <span class="kw">return</span> raw
+
+<span class="cm"># ── try/except/else/finally semantics ────────────────</span>
+<span class="kw">def</span> <span class="fn">read_config</span>(path):
+    f = <span class="nm">None</span>
+    <span class="kw">try</span>:
+        f = <span class="fn">open</span>(path)             <span class="cm"># might raise FileNotFoundError</span>
+    <span class="kw">except</span> <span class="cl">FileNotFoundError</span>:
+        <span class="kw">return</span> {}
+    <span class="kw">else</span>:
+        data = f.read()            <span class="cm"># only runs if open succeeded</span>
+        <span class="kw">return</span> parse(data)         <span class="cm"># exceptions here go UNCAUGHT (intentional)</span>
+    <span class="kw">finally</span>:
+        <span class="kw">if</span> f: f.close()            <span class="cm"># ALWAYS runs, even on return</span>
+
+<span class="cm"># ── Context manager protocol ─────────────────────────</span>
+<span class="cm"># 'with' calls __enter__ and __exit__</span>
+<span class="cm"># __exit__ receives exception info (type, value, traceback)</span>
+<span class="cm"># returning True from __exit__ SUPPRESSES the exception</span>
+<span class="kw">class</span> <span class="cl">Timer</span>:
+    <span class="kw">import</span> time
+    <span class="kw">def</span> <span class="fn">__enter__</span>(self):
+        self.start = <span class="bi">self.time</span>.perf_counter()
+        <span class="kw">return</span> self          <span class="cm"># 'as' variable receives this</span>
+    <span class="kw">def</span> <span class="fn">__exit__</span>(self, exc_type, exc_val, tb):
+        self.elapsed = <span class="bi">self.time</span>.perf_counter() - self.start
+        <span class="fn">print</span>(f<span class="str">"Elapsed: {self.elapsed:.4f}s"</span>)
+        <span class="kw">return</span> <span class="nm">False</span>         <span class="cm"># don't suppress exceptions</span>
+
+<span class="kw">with</span> <span class="cl">Timer</span>() <span class="kw">as</span> t:
+    <span class="fn">sum</span>(<span class="fn">range</span>(<span class="nm">10_000_000</span>))</div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('oop')">← Back</button><button class="btn-sec" onclick="go('deco')">Next: Decorators →</button></div>
+</div>
+
+<!-- ══════ 11 DECORATORS ══════ -->
+<div class="sec" id="s-deco">
+  <div class="sec-head">
+    <div class="sec-label">Advanced · 11</div>
+    <div class="sec-title">Decorators &amp; Generators</div>
+    <div class="sec-intro">Decorators are a <strong>higher-order function pattern</strong>. Generators are <strong>suspended execution</strong>. Both are fundamental to Python's approach to metaprogramming and lazy evaluation.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🎨 Decorators: The Full Mental Model</div>
+    <div class="explain-body">
+      <p><code>@decorator</code> is exactly equivalent to <code>fn = decorator(fn)</code>. Nothing more. Any callable that takes a callable and returns a callable is a decorator. The <code>@</code> syntax just applies it at definition time.</p>
+      <p><strong>Why <code>@wraps</code>?</strong> Without it, your wrapper function replaces the original's <code>__name__</code>, <code>__doc__</code>, <code>__module__</code>, etc. This breaks documentation, debugging, and introspection. <code>@wraps(func)</code> copies those attributes to the wrapper. Always use it.</p>
+      <p><strong>Decorator factories</strong> (decorators with arguments) require three levels of nesting: the factory function (takes config), the decorator (takes func), and the wrapper (takes func's args). The factory is called first, returns the decorator.</p>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">⚡ Generators: Coroutines Before Async</div>
+    <div class="explain-body">
+      <p>A generator function contains <code>yield</code>. When called, it returns a <em>generator object</em> immediately without executing any code. Each call to <code>next()</code> resumes execution until the next <code>yield</code>, then suspends again. The function's local state (variables, position) is preserved in the generator object's frame.</p>
+      <p><strong>The protocol:</strong> Any object implementing <code>__iter__</code> and <code>__next__</code> is an <em>iterator</em>. A generator is a convenient way to create iterators without writing a class. <code>StopIteration</code> is raised when the generator function returns.</p>
+      <p><strong><code>yield from</code></strong> does more than delegation. In a coroutine context, it also passes <code>send()</code> and <code>throw()</code> calls through. It's the basis of Python's original coroutine design before <code>async/await</code>.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">decorators_generators.py</div></div>
+    <div class="cb"><span class="kw">import</span> time, functools
+
+<span class="cm"># ── Decorator factory (3-level nesting) ──────────────</span>
+<span class="kw">def</span> <span class="fn">retry</span>(times=<span class="nm">3</span>, delay=<span class="nm">1.0</span>, exceptions=(<span class="cl">Exception</span>,)):
+    <span class="str">"""Decorator factory: retry on specified exceptions."""</span>
+    <span class="kw">def</span> <span class="fn">decorator</span>(func):                    <span class="cm"># level 2: receives the function</span>
+        <span class="dc">@functools.wraps</span>(func)
+        <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):        <span class="cm"># level 3: replaces the function</span>
+            last_exc = <span class="nm">None</span>
+            <span class="kw">for</span> attempt <span class="kw">in</span> <span class="fn">range</span>(times):
+                <span class="kw">try</span>:
+                    <span class="kw">return</span> func(*args, **kwargs)
+                <span class="kw">except</span> exceptions <span class="kw">as</span> e:
+                    last_exc = e
+                    <span class="kw">if</span> attempt &lt; times - <span class="nm">1</span>:
+                        time.sleep(delay * (<span class="nm">2</span> ** attempt))  <span class="cm"># exponential backoff</span>
+            <span class="kw">raise</span> last_exc
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator                        <span class="cm"># level 1: returns the decorator</span>
+
+<span class="dc">@retry</span>(times=<span class="nm">3</span>, delay=<span class="nm">0.5</span>, exceptions=(<span class="cl">TimeoutError</span>, <span class="cl">ConnectionError</span>))
+<span class="kw">def</span> <span class="fn">fetch</span>(url): ...
+
+<span class="cm"># ── Generator internals ──────────────────────────────</span>
+<span class="cm"># The function body does NOT run at call time</span>
+<span class="kw">def</span> <span class="fn">counter</span>(n):
+    <span class="fn">print</span>(<span class="str">"started"</span>)         <span class="cm"># only runs on first next()</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="fn">print</span>(f<span class="str">"before yield {i}"</span>)
+        <span class="kw">yield</span> i               <span class="cm"># suspend here, return i</span>
+        <span class="fn">print</span>(f<span class="str">"after yield {i}"</span>)  <span class="cm"># resumes here on next next()</span>
+
+g = <span class="fn">counter</span>(<span class="nm">3</span>)    <span class="cm"># no output yet — generator object created</span>
+<span class="fn">next</span>(g)           <span class="cm"># "started", "before yield 0", returns 0</span>
+<span class="fn">next</span>(g)           <span class="cm"># "after yield 0", "before yield 1", returns 1</span>
+
+<span class="cm"># ── Bidirectional communication with send() ──────────</span>
+<span class="kw">def</span> <span class="fn">accumulator</span>():
+    total = <span class="nm">0</span>
+    <span class="kw">while</span> <span class="nm">True</span>:
+        n = <span class="kw">yield</span> total      <span class="cm"># yield current total AND receive new value</span>
+        total += n <span class="kw">if</span> n <span class="kw">is</span> <span class="nm">not</span> <span class="nm">None</span> <span class="kw">else</span> <span class="nm">0</span>
+
+acc = <span class="fn">accumulator</span>()
+<span class="fn">next</span>(acc)          <span class="cm"># prime: advance to first yield, gets 0</span>
+acc.send(<span class="nm">10</span>)       <span class="cm"># sends 10, n=10, returns 10</span>
+acc.send(<span class="nm">25</span>)       <span class="cm"># sends 25, n=25, returns 35</span></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('errors')">← Back</button><button class="btn-sec" onclick="go('async')">Next: Async →</button></div>
+</div>
+
+<!-- ══════ 12 ASYNC ══════ -->
+<div class="sec" id="s-async">
+  <div class="sec-head">
+    <div class="sec-label">Advanced · 12</div>
+    <div class="sec-title">Async / Await</div>
+    <div class="sec-intro"><code>asyncio</code> implements <strong>cooperative multitasking</strong> on a single thread using an event loop. Understanding when it helps (and doesn't) is as important as knowing the syntax.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔄 The Event Loop: What Actually Happens</div>
+    <div class="explain-body">
+      <p>When you <code>await asyncio.sleep(1)</code>, your coroutine doesn't block — it suspends itself and tells the event loop "wake me up in 1 second." The event loop then runs <em>other</em> ready coroutines until yours is due to resume.</p>
+      <p>Crucially, <strong>only one coroutine runs at a time</strong> (no parallelism). The benefit is that I/O waits (network, disk) are handled by the OS without tying up a thread. For CPU-bound tasks, asyncio provides zero benefit — the GIL still limits you to one CPU, and you add scheduling overhead. Use <code>ProcessPoolExecutor</code> for CPU work.</p>
+      <p><strong><code>asyncio.gather()</code></strong> submits all coroutines to the event loop and waits for all to complete. They run concurrently (interleaved), not in parallel. If one raises an exception, <code>gather()</code> cancels the others by default.</p>
+      <p><strong>async context managers</strong> and <strong>async generators</strong> follow the same protocol as their sync counterparts — just with <code>__aenter__</code>/<code>__aexit__</code> and <code>__aiter__</code>/<code>__anext__</code>. Use <code>async with</code> and <code>async for</code>.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">async_deep.py</div></div>
+    <div class="cb"><span class="kw">import</span> asyncio
+
+<span class="cm"># ── Concurrency vs Parallelism ────────────────────────</span>
+<span class="kw">async def</span> <span class="fn">io_task</span>(name, delay):
+    <span class="fn">print</span>(f<span class="str">"→ {name} starting"</span>)
+    <span class="kw">await</span> asyncio.sleep(delay)  <span class="cm"># simulates network/disk wait</span>
+    <span class="fn">print</span>(f<span class="str">"✓ {name} done"</span>)
+    <span class="kw">return</span> name
+
+<span class="kw">async def</span> <span class="fn">main</span>():
+    <span class="cm"># Sequential: 3 seconds total</span>
+    <span class="kw">await</span> <span class="fn">io_task</span>(<span class="str">"A"</span>, <span class="nm">1.0</span>)
+    <span class="kw">await</span> <span class="fn">io_task</span>(<span class="str">"B"</span>, <span class="nm">1.0</span>)
+    <span class="kw">await</span> <span class="fn">io_task</span>(<span class="str">"C"</span>, <span class="nm">1.0</span>)
+
+    <span class="cm"># Concurrent: ~1 second total</span>
+    results = <span class="kw">await</span> asyncio.gather(
+        <span class="fn">io_task</span>(<span class="str">"A"</span>, <span class="nm">1.0</span>),
+        <span class="fn">io_task</span>(<span class="str">"B"</span>, <span class="nm">1.0</span>),
+        <span class="fn">io_task</span>(<span class="str">"C"</span>, <span class="nm">1.0</span>),
+    )   <span class="cm"># ["A", "B", "C"]</span>
+
+    <span class="cm"># gather with return_exceptions=True — don't cancel others on error</span>
+    results = <span class="kw">await</span> asyncio.gather(
+        <span class="fn">io_task</span>(<span class="str">"X"</span>, <span class="nm">0.5</span>),
+        <span class="fn">io_task</span>(<span class="str">"Y"</span>, <span class="nm">0.5</span>),
+        return_exceptions=<span class="nm">True</span>
+    )
+
+    <span class="cm"># Timeout on individual task</span>
+    <span class="kw">try</span>:
+        result = <span class="kw">await</span> asyncio.wait_for(<span class="fn">io_task</span>(<span class="str">"slow"</span>, <span class="nm">5.0</span>), timeout=<span class="nm">1.0</span>)
+    <span class="kw">except</span> asyncio.TimeoutError:
+        <span class="fn">print</span>(<span class="str">"Task timed out"</span>)
+
+<span class="cm"># ── Running sync code in threadpool ──────────────────</span>
+<span class="cm"># Never call blocking code in a coroutine — it blocks the event loop</span>
+<span class="kw">import</span> time
+<span class="kw">async def</span> <span class="fn">safe_blocking</span>():
+    loop = asyncio.get_event_loop()
+    <span class="cm"># run_in_executor offloads to ThreadPoolExecutor</span>
+    result = <span class="kw">await</span> loop.run_in_executor(<span class="nm">None</span>, time.sleep, <span class="nm">1</span>)
+    <span class="cm"># Use ProcessPoolExecutor for CPU-bound work</span>
+
+asyncio.run(<span class="fn">main</span>())</div>
+  </div>
+
+  <div class="callout c-warn"><strong>⚠️ The blocking call trap:</strong> Any synchronous blocking call inside a coroutine (e.g. <code>requests.get()</code>, <code>time.sleep()</code>, any heavy computation) blocks the <em>entire</em> event loop — all other coroutines freeze until it returns. Use async libraries: <code>aiohttp</code> instead of <code>requests</code>, <code>aiofiles</code> instead of <code>open()</code>, <code>run_in_executor</code> for unavoidable blocking calls.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('deco')">← Back</button><button class="btn-sec" onclick="go('meta')">Next: Metaclasses →</button></div>
+</div>
+
+<!-- ══════ 13 METACLASSES ══════ -->
+<div class="sec" id="s-meta">
+  <div class="sec-head">
+    <div class="sec-label">Advanced · 13</div>
+    <div class="sec-title">Metaclasses &amp; Dunder Methods</div>
+    <div class="sec-intro">Metaclasses are <strong>classes for classes</strong>. <code>type</code> is the default metaclass — every class you define is an instance of <code>type</code>. This is the layer where frameworks like Django ORM, SQLAlchemy, and Pydantic operate.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🧬 How Classes Are Created: The Full Lifecycle</div>
+    <div class="explain-body">
+      <p>When Python executes a <code>class</code> statement, it: (1) executes the class body in a fresh namespace, (2) identifies the metaclass (default: <code>type</code>), (3) calls <code>metaclass(name, bases, namespace)</code> which returns the class object.</p>
+      <p>By customising the metaclass, you intercept class creation. This lets you: auto-register subclasses, enforce interface rules at class-definition time, modify class attributes before instances are created, and implement things like ORMs (where <code>class User(Model)</code> automatically creates a database table).</p>
+      <p>For most use cases, <code>__init_subclass__</code> (Python 3.6+) and class decorators are simpler alternatives to full metaclasses and should be preferred.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">metaclasses_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── Metaclass basics ─────────────────────────────────</span>
+<span class="cm"># type(name, bases, dict) creates a class dynamically</span>
+<span class="cl">MyClass</span> = <span class="fn">type</span>(<span class="str">"MyClass"</span>, (object,), {<span class="str">"x"</span>: <span class="nm">42</span>, <span class="str">"greet"</span>: <span class="kw">lambda</span> self: <span class="str">"hi"</span>})
+<span class="cl">MyClass</span>().greet()  <span class="cm"># "hi" — same as writing class MyClass: x=42; def greet: ...</span>
+
+<span class="cm"># ── Plugin registry via __init_subclass__ ────────────</span>
+<span class="kw">class</span> <span class="cl">Serializer</span>:
+    <span class="str">"""Base: any subclass with format= gets auto-registered."""</span>
+    _registry: dict = {}
+
+    <span class="kw">def</span> <span class="fn">__init_subclass__</span>(cls, format: str = <span class="nm">None</span>, **kw):
+        <span class="fn">super</span>().__init_subclass__(**kw)
+        <span class="kw">if</span> format:
+            <span class="cl">Serializer</span>._registry[format] = cls
+
+    <span class="dc">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">get</span>(cls, format):
+        <span class="kw">return</span> cls._registry.get(format)
+
+<span class="kw">class</span> <span class="cl">JsonSerializer</span>(<span class="cl">Serializer</span>, format=<span class="str">"json"</span>): <span class="kw">pass</span>
+<span class="kw">class</span> <span class="cl">YamlSerializer</span>(<span class="cl">Serializer</span>, format=<span class="str">"yaml"</span>): <span class="kw">pass</span>
+
+<span class="cl">Serializer</span>.get(<span class="str">"json"</span>)   <span class="cm"># JsonSerializer (auto-registered)</span>
+
+<span class="cm"># ── Full metaclass: enforce abstract methods ─────────</span>
+<span class="kw">class</span> <span class="cl">InterfaceMeta</span>(<span class="fn">type</span>):
+    <span class="kw">def</span> <span class="fn">__new__</span>(mcs, name, bases, namespace):
+        cls = <span class="fn">super</span>().__new__(mcs, name, bases, namespace)
+        <span class="cm"># Find required methods from base classes</span>
+        required = <span class="fn">set</span>()
+        <span class="kw">for</span> base <span class="kw">in</span> bases:
+            required |= <span class="fn">getattr</span>(base, <span class="str">"_required"</span>, <span class="fn">set</span>())
+        missing = required - <span class="fn">set</span>(namespace)
+        <span class="kw">if</span> missing <span class="kw">and</span> bases:  <span class="cm"># skip the base class itself</span>
+            <span class="kw">raise</span> <span class="cl">TypeError</span>(f<span class="str">"{name} must implement: {missing}"</span>)
+        <span class="kw">return</span> cls</div>
+  </div>
+
+  <div class="callout c-deep"><strong>🔬 Pydantic, SQLAlchemy, Django ORM</strong> all use metaclasses or <code>__init_subclass__</code> extensively. When you write <code>class User(Base): name = Column(String)</code>, the metaclass intercepts this, reads the <code>Column</code> descriptors, and builds the SQL schema. When you write <code>class Settings(BaseModel): name: str</code>, Pydantic's metaclass reads the type hints and generates validators. The model looks like a class definition but actually registers complex runtime behaviour.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('async')">← Back</button><button class="btn-sec" onclick="go('stdlib')">Next: Std Library →</button></div>
+</div>
+
+<!-- ══════ 14 STDLIB ══════ -->
+<div class="sec" id="s-stdlib">
+  <div class="sec-head">
+    <div class="sec-label">Advanced · 14</div>
+    <div class="sec-title">Standard Library Deep Dive</div>
+    <div class="sec-intro">The standard library is vast. These are the modules every serious Python developer must know deeply — not just their existence, but their nuances.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">📚 The Modules You Actually Need to Master</div>
+    <div class="explain-body">
+      <ul>
+        <li><strong>pathlib</strong> — replaces <code>os.path</code>. Object-oriented path manipulation. <code>Path('a') / 'b' / 'c'</code> works on all platforms.</li>
+        <li><strong>itertools</strong> — lazy combinatorial tools. <code>chain</code>, <code>islice</code>, <code>groupby</code>, <code>product</code>, <code>accumulate</code>. Should be your first stop before writing any loop.</li>
+        <li><strong>functools</strong> — <code>lru_cache</code>/<code>cache</code>, <code>partial</code>, <code>reduce</code>, <code>wraps</code>, <code>total_ordering</code>, <code>cached_property</code>.</li>
+        <li><strong>typing</strong> — <code>Protocol</code> for structural subtyping, <code>TypeVar</code> for generics, <code>TypedDict</code> for dict schemas, <code>Literal</code> for restricted values, <code>overload</code> for multiple signatures.</li>
+        <li><strong>contextlib</strong> — <code>contextmanager</code> to make generators into context managers, <code>suppress</code> to silence exceptions, <code>ExitStack</code> to manage variable numbers of context managers.</li>
+        <li><strong>concurrent.futures</strong> — <code>ThreadPoolExecutor</code> and <code>ProcessPoolExecutor</code> with a clean Future-based API. Better than raw threading for most use cases.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">stdlib_deep.py</div></div>
+    <div class="cb"><span class="cm"># ── itertools: write zero loops ──────────────────────</span>
+<span class="kw">import</span> itertools <span class="kw">as</span> it
+
+<span class="cm"># Sliding window (no recipe needed in 3.12+, itertools.pairwise)</span>
+<span class="kw">def</span> <span class="fn">window</span>(seq, n):
+    iterables = [it.islice(seq, i, <span class="nm">None</span>) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)]
+    <span class="kw">yield from</span> <span class="fn">zip</span>(*iterables)
+
+<span class="fn">list</span>(<span class="fn">window</span>([<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">4</span>,<span class="nm">5</span>], <span class="nm">3</span>))  <span class="cm"># [(1,2,3),(2,3,4),(3,4,5)]</span>
+
+<span class="cm"># groupby — group consecutive items (MUST be sorted first!)</span>
+data = [(<span class="str">"a"</span>,<span class="nm">1</span>),(<span class="str">"a"</span>,<span class="nm">2</span>),(<span class="str">"b"</span>,<span class="nm">3</span>),(<span class="str">"b"</span>,<span class="nm">4</span>)]
+<span class="kw">for</span> key, group <span class="kw">in</span> it.groupby(data, key=<span class="kw">lambda</span> x: x[<span class="nm">0</span>]):
+    <span class="fn">print</span>(key, <span class="fn">list</span>(group))   <span class="cm"># a [(a,1),(a,2)], b [(b,3),(b,4)]</span>
+
+<span class="cm"># ── functools.partial ────────────────────────────────</span>
+<span class="kw">from</span> functools <span class="kw">import</span> partial
+
+<span class="kw">def</span> <span class="fn">power</span>(base, exp): <span class="kw">return</span> base ** exp
+square = partial(power, exp=<span class="nm">2</span>)   <span class="cm"># pre-fills exp=2</span>
+cube   = partial(power, exp=<span class="nm">3</span>)
+
+<span class="fn">print</span>([square(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">6</span>)])   <span class="cm"># [0,1,4,9,16,25]</span>
+
+<span class="cm"># ── Protocol: structural subtyping ───────────────────</span>
+<span class="kw">from</span> typing <span class="kw">import</span> Protocol, runtime_checkable
+
+<span class="dc">@runtime_checkable</span>
+<span class="kw">class</span> <span class="cl">Drawable</span>(<span class="cl">Protocol</span>):
+    <span class="kw">def</span> <span class="fn">draw</span>(self, canvas) -> <span class="nm">None</span>: ...
+    <span class="kw">def</span> <span class="fn">bounding_box</span>(self) -> <span class="fn">tuple</span>: ...
+
+<span class="cm"># Any class with these methods satisfies Drawable — no inheritance needed</span>
+<span class="cm"># isinstance(obj, Drawable) works with @runtime_checkable</span>
+
+<span class="cm"># ── concurrent.futures ───────────────────────────────</span>
+<span class="kw">from</span> concurrent.futures <span class="kw">import</span> ProcessPoolExecutor, as_completed
+
+<span class="kw">def</span> <span class="fn">cpu_task</span>(n): <span class="kw">return</span> n ** <span class="nm">2</span>
+
+<span class="kw">with</span> <span class="cl">ProcessPoolExecutor</span>(max_workers=<span class="nm">4</span>) <span class="kw">as</span> pool:
+    futures = {pool.submit(cpu_task, i): i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">10</span>)}
+    <span class="kw">for</span> future <span class="kw">in</span> as_completed(futures):
+        n = futures[future]
+        <span class="fn">print</span>(f<span class="str">"n={n}, result={future.result()}"</span>)</div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('meta')">← Back</button><button class="btn-sec" onclick="go('numpy')">Next: NumPy & Pandas →</button></div>
+</div>
+
+<!-- ══════ 15 NUMPY ══════ -->
+<div class="sec" id="s-numpy">
+  <div class="sec-head">
+    <div class="sec-label">Ecosystem · 15</div>
+    <div class="sec-title">NumPy &amp; Pandas</div>
+    <div class="sec-intro">NumPy's speed comes from <strong>vectorised operations</strong> on contiguous C arrays. The Python loop is replaced by a tight C loop — typically 50–100× faster. Understanding this mental model is key.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔢 Why NumPy is Fast: Vectorisation &amp; Broadcasting</div>
+    <div class="explain-body">
+      <p>A Python list stores references to Python objects — each element is a heap-allocated object with type info, reference count, and value. A NumPy array stores raw numeric data in a contiguous C buffer — no Python overhead per element.</p>
+      <p>When you write <code>a * 2</code> on a NumPy array, NumPy calls a compiled C function that iterates the buffer with SIMD instructions. No Python is executed per element. This is <em>vectorisation</em>.</p>
+      <p><strong>Broadcasting</strong> is NumPy's rule for operating on arrays of different shapes. A scalar is broadcast across the entire array. A (3,1) array broadcasts against a (1,5) array to produce (3,5). The rule: dimensions are aligned from the right; if they differ, a size-1 dimension is stretched to match.</p>
+      <p><strong>Pandas</strong> builds on NumPy. A DataFrame is essentially a dict of NumPy arrays (columns) sharing an index. Operations are vectorised. <code>apply()</code> with a Python function is slow — prefer built-in vectorised operations.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">numpy_pandas_deep.py</div></div>
+    <div class="cb"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cm"># ── NUMPY ═════════════════════════════════════════════</span>
+<span class="cm"># Views vs copies — critical for performance and correctness</span>
+a = np.arange(<span class="nm">12</span>).reshape(<span class="nm">3</span>, <span class="nm">4</span>)
+b = a[:<span class="nm">2</span>, :<span class="nm">2</span>]    <span class="cm"># b is a VIEW — shares memory with a</span>
+b[<span class="nm">0</span>, <span class="nm">0</span>] = <span class="nm">999</span>    <span class="cm"># modifies a too!</span>
+c = a[:<span class="nm">2</span>].copy() <span class="cm"># explicit copy — independent</span>
+
+<span class="cm"># Broadcasting rules in action</span>
+a = np.ones((<span class="nm">3</span>, <span class="nm">1</span>))    <span class="cm"># shape (3,1)</span>
+b = np.ones((<span class="nm">1</span>, <span class="nm">4</span>))    <span class="cm"># shape (1,4)</span>
+c = a + b               <span class="cm"># shape (3,4) — broadcast both dimensions</span>
+
+<span class="cm"># Boolean indexing — no Python loop</span>
+data = np.random.randn(<span class="nm">1000</span>)
+outliers = data[np.abs(data) > <span class="nm">3</span>]    <span class="cm"># automatic mask</span>
+data[np.abs(data) > <span class="nm">3</span>] = <span class="nm">0</span>           <span class="cm"># zero out outliers in-place</span>
+
+<span class="cm"># np.where: vectorised if/else</span>
+result = np.where(data > <span class="nm">0</span>, data, <span class="nm">0</span>)   <span class="cm"># relu!</span>
+
+<span class="cm"># ── PANDAS ════════════════════════════════════════════</span>
+df = pd.read_csv(<span class="str">"data.csv"</span>)
+
+<span class="cm"># Chained assignment warning — use .loc for assignment</span>
+df[df.age > <span class="nm">30</span>][<span class="str">"score"</span>] = <span class="nm">100</span>         <span class="cm"># SettingWithCopyWarning!</span>
+df.loc[df.age > <span class="nm">30</span>, <span class="str">"score"</span>] = <span class="nm">100</span>     <span class="cm"># correct way</span>
+
+<span class="cm"># apply() is slow — prefer vectorised alternatives</span>
+df[<span class="str">"len"</span>] = df[<span class="str">"name"</span>].apply(<span class="fn">len</span>)       <span class="cm"># slow — Python loop</span>
+df[<span class="str">"len"</span>] = df[<span class="str">"name"</span>].str.len()        <span class="cm"># fast — vectorised</span>
+
+<span class="cm"># groupby + agg: powerful data summarisation</span>
+summary = df.groupby(<span class="str">"category"</span>).agg(
+    mean_score=(<span class="str">"score"</span>, <span class="str">"mean"</span>),
+    count=(<span class="str">"score"</span>, <span class="str">"count"</span>),
+    max_age=(<span class="str">"age"</span>, <span class="str">"max"</span>),
+).reset_index()
+
+<span class="cm"># Method chaining — Pandas style</span>
+result = (df
+    .query(<span class="str">"age > 25 and score > 80"</span>)
+    .assign(grade=<span class="kw">lambda</span> x: pd.cut(x.score, bins=[<span class="nm">0</span>,<span class="nm">60</span>,<span class="nm">80</span>,<span class="nm">100</span>], labels=[<span class="str">"C"</span>,<span class="str">"B"</span>,<span class="str">"A"</span>]))
+    .groupby(<span class="str">"grade"</span>)[<span class="str">"score"</span>]
+    .mean()
+)</div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('stdlib')">← Back</button><button class="btn-sec" onclick="go('ml')">Next: ML Libraries →</button></div>
+</div>
+
+<!-- ══════ 16 ML ══════ -->
+<div class="sec" id="s-ml">
+  <div class="sec-head">
+    <div class="sec-label">Ecosystem · 16</div>
+    <div class="sec-title">ML Libraries</div>
+    <div class="sec-intro">Python dominates ML because of NumPy's C array foundation which every library builds on. TensorFlow, PyTorch, JAX, and sklearn all interoperate through the array protocol.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🧠 PyTorch: Tensors, Autograd &amp; the Training Loop</div>
+    <div class="explain-body">
+      <p>PyTorch tensors are like NumPy arrays but with two additions: they can live on GPU and they support <strong>automatic differentiation</strong> (autograd). When you do math on tensors with <code>requires_grad=True</code>, PyTorch builds a computation graph. Calling <code>.backward()</code> traverses this graph in reverse to compute gradients.</p>
+      <p><strong>The training loop</strong> is explicit in PyTorch (unlike Keras). This is intentional — you have full control over every step: forward pass, loss computation, gradient computation, gradient clipping, and parameter update. This makes debugging and research much easier than black-box APIs.</p>
+      <p><code>model.train()</code> vs <code>model.eval()</code> controls BatchNorm and Dropout behaviour. In eval mode, BatchNorm uses running statistics (not batch), and Dropout is disabled. <strong>Always set the correct mode.</strong> Forgetting <code>model.eval()</code> at inference time causes inconsistent results.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">pytorch_deep.py</div></div>
+    <div class="cb"><span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="cm"># ── Autograd mechanics ───────────────────────────────</span>
+x = torch.tensor([<span class="nm">2.0</span>], requires_grad=<span class="nm">True</span>)
+y = x ** <span class="nm">3</span> + <span class="nm">2</span> * x          <span class="cm"># builds computation graph</span>
+y.backward()                  <span class="cm"># dy/dx = 3x² + 2</span>
+<span class="fn">print</span>(x.grad)                 <span class="cm"># tensor([14.])  (3*4 + 2 = 14)</span>
+
+<span class="cm"># ── Custom nn.Module ─────────────────────────────────</span>
+<span class="kw">class</span> <span class="cl">TransformerBlock</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, d_model, n_heads, ff_dim, dropout=<span class="nm">0.1</span>):
+        <span class="fn">super</span>().__init__()
+        self.attn   = nn.MultiheadAttention(d_model, n_heads, dropout=dropout, batch_first=<span class="nm">True</span>)
+        self.ff     = nn.Sequential(
+            nn.Linear(d_model, ff_dim), nn.GELU(), nn.Dropout(dropout),
+            nn.Linear(ff_dim, d_model),
+        )
+        self.norm1  = nn.LayerNorm(d_model)
+        self.norm2  = nn.LayerNorm(d_model)
+        self.drop   = nn.Dropout(dropout)
+
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x, attn_mask=<span class="nm">None</span>, key_padding_mask=<span class="nm">None</span>):
+        <span class="cm"># Pre-norm formulation (better training stability)</span>
+        x_norm = self.norm1(x)
+        attn_out, _ = self.attn(x_norm, x_norm, x_norm,
+                                attn_mask=attn_mask,
+                                key_padding_mask=key_padding_mask)
+        x = x + self.drop(attn_out)          <span class="cm"># residual connection</span>
+        x = x + self.drop(self.ff(self.norm2(x)))
+        <span class="kw">return</span> x
+
+<span class="cm"># ── Production training loop ─────────────────────────</span>
+<span class="kw">def</span> <span class="fn">train_epoch</span>(model, loader, optimiser, criterion, device, scaler):
+    model.train()
+    total_loss = <span class="nm">0</span>
+    <span class="kw">for</span> batch in loader:
+        xb, yb = batch[<span class="nm">0</span>].to(device), batch[<span class="nm">1</span>].to(device)
+
+        <span class="kw">with</span> torch.autocast(device_type=device.type, dtype=torch.float16):
+            preds = model(xb)                 <span class="cm"># forward  (mixed precision)</span>
+            loss  = criterion(preds, yb)
+
+        optimiser.zero_grad()                 <span class="cm"># clear old gradients</span>
+        scaler.scale(loss).backward()         <span class="cm"># backward (scaled for fp16)</span>
+        scaler.unscale_(optimiser)
+        nn.utils.clip_grad_norm_(model.parameters(), <span class="nm">1.0</span>)  <span class="cm"># prevent explosion</span>
+        scaler.step(optimiser)
+        scaler.update()
+        total_loss += loss.item()
+    <span class="kw">return</span> total_loss / <span class="fn">len</span>(loader)</div>
+  </div>
+
+  <div class="callout c-tip"><strong>✅ Best practice:</strong> Always use mixed precision training (<code>torch.autocast</code> + <code>GradScaler</code>). It's ~2× faster on modern GPUs with minimal code change. Always clip gradients — exploding gradients will silently corrupt training. Use <code>AdamW</code> (not <code>Adam</code>) — the weight decay implementation in <code>Adam</code> is mathematically incorrect.</div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('numpy')">← Back</button><button class="btn-sec" onclick="go('nlp')">Next: NLP / Transformers →</button></div>
+</div>
+
+<!-- ══════ 17 NLP ══════ -->
+<div class="sec" id="s-nlp">
+  <div class="sec-head">
+    <div class="sec-label">Ecosystem · 17</div>
+    <div class="sec-title">NLP &amp; Transformers</div>
+    <div class="sec-intro"><code>SentenceTransformer</code>, HuggingFace, spaCy — this section goes deep on what these libraries actually do internally, not just the API calls.</div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🔑 SentenceTransformer: What it Actually Does</div>
+    <div class="explain-body">
+      <p><code>SentenceTransformer</code> takes a transformer model (BERT, RoBERTa, etc.) and adds a <strong>pooling layer</strong> on top. The transformer produces one embedding vector per token. The pooling layer (mean pooling by default) averages these into a single fixed-size vector for the entire sentence.</p>
+      <p>The resulting dense vector is a point in a high-dimensional semantic space. Sentences with similar meaning are close together (high cosine similarity). This makes it ideal for: semantic search, clustering, paraphrase detection, deduplication, and RAG (Retrieval-Augmented Generation) pipelines.</p>
+      <p><strong>Model selection matters:</strong> <code>all-MiniLM-L6-v2</code> is fast (22M params, 384 dims) — good for prototyping. <code>all-mpnet-base-v2</code> (109M params, 768 dims) is higher quality. <code>BAAI/bge-large-en-v1.5</code> is SOTA for retrieval. Multilingual models (<code>paraphrase-multilingual</code>) handle 50+ languages.</p>
+      <p><strong>Fine-tuning:</strong> Pre-trained embeddings may not capture your domain's vocabulary. Fine-tune using <code>MultipleNegativesRankingLoss</code> (for retrieval) or <code>CosineSimilarityLoss</code> (for similarity scores). Even a few hundred domain examples can substantially improve performance.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">sentence_transformers_deep.py</div></div>
+    <div class="cb"><span class="cm"># pip install sentence-transformers</span>
+<span class="kw">from</span> sentence_transformers <span class="kw">import</span> SentenceTransformer, util, losses, InputExample
+<span class="kw">from</span> torch.utils.data <span class="kw">import</span> DataLoader
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># ── Load &amp; inspect ────────────────────────────────────</span>
+model = <span class="cl">SentenceTransformer</span>(<span class="str">"all-MiniLM-L6-v2"</span>)
+<span class="cm"># Model architecture: Transformer → Pooling → (optional Normalise)</span>
+<span class="fn">print</span>(model)   <span class="cm"># shows the module layers</span>
+
+<span class="cm"># ── Encoding returns numpy array by default ──────────</span>
+sentences = [
+    <span class="str">"The stock market crashed today"</span>,
+    <span class="str">"Equity markets saw a sharp decline"</span>,
+    <span class="str">"My cat ate breakfast this morning"</span>,
+]
+embs = model.encode(sentences,
+                    batch_size=<span class="nm">32</span>,
+                    show_progress_bar=<span class="nm">True</span>,
+                    normalize_embeddings=<span class="nm">True</span>)  <span class="cm"># L2 normalise → cosine = dot product</span>
+<span class="fn">print</span>(embs.shape)   <span class="cm"># (3, 384)</span>
+
+<span class="cm"># Cosine similarity — with normalised embeddings, just dot product</span>
+sim_matrix = embs @ embs.T            <span class="cm"># shape (3, 3)</span>
+<span class="cm"># or use utility:</span>
+sim = util.cos_sim(embs, embs)        <span class="cm"># torch.Tensor (3, 3)</span>
+<span class="fn">print</span>(f<span class="str">"Sentences 0&amp;1: {sim[0,1]:.4f}"</span>)  <span class="cm"># ≈ 0.82 (similar meaning)</span>
+<span class="fn">print</span>(f<span class="str">"Sentences 0&amp;2: {sim[0,2]:.4f}"</span>)  <span class="cm"># ≈ 0.05 (unrelated)</span>
+
+<span class="cm"># ── Semantic search: corpus retrieval ────────────────</span>
+corpus = [<span class="str">"Python closures explained"</span>,
+          <span class="str">"How to use asyncio"</span>,
+          <span class="str">"Neural network training tips"</span>,
+          <span class="str">"Global warming and climate change"</span>]
+
+corpus_embs = model.encode(corpus, convert_to_tensor=<span class="nm">True</span>, normalize_embeddings=<span class="nm">True</span>)
+query       = <span class="str">"async programming in Python"</span>
+query_emb   = model.encode(query,  convert_to_tensor=<span class="nm">True</span>, normalize_embeddings=<span class="nm">True</span>)
+
+<span class="cm"># semantic_search returns top_k hits with score and index</span>
+hits = util.semantic_search(query_emb, corpus_embs, top_k=<span class="nm">2</span>)[<span class="nm">0</span>]
+<span class="kw">for</span> h <span class="kw">in</span> hits:
+    <span class="fn">print</span>(f<span class="str">{corpus[h['corpus_id']]!r:40} score={h['score']:.4f}"</span>)
+
+<span class="cm"># ── Fine-tuning: MultipleNegativesRankingLoss ─────────</span>
+<span class="cm"># Best for retrieval tasks — uses in-batch negatives (efficient)</span>
+train_examples = [
+    <span class="cl">InputExample</span>(texts=[<span class="str">"What is Python?"</span>, <span class="str">"Python is a programming language"</span>]),
+    <span class="cl">InputExample</span>(texts=[<span class="str">"async vs threads"</span>, <span class="str">"asyncio uses cooperative multitasking"</span>]),
+    <span class="cm"># Each pair: (query, positive_doc). Other docs in batch = hard negatives.</span>
+]
+loader     = <span class="cl">DataLoader</span>(train_examples, batch_size=<span class="nm">16</span>, shuffle=<span class="nm">True</span>)
+train_loss = losses.<span class="cl">MultipleNegativesRankingLoss</span>(model)
+
+model.fit(
+    train_objectives=[(loader, train_loss)],
+    epochs=<span class="nm">3</span>,
+    warmup_steps=<span class="nm">100</span>,
+    evaluator=<span class="nm">None</span>,   <span class="cm"># add InformationRetrievalEvaluator in real use</span>
+    output_path=<span class="str">"./my-model"</span>,
+)
+
+<span class="cm"># ── Using with FAISS for million-scale search ─────────</span>
+<span class="cm"># import faiss</span>
+<span class="cm"># index = faiss.IndexFlatIP(384)          # inner product (with normalised vectors = cosine)</span>
+<span class="cm"># index = faiss.IndexIVFFlat(quantizer, 384, n_clusters)  # approximate (faster)</span>
+<span class="cm"># index.add(corpus_embs.numpy())          # add all vectors</span>
+<span class="cm"># scores, indices = index.search(query_emb.numpy(), k=10)  # find top-10</span></div>
+  </div>
+
+  <div class="explain">
+    <div class="explain-title">🤗 HuggingFace Transformers: The Full Picture</div>
+    <div class="explain-body">
+      <p>HuggingFace provides a unified API over hundreds of transformer architectures. The key abstraction is: <strong>AutoTokenizer + AutoModel</strong>. Given a model name string, they download the config and weights from the Hub and return the right class.</p>
+      <p><strong>Tokenisation</strong> is often overlooked but critical. Tokenizers convert text to token IDs using vocabulary + subword algorithm (BPE, WordPiece, SentencePiece). Different models use different vocabularies — you must use the model's own tokenizer. The tokenizer also handles padding, truncation, special tokens (<code>[CLS]</code>, <code>[SEP]</code>), and attention masks.</p>
+      <p><strong>pipeline()</strong> is a high-level shortcut for common tasks. For production, use the lower-level AutoModel directly — it gives you control over batching, device placement, and output format.</p>
+    </div>
+  </div>
+
+  <div class="cw">
+    <div class="cw-bar"><div class="cw-dots"><span></span><span></span><span></span></div><div class="cw-name">huggingface_deep.py</div></div>
+    <div class="cb"><span class="kw">from</span> transformers <span class="kw">import</span> (
+    AutoTokenizer, AutoModelForSequenceClassification,
+    AutoModelForCausalLM, BitsAndBytesConfig,
+    pipeline, TrainingArguments, Trainer,
+)
+<span class="kw">import</span> torch
+
+<span class="cm"># ── Tokenisation deep dive ────────────────────────────</span>
+tok = <span class="cl">AutoTokenizer</span>.from_pretrained(<span class="str">"bert-base-uncased"</span>)
+
+<span class="cm"># What encode() does:</span>
+tokens   = tok.tokenize(<span class="str">"Running fast in Python"</span>)
+<span class="fn">print</span>(tokens)    <span class="cm"># ['running', 'fast', 'in', 'python'] — lower-cased + WordPiece</span>
+ids      = tok.convert_tokens_to_ids(tokens)
+
+<span class="cm"># Full encoding with all components</span>
+encoded = tok(<span class="str">"Hello world"</span>,
+              return_tensors=<span class="str">"pt"</span>,    <span class="cm"># "pt"=PyTorch, "np"=NumPy, "tf"=TensorFlow</span>
+              padding=<span class="nm">True</span>,           <span class="cm"># pad to longest in batch</span>
+              truncation=<span class="nm">True</span>,        <span class="cm"># truncate to max_length</span>
+              max_length=<span class="nm">512</span>)
+<span class="cm"># returns: input_ids, attention_mask, token_type_ids</span>
+<span class="cm"># attention_mask: 1=real token, 0=padding — model ignores padding positions</span>
+
+<span class="cm"># ── Inference with AutoModel ─────────────────────────</span>
+model = <span class="cl">AutoModelForSequenceClassification</span>.from_pretrained(
+    <span class="str">"cardiffnlp/twitter-roberta-base-sentiment-latest"</span>
+)
+model.eval()
+<span class="kw">with</span> torch.no_grad():           <span class="cm"># disable grad tracking — saves memory at inference</span>
+    outputs = model(**encoded)  <span class="cm"># **encoded unpacks input_ids, attention_mask etc</span>
+    probs   = torch.softmax(outputs.logits, dim=-<span class="nm">1</span>)
+
+<span class="cm"># ── LLM inference: causal language model ─────────────</span>
+<span class="cm"># For chat/instruction models, the prompt must follow the template</span>
+model_id = <span class="str">"meta-llama/Llama-3.2-3B-Instruct"</span>
+llm = <span class="cl">AutoModelForCausalLM</span>.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,   <span class="cm"># half precision — 2× memory reduction</span>
+    device_map=<span class="str">"auto"</span>,           <span class="cm"># auto-distribute across available GPUs</span>
+)
+tok_llm = <span class="cl">AutoTokenizer</span>.from_pretrained(model_id)
+
+messages = [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Explain Python's GIL in 3 sentences."</span>}]
+prompt   = tok_llm.apply_chat_template(messages, tokenize=<span class="nm">False</span>)  <span class="cm"># apply model's template</span>
+inputs   = tok_llm(prompt, return_tensors=<span class="str">"pt"</span>).to(llm.device)
+
+output_ids = llm.generate(
+    **inputs,
+    max_new_tokens=<span class="nm">200</span>,
+    do_sample=<span class="nm">True</span>,
+    temperature=<span class="nm">0.7</span>,    <span class="cm"># higher = more random, lower = more focused</span>
+    top_p=<span class="nm">0.9</span>,          <span class="cm"># nucleus sampling: sample from top 90% probability mass</span>
+    repetition_penalty=<span class="nm">1.1</span>,  <span class="cm"># penalise recently generated tokens</span>
+)
+response = tok_llm.decode(output_ids[<span class="nm">0</span>][inputs.input_ids.shape[-<span class="nm">1</span>]:], skip_special_tokens=<span class="nm">True</span>)
+<span class="cm"># [inputs.input_ids.shape[-1]:] slices off the prompt — only the new tokens</span>
+
+<span class="cm"># ── 4-bit quantisation (QLoRA) — run 7B on consumer GPU ─</span>
+bnb = <span class="cl">BitsAndBytesConfig</span>(
+    load_in_4bit=<span class="nm">True</span>,
+    bnb_4bit_quant_type=<span class="str">"nf4"</span>,         <span class="cm"># NormalFloat4 — optimal for normal distributions</span>
+    bnb_4bit_compute_dtype=torch.bfloat16,
+    bnb_4bit_use_double_quant=<span class="nm">True</span>,    <span class="cm"># quantise the quantisation constants too</span>
+)
+model_4bit = <span class="cl">AutoModelForCausalLM</span>.from_pretrained(<span class="str">"mistralai/Mistral-7B-v0.1"</span>,
+                                                   quantization_config=bnb,
+                                                   device_map=<span class="str">"auto"</span>)</div>
+  </div>
+
+  <div class="quiz">
+    <div class="quiz-q">When you call <code>SentenceTransformer.encode(sentences)</code>, what is returned by default and what are the dimensions?</div>
+    <div class="quiz-opts" id="q1">
+      <div class="qo" onclick="ans(this,'q1','B')"><div class="ql">A</div>A Python list of lists — one list per sentence</div>
+      <div class="qo" onclick="ans(this,'q1','B')"><div class="ql">B</div>A NumPy array of shape (n_sentences, embedding_dim), e.g. (3, 384) for MiniLM</div>
+      <div class="qo" onclick="ans(this,'q1','C')"><div class="ql">C</div>A PyTorch tensor with gradients enabled</div>
+      <div class="qo" onclick="ans(this,'q1','D')"><div class="ql">D</div>A dict mapping each sentence string to its embedding vector</div>
+    </div>
+    <div class="qfb" id="f-q1"></div>
+  </div>
+
+  <div class="btn-row"><button class="btn-sec" onclick="go('ml')">← Back</button><button class="btn-sec" onclick="go('cheat')">📋 Cheat Sheet →</button></div>
+</div>
+
+<!-- ══════ CHEAT SHEET ══════ -->
+<div class="sec" id="s-cheat">
+  <div class="sec-head">
+    <div class="sec-label">Reference</div>
+    <div class="sec-title">📋 Cheat Sheet</div>
+    <div class="sec-intro">Every key pattern from this guide — one glance and you're unblocked.</div>
+  </div>
+
+  <div class="cheat-grid">
+    <div class="ci"><div class="ct">Names &amp; References</div><pre>a = [1,2,3]
+b = a         # alias — same object
+b = a.copy()  # shallow copy
+import copy
+b = copy.deepcopy(a)  # deep copy
+id(a) == id(b)   # identity check
+a is b            # use for None/singletons
+a == b            # value equality</pre></div>
+
+    <div class="ci"><div class="ct">Mutable Default Trap</div><pre># WRONG
+def bad(x, lst=[]):
+    lst.append(x)
+    return lst
+
+# RIGHT
+def good(x, lst=None):
+    if lst is None:
+        lst = []
+    lst.append(x)
+    return lst</pre></div>
+
+    <div class="ci"><div class="ct">LEGB Scope Rules</div><pre>x = "global"       # G
+
+def outer():
+    x = "enclosing"  # E
+    def inner():
+        x = "local"    # L
+        print(len)     # B (built-in)
+    def modify_enc():
+        nonlocal x     # modify E
+    def modify_glb():
+        global x       # modify G</pre></div>
+
+    <div class="ci"><div class="ct">Closure-in-Loop Bug</div><pre># BUG: all funcs share i
+funcs = [lambda: i for i in range(5)]
+# → [4,4,4,4,4]
+
+# FIX: capture value as default
+funcs = [lambda i=i: i for i in range(5)]
+# → [0,1,2,3,4]</pre></div>
+
+    <div class="ci"><div class="ct">for-else Pattern</div><pre>for item in collection:
+    if condition(item):
+        result = item
+        break
+else:
+    # runs only if no break occurred
+    result = default_value</pre></div>
+
+    <div class="ci"><div class="ct">Decorator Factory</div><pre>from functools import wraps
+
+def retry(times=3):
+    def decorator(func):
+        @wraps(func)  # preserve metadata
+        def wrapper(*a, **kw):
+            for _ in range(times):
+                try: return func(*a, **kw)
+                except Exception: pass
+            raise RuntimeError("failed")
+        return wrapper
+    return decorator
+
+@retry(times=5)
+def flaky(): ...</pre></div>
+
+    <div class="ci"><div class="ct">Generator Protocol</div><pre>def gen(n):
+    print("started")   # runs on first next()
+    for i in range(n):
+        yield i        # suspend + return
+
+# Send values in
+def acc():
+    total = 0
+    while True:
+        n = yield total  # recv via send()
+        total += n or 0
+
+g = acc(); next(g)   # prime
+g.send(10)           # 10
+g.send(25)           # 35</pre></div>
+
+    <div class="ci"><div class="ct">Async Best Practices</div><pre>import asyncio
+
+# Never block the event loop:
+# ❌ time.sleep(1)
+# ✅ await asyncio.sleep(1)
+# ❌ requests.get(url)
+# ✅ aiohttp.ClientSession().get(url)
+
+# Offload blocking code:
+loop = asyncio.get_event_loop()
+result = await loop.run_in_executor(
+    None, blocking_function, arg
+)</pre></div>
+
+    <div class="ci"><div class="ct">SentenceTransformer</div><pre>from sentence_transformers import (
+    SentenceTransformer, util
+)
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# encode → numpy (n, 384)
+embs = model.encode(
+    sentences,
+    normalize_embeddings=True,  # → dot=cosine
+    batch_size=64,
+)
+
+# cosine similarity
+sim = util.cos_sim(embs[0], embs[1])
+
+# semantic search
+hits = util.semantic_search(
+    query_emb, corpus_embs, top_k=5
+)[0]</pre></div>
+
+    <div class="ci"><div class="ct">HuggingFace Tokenizer</div><pre>tok = AutoTokenizer.from_pretrained(model_id)
+
+encoded = tok(
+    texts,
+    return_tensors="pt",  # pt / np / tf
+    padding=True,
+    truncation=True,
+    max_length=512,
+)
+# → input_ids, attention_mask
+
+# LLM: slice off prompt from output
+out = model.generate(**inputs, max_new_tokens=200)
+new_tokens = out[0][inputs.input_ids.shape[-1]:]
+text = tok.decode(new_tokens, skip_special_tokens=True)</pre></div>
+
+    <div class="ci"><div class="ct">NumPy Gotchas</div><pre>a = np.arange(12).reshape(3,4)
+b = a[:2]        # VIEW — shares memory
+b[0,0] = 999     # modifies a!
+c = a[:2].copy() # independent copy
+
+# Prefer vectorised over apply():
+df["len"] = df["name"].str.len()  # fast
+df["len"] = df["name"].apply(len) # slow
+
+# Assignment: use .loc, not chained
+df.loc[mask, "col"] = val   # correct
+df[mask]["col"] = val        # warning!</pre></div>
+
+    <div class="ci"><div class="ct">MRO &amp; super()</div><pre>class A:
+    def method(self): return "A"
+class B(A):
+    def method(self):
+        return "B" + super().method()
+class C(A):
+    def method(self):
+        return "C" + super().method()
+class D(B, C):  # MRO: D→B→C→A
+    pass
+
+D().method()  # "BCA"
+D.__mro__     # (D, B, C, A, object)</pre></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-sec" onclick="go('nlp')">← Back</button>
+    <button class="btn-primary" onclick="go('home')">🏠 Start Over</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ══ NAVIGATION ══
+const SECS=['home','syntax','vars','ops','strings','ctrl','fns','scope','ds','oop','errors','deco','async','meta','stdlib','numpy','ml','nlp','cheat'];
+const visited=new Set(['home']);
+function go(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sb-link').forEach(n=>n.classList.remove('active'));
+  const s=document.getElementById('s-'+id);
+  const n=document.getElementById('n-'+id);
+  if(s)s.classList.add('active');
+  if(n){n.classList.add('active');n.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  visited.add(id);
+  visited.forEach(v=>{const x=document.getElementById('n-'+v);if(x&&v!==id)x.classList.add('done');});
+  const pct=(visited.size/SECS.length)*100;
+  document.getElementById('pfill').style.width=pct+'%';
+  document.getElementById('plbl').textContent=visited.size+'/'+SECS.length;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ══ PLAYGROUND RUNTIME ══
+function run(id){
+  const ed=document.getElementById('pe-'+id);
+  const out=document.getElementById('o-'+id);
+  out.classList.add('on');out.classList.remove('err');
+  try{out.textContent=pyExec(ed.value)||'(no output)';}
+  catch(e){out.classList.add('err');out.textContent='Error: '+e.message;}
+}
+function rst(id){
+  const out=document.getElementById('o-'+id);
+  out.classList.remove('on','err');out.textContent='';
+}
+
+function pyExec(src){
+  const prints=[];
+  function pr(...args){prints.push(args.map(v=>pstr(v,false)).join(' '));}
+  function pstr(v,q=true){
+    if(v===null||v===undefined)return 'None';
+    if(v===true)return 'True';if(v===false)return 'False';
+    if(Array.isArray(v))return '['+v.map(x=>pstr(x,true)).join(', ')+']';
+    if(v instanceof Set)return '{'+[...v].map(x=>pstr(x,true)).join(', ')+'}';
+    if(typeof v==='object'){return '{'+Object.entries(v).map(([k,val])=>"'"+k+"': "+pstr(val,true)).join(', ')+'}';}
+    if(typeof v==='string'&&q)return "'"+v+"'";
+    return String(v);
+  }
+  let js=src
+    .replace(/#[^\n]*/g,'')
+    .replace(/f"((?:[^"\\]|\\.)*)"/g,(m,i)=>'`'+i.replace(/\{([^}]+)\}/g,'${$1}')+'`')
+    .replace(/f'((?:[^'\\]|\\.)*)'/g,(m,i)=>'`'+i.replace(/\{([^}]+)\}/g,'${$1}')+'`')
+    .replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null')
+    .replace(/\bnot in\b/g,'__NIN__').replace(/\band\b/g,'&&').replace(/\bor\b/g,'||').replace(/\bnot\b/g,'!')
+    .replace(/__NIN__/g,'__nin')
+    .replace(/\belif\s/g,'else if ')
+    .replace(/print\(/g,'_pr(')
+    .replace(/\blen\(([^)]+)\)/g,'($1).length')
+    .replace(/(\w+|\))\s*\*\*\s*(\w+|\d+(?:\.\d+)?)/g,'Math.pow($1,$2)')
+    .replace(/(\w+)\.upper\(\)/g,'($1).toUpperCase()')
+    .replace(/(\w+)\.lower\(\)/g,'($1).toLowerCase()')
+    .replace(/(\w+)\.strip\(\)/g,'($1).trim()')
+    .replace(/(\w+)\.split\(\)/g,'($1).split(/\\s+/)')
+    .replace(/\brange\((\d+)\)/g,'__rng($1)')
+    .replace(/\brange\((\d+)\s*,\s*(\d+)\)/g,'__rng($1,$2)')
+    .replace(/\brange\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\)/g,'__rng($1,$2,$3)')
+    .replace(/for\s+(\w+)\s*,\s*(\w+)\s+in\s+(.+?)\s*:/g,'for (let [$1,$2] of $3) {')
+    .replace(/for\s+(\w+)\s+in\s+(.+?)\s*:/g,'for (let $1 of $2) {')
+    .replace(/while\s+(.+?)\s*:/g,'while ($1) {')
+    .replace(/if\s+(.+?)\s*:/g,'if ($1) {')
+    .replace(/else\s*:/g,'} else {')
+    .replace(/def\s+(\w+)\s*\(([^)]*)\)\s*:/g,'function $1($2) {')
+    .replace(/\/\//g,'__FD__');
+  js=iblk(js).replace(/__FD__/g,'//');
+  try{
+    new Function('_pr','Math','__rng','__nin',js)(pr,Math,
+      (a,b,c)=>{if(b===undefined)return Array.from({length:a},(_,i)=>i);if(c===undefined)return Array.from({length:b-a},(_,i)=>i+a);const r=[];for(let i=a;i<b;i+=c)r.push(i);return r;},
+      (a,b)=>!(Array.isArray(b)?b.includes(a):(b instanceof Set)?b.has(a):Object.keys(b).includes(String(a)))
+    );
+    return prints.join('\n');
+  }catch(e){return fallback(src,prints);}
+}
+
+function iblk(c){
+  const lines=c.split('\n'),out=[],stk=[0];
+  for(let raw of lines){
+    const t=raw.trimStart();if(!t)continue;
+    const ind=raw.length-t.length;
+    if(ind>stk[stk.length-1])stk.push(ind);
+    else while(stk.length>1&&stk[stk.length-1]>ind){stk.pop();out.push('}');}
+    out.push(t);
+  }
+  while(stk.length>1){stk.pop();out.push('}');}
+  return out.join('\n');
+}
+
+function fallback(src,prints){
+  const env={};
+  for(const line of src.split('\n')){
+    const t=line.trim();if(!t||t.startsWith('#'))continue;
+    const pm=t.match(/^print\((.+)\)$/);
+    if(pm){try{prints.push(evalp(pm[1],env));}catch(e){prints.push('...');}}
+    const am=t.match(/^(\w+)\s*=\s*(.+)$/);
+    if(am&&!t.includes('==')&&!t.includes('(')){try{env[am[1]]=new Function(...Object.keys(env),'return '+am[2])(...Object.values(env));}catch(e){}}
+  }
+  return prints.join('\n');
+}
+
+function evalp(expr,env){
+  expr=expr.trim();
+  const f=expr.match(/^f["'`](.*?)["'`]$/);
+  if(f)return f[1].replace(/\{([^}]+)\}/g,(m,e)=>{try{return new Function(...Object.keys(env),'return '+e.split(':')[0])(...Object.values(env));}catch(x){return m;}});
+  const s=expr.match(/^["'](.*?)["']$/);if(s)return s[1];
+  if(!isNaN(expr))return expr;
+  if(env[expr]!==undefined)return String(env[expr]);
+  try{return String(new Function(...Object.keys(env),'return '+expr.replace(/\bTrue\b/g,'true').replace(/\bFalse\b/g,'false').replace(/\bNone\b/g,'null'))(...Object.values(env)));}
+  catch(e){return expr;}
+}
+
+// ══ QUIZ ══
+const QA={
+  q0:{ans:'B',expl:'Closures capture variable *references*, not values. In a loop, all lambdas close over the single loop variable `i`. By the time you call them, the loop has ended and `i=4`. The fix: `lambda i=i: i` uses a default argument evaluated at definition time, snapshotting the current value.'},
+  q1:{ans:'B',expl:'encode() returns a NumPy float32 array of shape (n_sentences, embedding_dim). For all-MiniLM-L6-v2, that\'s (n, 384). Use convert_to_tensor=True to get a PyTorch tensor instead.'},
+};
+function ans(el,gid,choice){
+  const grp=document.getElementById(gid);
+  if(grp.dataset.done)return;
+  grp.dataset.done='1';
+  const qa=QA[gid];
+  const opts=grp.querySelectorAll('.qo');
+  const letters=['A','B','C','D'];
+  opts.forEach((o,i)=>{if(letters[i]===qa.ans)o.classList.add('correct');else if(letters[i]===choice)o.classList.add('wrong');});
+  const fb=document.getElementById('f-'+gid);
+  fb.className='qfb on '+(choice===qa.ans?'ok':'no');
+  fb.textContent=(choice===qa.ans?'✓ Correct! ':'✗ Not quite. ')+qa.expl;
+}
+
+// init
+go('home');
+</script>
+</body>
+</html>

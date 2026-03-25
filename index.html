@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Study Website</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fb;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #1e293b;
+      color: white;
+      padding: 15px 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    /* Container */
+    .container {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    /* Search */
+    #search {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    /* List */
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: white;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    li:hover {
+      background: #e2e8f0;
+    }
+
+    a {
+      text-decoration: none;
+      color: #1e293b;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="navbar">
+    📘 My Study Hub
+  </div>
+
+  <div class="container">
+
+    <input type="text" id="search" placeholder="Search topics..." onkeyup="filterList()">
+
+    <ul id="list">
+      <li><a href="angular-to-react-reference.html">Angular to React Reference</a></li>
+      <li><a href="learn-context-redux.html">Learn Context and Redux</a></li>
+      <li><a href="python_deep_guide.html">Python Deep Guide</a></li>
+      <li><a href="python_internals.html">Python Internals</a></li>
+      <li><a href="react-complete-deepdive.html">React Complete Deepdive</a></li>
+      <li><a href="react-deep-explanations.html">React Deep Explanations</a></li>
+      <li><a href="react-production-architecture.html">React Production Architecture</a></li>
+      <li><a href="react-state-management-deepdive.html">React State Management Deepdive</a></li>
+      <li><a href="openshift-reference.html">OpenShift Reference</a></li>
+      <li><a href="jenkins-pipeline-reference.html">Jenkins Pipeline Reference</a></li>
+    </ul>
+
+  </div>
+
+  <script>
+    function filterList() {
+      const input = document.getElementById("search").value.toLowerCase();
+      const items = document.querySelectorAll("#list li");
+
+      items.forEach(item => {
+        const text = item.innerText.toLowerCase();
+        item.style.display = text.includes(input) ? "" : "none";
+      });
+    }
+  </script>
+
+</body>
+</html>

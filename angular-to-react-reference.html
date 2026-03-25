@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Angular → React Migration Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #1e1e2e;
+    --border2: #2a2a3e;
+    --angular-red: #dd0031;
+    --angular-pink: #c3002f;
+    --react-blue: #61dafb;
+    --react-dark: #20232a;
+    --accent-amber: #f59e0b;
+    --accent-green: #10b981;
+    --accent-purple: #a78bfa;
+    --text-primary: #f0f0f8;
+    --text-secondary: #8888aa;
+    --text-muted: #44445a;
+    --arrow: #f59e0b;
+    --code-bg: #0d0d16;
+    --code-border: #1a1a2e;
+    --angular-bg: rgba(221, 0, 49, 0.06);
+    --react-bg: rgba(97, 218, 251, 0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    padding: 80px 60px 60px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(221,0,49,0.15) 0%, rgba(97,218,251,0.1) 50%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-amber);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    animation: fadeSlideDown 0.6s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 6vw, 80px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    animation: fadeSlideDown 0.6s 0.1s ease both;
+  }
+
+  .title-angular { color: var(--angular-red); }
+  .title-arrow {
+    color: var(--accent-amber);
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    margin: 0 12px;
+  }
+  .title-react { color: var(--react-blue); }
+
+  .hero-subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin-bottom: 40px;
+    animation: fadeSlideDown 0.6s 0.2s ease both;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    animation: fadeSlideDown 0.6s 0.3s ease both;
+    flex-wrap: wrap;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-number { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.04em; }
+  .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* LAYOUT */
+  .wrapper { display: flex; max-width: 100%; }
+
+  /* SIDEBAR NAV */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    padding: 28px 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 3px; }
+
+  .nav-section-label {
+    padding: 0 20px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 16px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: var(--surface);
+    border-left-color: var(--accent-amber);
+  }
+
+  .nav-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    min-width: 20px;
+  }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; min-width: 0; padding: 0 60px 100px; max-width: calc(100% - 260px); }
+
+  /* SECTIONS */
+  .section {
+    padding: 60px 0 40px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.5s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  /* COMPARISON BLOCK */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    margin: 24px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+  }
+
+  .comp-panel { overflow: hidden; }
+
+  .comp-label {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .comp-label.angular { background: rgba(221,0,49,0.12); color: var(--angular-red); border-bottom: 1px solid rgba(221,0,49,0.2); }
+  .comp-label.react { background: rgba(97,218,251,0.08); color: var(--react-blue); border-bottom: 1px solid rgba(97,218,251,0.15); }
+
+  .comp-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .comp-dot.angular { background: var(--angular-red); }
+  .comp-dot.react { background: var(--react-blue); }
+
+  .comp-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border-left: 1px solid var(--border2);
+    border-right: 1px solid var(--border2);
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .comp-arrow svg { color: var(--accent-amber); }
+
+  pre {
+    margin: 0;
+    padding: 16px;
+    background: var(--code-bg);
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #c9d1d9;
+  }
+
+  pre.angular-code { border-left: 3px solid rgba(221,0,49,0.4); }
+  pre.react-code { border-left: 3px solid rgba(97,218,251,0.3); }
+
+  /* INLINE CODE */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: rgba(97,218,251,0.08);
+    color: var(--react-blue);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(97,218,251,0.15);
+  }
+
+  /* SYNTAX HIGHLIGHTING */
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .cm { color: #6272a4; font-style: italic; }
+  .dec { color: #ff6e6e; }
+  .cls { color: #8be9fd; }
+  .num { color: #bd93f9; }
+  .prop { color: #ffb86c; }
+  .tag { color: #ff79c6; }
+  .attr { color: #50fa7b; }
+  .jsx { color: #8be9fd; }
+
+  /* MAPPING TABLE */
+  .map-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border2);
+    font-size: 13px;
+  }
+
+  .map-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .map-table th:first-child { background: rgba(221,0,49,0.1); color: var(--angular-red); }
+  .map-table th:last-child { background: rgba(97,218,251,0.07); color: var(--react-blue); }
+
+  .map-table td {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .map-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .map-table td code { font-size: 12px; }
+
+  /* CALLOUT */
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid;
+    font-size: 13.5px;
+  }
+
+  .callout.info { background: rgba(97,218,251,0.05); border-color: rgba(97,218,251,0.2); color: #a8d8e8; }
+  .callout.warn { background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.2); color: #d4a843; }
+  .callout.tip { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2); color: #6fcfb0; }
+
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+
+  /* CHEAT SHEET */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 2px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .cheat-row {
+    display: grid;
+    grid-template-columns: 1fr 30px 1fr;
+    background: var(--surface);
+    transition: background 0.15s;
+  }
+
+  .cheat-row:hover { background: var(--surface2); }
+
+  .cheat-cell {
+    padding: 9px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .cheat-cell.ang { color: #ff8899; }
+  .cheat-cell.rea { color: #7de8ff; }
+  .cheat-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent-amber); font-size: 12px; }
+
+  /* LIFECYCLE TABLE */
+  .lifecycle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .lifecycle-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 16px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .lifecycle-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+
+  .lc-angular {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--angular-red);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .lc-arrow { color: var(--accent-amber); margin: 6px 0; font-size: 14px; }
+
+  .lc-react {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--react-blue);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .lc-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* PILLS */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .pill.angular { background: rgba(221,0,49,0.15); color: var(--angular-red); border: 1px solid rgba(221,0,49,0.3); }
+  .pill.react { background: rgba(97,218,251,0.1); color: var(--react-blue); border: 1px solid rgba(97,218,251,0.25); }
+
+  /* RxJS TABLE */
+  .rxjs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .rxjs-header {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .rxjs-header-ang { background: rgba(221,0,49,0.12); color: var(--angular-red); padding: 10px 16px; }
+  .rxjs-header-rea { background: rgba(97,218,251,0.08); color: var(--react-blue); padding: 10px 16px; }
+
+  .rxjs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .rxjs-cell {
+    background: var(--surface);
+    padding: 9px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    transition: background 0.15s;
+  }
+
+  .rxjs-cell:hover { background: var(--surface2); }
+  .rxjs-cell.ang { color: #ff8899; }
+  .rxjs-cell.rea { color: #7de8ff; }
+
+  /* TAILWIND TABLE */
+  .tw-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin: 20px 0;
+    font-size: 12.5px;
+  }
+
+  .tw-header {
+    display: contents;
+  }
+
+  .tw-header > div {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .tw-css { background: var(--surface2); color: var(--text-secondary); padding: 9px 16px; font-family: 'JetBrains Mono', monospace; transition: background 0.15s; }
+  .tw-tw { background: var(--surface); color: #7de8ff; padding: 9px 16px; font-family: 'JetBrains Mono', monospace; transition: background 0.15s; }
+  .tw-css:hover, .tw-tw:hover { background: rgba(255,255,255,0.03); }
+
+  /* INTRO TEXT */
+  .section-intro {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.8;
+    border-left: 3px solid var(--accent-amber);
+    padding-left: 16px;
+  }
+
+  /* SUBSECTION */
+  .subsection { margin: 28px 0 16px; }
+  .subsection-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .subsection-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* KEY DIFFS */
+  .diff-list { list-style: none; margin: 16px 0; }
+  .diff-list li {
+    padding: 6px 0 6px 20px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    position: relative;
+  }
+  .diff-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent-amber); font-weight: 700; }
+
+  /* ANIMATIONS */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 40px 60px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: 260px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .footer-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 0 24px 80px; }
+    .hero { padding: 48px 24px 40px; }
+    .comparison { grid-template-columns: 1fr; }
+    .comp-arrow { display: none; }
+    .lifecycle-grid { grid-template-columns: 1fr; }
+    .footer { margin-left: 0; padding: 24px; flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+   <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Complete Migration Reference
+    </div>
+    <h1 class="hero-title">
+      <span class="title-angular">Angular</span>
+      <span class="title-arrow">→</span>
+      <span class="title-react">React</span>
+    </h1>
+    <p class="hero-subtitle">Every Angular concept mapped to its React + Hooks + Tailwind CSS equivalent. Deep-dive coverage of all 27 categories — nothing skipped.</p>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-number">27</span><span class="stat-label">Categories</span></div>
+      <div class="stat"><span class="stat-number">100+</span><span class="stat-label">Mappings</span></div>
+      <div class="stat"><span class="stat-number">50+</span><span class="stat-label">Code Examples</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrapper">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Core</div>
+    <a href="#s1" class="nav-link"><span class="nav-num">01</span> Component Structure</a>
+    <a href="#s2" class="nav-link"><span class="nav-num">02</span> Templates vs JSX</a>
+    <a href="#s3" class="nav-link"><span class="nav-num">03</span> Data Binding</a>
+    <a href="#s4" class="nav-link"><span class="nav-num">04</span> Directives</a>
+    <a href="#s5" class="nav-link"><span class="nav-num">05</span> Lifecycle Hooks</a>
+    <a href="#s6" class="nav-link"><span class="nav-num">06</span> Input &amp; Output</a>
+    <div class="nav-section-label">Architecture</div>
+    <a href="#s7" class="nav-link"><span class="nav-num">07</span> Services &amp; DI</a>
+    <a href="#s8" class="nav-link"><span class="nav-num">08</span> State Management</a>
+    <a href="#s9" class="nav-link"><span class="nav-num">09</span> Forms</a>
+    <a href="#s10" class="nav-link"><span class="nav-num">10</span> Routing</a>
+    <a href="#s11" class="nav-link"><span class="nav-num">11</span> HTTP Calls</a>
+    <a href="#s12" class="nav-link"><span class="nav-num">12</span> Pipes</a>
+    <div class="nav-section-label">Advanced</div>
+    <a href="#s13" class="nav-link"><span class="nav-num">13</span> Custom Directives</a>
+    <a href="#s14" class="nav-link"><span class="nav-num">14</span> Content Projection</a>
+    <a href="#s15" class="nav-link"><span class="nav-num">15</span> ViewChild &amp; Refs</a>
+    <a href="#s16" class="nav-link"><span class="nav-num">16</span> Change Detection</a>
+    <a href="#s17" class="nav-link"><span class="nav-num">17</span> Modules</a>
+    <a href="#s18" class="nav-link"><span class="nav-num">18</span> Decorators</a>
+    <a href="#s19" class="nav-link"><span class="nav-num">19</span> RxJS</a>
+    <div class="nav-section-label">Patterns</div>
+    <a href="#s20" class="nav-link"><span class="nav-num">20</span> Error Handling</a>
+    <a href="#s21" class="nav-link"><span class="nav-num">21</span> Lazy Loading</a>
+    <a href="#s22" class="nav-link"><span class="nav-num">22</span> Route Guards</a>
+    <a href="#s23" class="nav-link"><span class="nav-num">23</span> Animations</a>
+    <a href="#s24" class="nav-link"><span class="nav-num">24</span> Styling / Tailwind</a>
+    <a href="#s25" class="nav-link"><span class="nav-num">25</span> Testing</a>
+    <a href="#s26" class="nav-link"><span class="nav-num">26</span> Env Variables</a>
+    <a href="#s27" class="nav-link"><span class="nav-num">27</span> Cheat Sheet</a>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- S1: COMPONENT STRUCTURE -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Component Structure</h2>
+      </div>
+      <p class="section-intro">Angular components are class-based with decorators. React components are plain functions that return JSX — no decorators, no separate files, no boilerplate.</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+          <pre class="angular-code"><span class="cm">// app.component.ts</span>
+<span class="kw">import</span> { <span class="cls">Component</span>, <span class="cls">OnInit</span> } <span class="kw">from</span> <span class="str">'@angular/core'</span>;
+
+<span class="dec">@Component</span>({
+  selector: <span class="str">'app-root'</span>,
+  templateUrl: <span class="str">'./app.component.html'</span>,
+  styleUrls: [<span class="str">'./app.component.css'</span>]
+})
+<span class="kw">export class</span> <span class="cls">AppComponent</span> <span class="kw">implements</span> <span class="cls">OnInit</span> {
+  title = <span class="str">'my-app'</span>;
+
+  <span class="fn">constructor</span>(<span class="kw">private</span> myService: <span class="cls">MyService</span>) {}
+
+  <span class="fn">ngOnInit</span>(): <span class="kw">void</span> {
+    <span class="cm">// initialization logic</span>
+  }
+}</pre>
+        </div>
+        <div class="comp-arrow">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React + Hooks</div>
+          <pre class="react-code"><span class="cm">// App.tsx</span>
+<span class="kw">import</span> { <span class="fn">useEffect</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="fn">useMyService</span> } <span class="kw">from</span> <span class="str">'./hooks/useMyService'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> title = <span class="str">'my-app'</span>;
+  <span class="kw">const</span> myService = <span class="fn">useMyService</span>();
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="cm">// initialization logic</span>
+  }, []);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"p-4"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;h1</span> <span class="attr">className</span>=<span class="str">"text-2xl font-bold"</span><span class="tag">&gt;</span>{title}<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</pre>
+        </div>
+      </div>
+      <ul class="diff-list">
+        <li>No <code>@Component</code> decorator — just export a function</li>
+        <li>No <code>selector</code> — components are imported and used as JSX tags directly</li>
+        <li>No separate <code>.html</code> / <code>.css</code> files — JSX and Tailwind classes live together</li>
+        <li><code>constructor()</code> → function body or <code>useState</code> / custom hooks</li>
+        <li><code>ngOnInit()</code> → <code>useEffect(() => {}, [])</code></li>
+      </ul>
+    </section>
+
+    <!-- S2: TEMPLATES vs JSX -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Templates vs JSX</h2>
+      </div>
+      <p class="section-intro">Angular uses a separate HTML template with special binding syntax. React uses JSX — JavaScript with HTML-like syntax inline in your component.</p>
+      <table class="map-table">
+        <thead><tr><th>Angular Template</th><th>React JSX</th></tr></thead>
+        <tbody>
+          <tr><td><code>{{ value }}</code></td><td><code>{value}</code></td></tr>
+          <tr><td><code>[property]="value"</code></td><td><code>property={value}</code></td></tr>
+          <tr><td><code>(click)="fn()"</code></td><td><code>onClick={fn}</code></td></tr>
+          <tr><td><code>class="..."</code></td><td><code>className="..."</code></td></tr>
+          <tr><td><code>for="..."</code></td><td><code>htmlFor="..."</code></td></tr>
+          <tr><td><code>*ngIf="cond"</code></td><td><code>{cond &amp;&amp; &lt;El /&gt;}</code></td></tr>
+          <tr><td><code>*ngFor="let x of arr"</code></td><td><code>{arr.map(x =&gt; &lt;El key={x.id} /&gt;)}</code></td></tr>
+          <tr><td><code>[style.color]="val"</code></td><td><code>style={{ color: val }}</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S3: DATA BINDING -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Data Binding</h2>
+      </div>
+      <p class="section-intro">Angular has 4 binding types. React uses one-way data flow — two-way binding is achieved with controlled components (value + onChange pair).</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular — ngModel two-way</div>
+          <pre class="angular-code"><span class="cm">// Two-way binding</span>
+name = <span class="str">''</span>;
+<span class="cm">// template:</span>
+<span class="tag">&lt;input</span> <span class="attr">[(ngModel)]</span>=<span class="str">"name"</span> <span class="tag">/&gt;</span>
+<span class="tag">&lt;p&gt;</span>Hello {{ name }}<span class="tag">&lt;/p&gt;</span></pre>
+        </div>
+        <div class="comp-arrow">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React — controlled component</div>
+          <pre class="react-code"><span class="kw">const</span> [name, setName] = <span class="fn">useState</span>(<span class="str">''</span>);
+
+<span class="tag">&lt;input</span>
+  <span class="attr">value</span>={name}
+  <span class="attr">onChange</span>={e => <span class="fn">setName</span>(e.target.value)}
+  <span class="attr">className</span>=<span class="str">"border p-2 rounded"</span>
+<span class="tag">/&gt;</span>
+<span class="tag">&lt;p&gt;</span>Hello {name}<span class="tag">&lt;/p&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S4: DIRECTIVES -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Directives</h2>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-title">*ngIf → Conditional Rendering</div>
+        <div class="comparison">
+          <div class="comp-panel">
+            <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+            <pre class="angular-code"><span class="tag">&lt;div</span> <span class="attr">*ngIf</span>=<span class="str">"isLoggedIn"</span><span class="tag">&gt;</span>Welcome!<span class="tag">&lt;/div&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="attr">*ngIf</span>=<span class="str">"isLoggedIn; else guestBlock"</span><span class="tag">&gt;</span>
+  Welcome!
+<span class="tag">&lt;/div&gt;</span>
+<span class="tag">&lt;ng-template</span> <span class="attr">#guestBlock</span><span class="tag">&gt;</span>
+  Please log in.
+<span class="tag">&lt;/ng-template&gt;</span></pre>
+          </div>
+          <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="comp-panel">
+            <div class="comp-label react"><span class="comp-dot react"></span>React</div>
+            <pre class="react-code"><span class="cm">// Short-circuit (show only)</span>
+{isLoggedIn <span class="kw">&amp;&amp;</span> <span class="tag">&lt;div&gt;</span>Welcome!<span class="tag">&lt;/div&gt;</span>}
+
+<span class="cm">// Ternary (show/else)</span>
+{isLoggedIn
+  ? <span class="tag">&lt;div&gt;</span>Welcome!<span class="tag">&lt;/div&gt;</span>
+  : <span class="tag">&lt;div&gt;</span>Please log in.<span class="tag">&lt;/div&gt;</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-title">*ngFor → Array.map()</div>
+        <div class="comparison">
+          <div class="comp-panel">
+            <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+            <pre class="angular-code"><span class="tag">&lt;ul&gt;</span>
+  <span class="tag">&lt;li</span> <span class="attr">*ngFor</span>=<span class="str">"let item of items;
+       let i = index;
+       trackBy: trackById"</span><span class="tag">&gt;</span>
+    {{ i }}: {{ item.name }}
+  <span class="tag">&lt;/li&gt;</span>
+<span class="tag">&lt;/ul&gt;</span></pre>
+          </div>
+          <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="comp-panel">
+            <div class="comp-label react"><span class="comp-dot react"></span>React</div>
+            <pre class="react-code"><span class="tag">&lt;ul&gt;</span>
+  {items.<span class="fn">map</span>((item, i) => (
+    <span class="tag">&lt;li</span> <span class="attr">key</span>={item.id}<span class="tag">&gt;</span>
+      {i}: {item.name}
+    <span class="tag">&lt;/li&gt;</span>
+  ))}
+<span class="tag">&lt;/ul&gt;</span>
+
+<span class="cm">// trackBy → key prop (use id not index)</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-title">[ngClass] &amp; [ngStyle]</div>
+        <div class="comparison">
+          <div class="comp-panel">
+            <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+            <pre class="angular-code"><span class="tag">&lt;div</span> <span class="attr">[ngClass]</span>=<span class="str">"{ 'active': isActive,
+               'disabled': isDisabled }"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;div</span> <span class="attr">[ngStyle]</span>=<span class="str">"{ color: textColor,
+               fontSize: size + 'px' }"</span><span class="tag">&gt;</span></pre>
+          </div>
+          <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="comp-panel">
+            <div class="comp-label react"><span class="comp-dot react"></span>React + Tailwind</div>
+            <pre class="react-code"><span class="cm">// clsx (recommended)</span>
+<span class="tag">&lt;div</span> <span class="attr">className</span>={<span class="fn">clsx</span>(<span class="str">'p-4'</span>, {
+  <span class="str">'bg-blue-500'</span>: isActive,
+  <span class="str">'opacity-50'</span>: isDisabled
+})}<span class="tag">&gt;</span>
+
+<span class="tag">&lt;div</span> <span class="attr">style</span>={{ color: textColor,
+            fontSize: `${size}px` }}<span class="tag">&gt;</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S5: LIFECYCLE -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Lifecycle Hooks</h2>
+      </div>
+      <p class="section-intro">Angular has 8 lifecycle hooks. React consolidates them into <code>useEffect</code> with different dependency arrays.</p>
+      <div class="lifecycle-grid">
+        <div class="lifecycle-card">
+          <div class="lc-angular">constructor()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">useState() init / fn body</div>
+          <div class="lc-desc">Runs once during component creation</div>
+        </div>
+        <div class="lifecycle-card">
+          <div class="lc-angular">ngOnInit()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">useEffect(() =&gt; {}, [])</div>
+          <div class="lc-desc">After first render, empty deps array</div>
+        </div>
+        <div class="lifecycle-card">
+          <div class="lc-angular">ngOnChanges()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">useEffect(() =&gt; {}, [dep])</div>
+          <div class="lc-desc">Runs when specified dependency changes</div>
+        </div>
+        <div class="lifecycle-card">
+          <div class="lc-angular">ngOnDestroy()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">return () =&gt; {} (cleanup fn)</div>
+          <div class="lc-desc">Cleanup inside useEffect return</div>
+        </div>
+        <div class="lifecycle-card">
+          <div class="lc-angular">ngAfterViewInit()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">useEffect + useRef</div>
+          <div class="lc-desc">After DOM is painted and accessible</div>
+        </div>
+        <div class="lifecycle-card">
+          <div class="lc-angular">ngAfterViewChecked()</div>
+          <div class="lc-arrow">↓</div>
+          <div class="lc-react">useEffect (no deps)</div>
+          <div class="lc-desc">After every render cycle completes</div>
+        </div>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+          <pre class="angular-code"><span class="kw">export class</span> <span class="cls">MyComponent</span>
+  <span class="kw">implements</span> <span class="cls">OnInit</span>, <span class="cls">OnDestroy</span>, <span class="cls">OnChanges</span> {
+
+  <span class="fn">ngOnInit</span>() { <span class="cm">/* setup */</span> }
+
+  <span class="fn">ngOnChanges</span>(changes: <span class="cls">SimpleChanges</span>) {
+    <span class="cm">/* prop changed */</span>
+  }
+
+  <span class="fn">ngOnDestroy</span>() { <span class="cm">/* cleanup */</span> }
+}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React</div>
+          <pre class="react-code"><span class="fn">useEffect</span>(() => {
+  console.<span class="fn">log</span>(<span class="str">'mounted'</span>); <span class="cm">// ngOnInit</span>
+  <span class="kw">return</span> () => {
+    console.<span class="fn">log</span>(<span class="str">'unmounted'</span>); <span class="cm">// ngOnDestroy</span>
+  };
+}, []); <span class="cm">// empty = run once</span>
+
+<span class="fn">useEffect</span>(() => {
+  <span class="cm">// ngOnChanges — runs when someProp changes</span>
+  console.<span class="fn">log</span>(<span class="str">'someProp changed:'</span>, someProp);
+}, [someProp]);</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S6: INPUT OUTPUT -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Input &amp; Output (Props &amp; Events)</h2>
+      </div>
+      <p class="section-intro"><code>@Input()</code> → props passed down. <code>@Output()</code> + <code>EventEmitter</code> → callback function as a prop (convention: <code>onXxx</code>).</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular</div>
+          <pre class="angular-code"><span class="kw">export class</span> <span class="cls">ChildComponent</span> {
+  <span class="dec">@Input</span>() title: <span class="kw">string</span> = <span class="str">''</span>;
+  <span class="dec">@Input</span>() count: <span class="kw">number</span> = <span class="num">0</span>;
+  <span class="dec">@Output</span>() clicked =
+    <span class="kw">new</span> <span class="cls">EventEmitter</span>&lt;<span class="kw">string</span>&gt;();
+
+  <span class="fn">handleClick</span>() {
+    <span class="kw">this</span>.clicked.<span class="fn">emit</span>(<span class="str">'Hello from child'</span>);
+  }
+}
+
+<span class="cm">&lt;!-- Parent --&gt;</span>
+<span class="tag">&lt;app-child</span>
+  <span class="attr">[title]</span>=<span class="str">"parentTitle"</span>
+  <span class="attr">[count]</span>=<span class="str">"5"</span>
+  <span class="attr">(clicked)</span>=<span class="str">"onChildClick($event)"</span>
+<span class="tag">&gt;&lt;/app-child&gt;</span></pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React</div>
+          <pre class="react-code"><span class="kw">interface</span> <span class="cls">ChildProps</span> {
+  title: <span class="kw">string</span>;
+  count: <span class="kw">number</span>;
+  onClicked: (value: <span class="kw">string</span>) => <span class="kw">void</span>;
+}
+
+<span class="kw">function</span> <span class="fn">Child</span>({ title, count, onClicked }: <span class="cls">ChildProps</span>) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() => <span class="fn">onClicked</span>(<span class="str">'Hello from child'</span>)}<span class="tag">&gt;</span>
+      {title} - {count}
+    <span class="tag">&lt;/button&gt;</span>
+  );
+}
+
+<span class="cm">// Parent usage:</span>
+<span class="tag">&lt;Child</span> <span class="attr">title</span>={parentTitle} <span class="attr">count</span>={<span class="num">5</span>}
+       <span class="attr">onClicked</span>={handleChildClick} <span class="tag">/&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S7: SERVICES & DI -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Services &amp; Dependency Injection</h2>
+      </div>
+      <p class="section-intro">Angular injects services via constructor. React replaces DI with <strong>custom hooks</strong> (for stateless logic) and <strong>Context API</strong> (for singletons/global state).</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular Service</div>
+          <pre class="angular-code"><span class="dec">@Injectable</span>({ providedIn: <span class="str">'root'</span> })
+<span class="kw">export class</span> <span class="cls">ApiService</span> {
+  <span class="fn">constructor</span>(<span class="kw">private</span> http: <span class="cls">HttpClient</span>) {}
+
+  <span class="fn">getUsers</span>() {
+    <span class="kw">return this</span>.http.<span class="fn">get</span>&lt;<span class="cls">User</span>[]&gt;(<span class="str">'/api/users'</span>);
+  }
+}
+<span class="cm">// Component injection:</span>
+<span class="fn">constructor</span>(<span class="kw">private</span> api: <span class="cls">ApiService</span>) {}
+<span class="kw">this</span>.api.<span class="fn">getUsers</span>().<span class="fn">subscribe</span>(...);</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React Custom Hook</div>
+          <pre class="react-code"><span class="kw">function</span> <span class="fn">useApiService</span>() {
+  <span class="kw">const</span> <span class="fn">getUsers</span> = <span class="kw">async</span> () => {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/users'</span>);
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  };
+  <span class="kw">return</span> { getUsers };
+}
+
+<span class="cm">// Component usage:</span>
+<span class="kw">const</span> { getUsers } = <span class="fn">useApiService</span>();
+<span class="fn">useEffect</span>(() => {
+  <span class="fn">getUsers</span>().<span class="fn">then</span>(setUsers);
+}, []);</pre>
+        </div>
+      </div>
+      <div class="callout info">
+        <span class="callout-icon">💡</span>
+        <div>For <strong>singleton services</strong> (shared state across the app), use the <strong>Context API</strong>: wrap your app in a <code>&lt;Provider&gt;</code> and consume with <code>useContext()</code> — this replaces Angular's <code>providedIn: 'root'</code>.</div>
+      </div>
+    </section>
+
+    <!-- S8: STATE MANAGEMENT -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">State Management</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular Component State</div>
+          <pre class="angular-code">count = <span class="num">0</span>;
+name = <span class="str">''</span>;
+items: <span class="kw">string</span>[] = [];
+
+<span class="fn">increment</span>() { <span class="kw">this</span>.count++; }
+<span class="fn">addItem</span>(item: <span class="kw">string</span>) {
+  <span class="kw">this</span>.items = [...<span class="kw">this</span>.items, item];
+}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React useState</div>
+          <pre class="react-code"><span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num">0</span>);
+<span class="kw">const</span> [name, setName] = <span class="fn">useState</span>(<span class="str">''</span>);
+<span class="kw">const</span> [items, setItems] = <span class="fn">useState</span>&lt;<span class="kw">string</span>[]&gt;([]);
+
+<span class="kw">const</span> increment = () => <span class="fn">setCount</span>(prev => prev + <span class="num">1</span>);
+<span class="kw">const</span> addItem = (item: <span class="kw">string</span>) =>
+  <span class="fn">setItems</span>(prev => [...prev, item]);</pre>
+        </div>
+      </div>
+      <table class="map-table" style="margin-top:20px">
+        <thead><tr><th>NgRx (Angular)</th><th>React Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td><code>Store</code></td><td>Redux / Zustand store</td></tr>
+          <tr><td><code>Action</code></td><td>Redux action / Zustand setter</td></tr>
+          <tr><td><code>Reducer</code></td><td><code>useReducer</code> / Redux reducer</td></tr>
+          <tr><td><code>Selector</code></td><td><code>useSelector</code> / Zustand selector</td></tr>
+          <tr><td><code>Effect</code></td><td>Redux Thunk / RTK Query</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S9: FORMS -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Forms</h2>
+      </div>
+      <div class="subsection">
+        <div class="subsection-title">Template-Driven → Controlled Components</div>
+        <div class="comparison">
+          <div class="comp-panel">
+            <div class="comp-label angular"><span class="comp-dot angular"></span>Angular ngModel</div>
+            <pre class="angular-code"><span class="tag">&lt;form</span> <span class="attr">#f</span>=<span class="str">"ngForm"</span> <span class="attr">(ngSubmit)</span>=<span class="str">"onSubmit(f)"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">name</span>=<span class="str">"email"</span>
+    <span class="attr">[(ngModel)]</span>=<span class="str">"email"</span>
+    <span class="attr">required</span> <span class="attr">email</span>
+    <span class="attr">#emailField</span>=<span class="str">"ngModel"</span> <span class="tag">/&gt;</span>
+  <span class="tag">&lt;span</span> <span class="attr">*ngIf</span>=<span class="str">"emailField.invalid
+    &amp;&amp; emailField.touched"</span><span class="tag">&gt;</span>
+    Invalid email
+  <span class="tag">&lt;/span&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">[disabled]</span>=<span class="str">"f.invalid"</span><span class="tag">&gt;</span>Submit<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/form&gt;</span></pre>
+          </div>
+          <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="comp-panel">
+            <div class="comp-label react"><span class="comp-dot react"></span>React Controlled</div>
+            <pre class="react-code"><span class="kw">const</span> [email, setEmail] = <span class="fn">useState</span>(<span class="str">''</span>);
+<span class="kw">const</span> [touched, setTouched] = <span class="fn">useState</span>(<span class="kw">false</span>);
+<span class="kw">const</span> isValid = <span class="str">/\S+@\S+\.\S+/</span>.<span class="fn">test</span>(email);
+
+<span class="tag">&lt;form</span> <span class="attr">onSubmit</span>={e => { e.<span class="fn">preventDefault</span>(); <span class="fn">onSubmit</span>(); }}<span class="tag">&gt;</span>
+  <span class="tag">&lt;input</span> <span class="attr">value</span>={email}
+    <span class="attr">onChange</span>={e => <span class="fn">setEmail</span>(e.target.value)}
+    <span class="attr">onBlur</span>={() => <span class="fn">setTouched</span>(<span class="kw">true</span>)}
+    <span class="attr">className</span>=<span class="str">"border p-2 rounded"</span> <span class="tag">/&gt;</span>
+  {!isValid <span class="kw">&amp;&amp;</span> touched <span class="kw">&amp;&amp;</span>
+    <span class="tag">&lt;span</span> <span class="attr">className</span>=<span class="str">"text-red-500"</span><span class="tag">&gt;</span>Invalid email<span class="tag">&lt;/span&gt;</span>}
+  <span class="tag">&lt;button</span> <span class="attr">disabled</span>={!isValid}<span class="tag">&gt;</span>Submit<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/form&gt;</span></pre>
+          </div>
+        </div>
+      </div>
+      <div class="callout tip">
+        <span class="callout-icon">✅</span>
+        <div><strong>Reactive Forms →</strong> Use <code>react-hook-form</code> for complex validation. It mirrors Angular's Reactive Forms API with <code>register</code>, <code>handleSubmit</code>, and <code>formState.errors</code>.</div>
+      </div>
+    </section>
+
+    <!-- S10: ROUTING -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Routing</h2>
+      </div>
+      <table class="map-table">
+        <thead><tr><th>Angular (RouterModule)</th><th>React Router v6</th></tr></thead>
+        <tbody>
+          <tr><td><code>RouterModule.forRoot(routes)</code></td><td><code>&lt;BrowserRouter&gt;</code></td></tr>
+          <tr><td><code>&lt;router-outlet&gt;</code></td><td><code>&lt;Routes&gt; ... &lt;/Routes&gt;</code></td></tr>
+          <tr><td><code>routerLink="/about"</code></td><td><code>&lt;Link to="/about"&gt;</code></td></tr>
+          <tr><td><code>routerLinkActive="cls"</code></td><td><code>&lt;NavLink className={({isActive}) =&gt; ...}&gt;</code></td></tr>
+          <tr><td><code>ActivatedRoute.params</code></td><td><code>useParams()</code></td></tr>
+          <tr><td><code>Router.navigate(['/path'])</code></td><td><code>useNavigate()</code></td></tr>
+          <tr><td><code>ActivatedRoute.queryParams</code></td><td><code>useSearchParams()</code></td></tr>
+          <tr><td><code>location.path()</code></td><td><code>useLocation()</code></td></tr>
+          <tr><td><code>{ path: '**' }</code> (wildcard)</td><td><code>&lt;Route path="*" /&gt;</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S11: HTTP -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">HTTP Calls</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>HttpClient + Observable</div>
+          <pre class="angular-code"><span class="kw">this</span>.http.<span class="fn">get</span>&lt;<span class="cls">User</span>[]&gt;(<span class="str">'/api/users'</span>)
+  .<span class="fn">subscribe</span>({
+    next: users => <span class="kw">this</span>.users = users,
+    error: err => console.<span class="fn">error</span>(err)
+  });</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React Query (recommended)</div>
+          <pre class="react-code"><span class="kw">const</span> { data: users, isLoading, error }
+  = <span class="fn">useQuery</span>({
+    queryKey: [<span class="str">'users'</span>],
+    queryFn: () => <span class="fn">fetch</span>(<span class="str">'/api/users'</span>)
+                    .<span class="fn">then</span>(r => r.<span class="fn">json</span>()),
+  });</pre>
+        </div>
+      </div>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div>React Query is the closest equivalent to Angular's <code>HttpClient</code> + <code>async</code> pipe combo — it handles caching, loading states, refetching, and error handling automatically.</div>
+      </div>
+    </section>
+
+    <!-- S12: PIPES -->
+    <section class="section" id="s12">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Pipes vs Utility Functions</h2>
+      </div>
+      <p class="section-intro">Angular pipes transform data in templates. React has no pipe syntax — call utility functions directly in JSX.</p>
+      <table class="map-table">
+        <thead><tr><th>Angular Pipe</th><th>React Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td><code>value | uppercase</code></td><td><code>{value.toUpperCase()}</code></td></tr>
+          <tr><td><code>value | lowercase</code></td><td><code>{value.toLowerCase()}</code></td></tr>
+          <tr><td><code>value | titlecase</code></td><td>Custom utility function</td></tr>
+          <tr><td><code>amount | currency:'USD'</code></td><td><code>{new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(amount)}</code></td></tr>
+          <tr><td><code>date | date:'shortDate'</code></td><td><code>{new Date(date).toLocaleDateString()}</code> or <code>date-fns</code></td></tr>
+          <tr><td><code>text | slice:0:100</code></td><td><code>{text.slice(0, 100)}</code></td></tr>
+          <tr><td><code>obj | json</code></td><td><code>{JSON.stringify(obj)}</code></td></tr>
+          <tr><td><code>obs$ | async</code></td><td><code>useEffect</code> + <code>useState</code> / React Query</td></tr>
+          <tr><td><code>value | percent</code></td><td><code>Intl.NumberFormat</code> with <code>style: 'percent'</code></td></tr>
+          <tr><td>Custom pipe</td><td>Utility function or custom hook</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S13: CUSTOM DIRECTIVES -->
+    <section class="section" id="s13">
+      <div class="section-header">
+        <span class="section-num">13</span>
+        <h2 class="section-title">Custom Directives</h2>
+      </div>
+      <p class="section-intro">Angular attribute directives attach behavior to DOM elements. React achieves this with <strong>custom hooks</strong> (for DOM logic) or <strong>wrapper components</strong>.</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular Directive</div>
+          <pre class="angular-code"><span class="dec">@Directive</span>({ selector: <span class="str">'[appHighlight]'</span> })
+<span class="kw">export class</span> <span class="cls">HighlightDirective</span> {
+  <span class="dec">@Input</span>() appHighlight = <span class="str">'yellow'</span>;
+  <span class="fn">constructor</span>(<span class="kw">private</span> el: <span class="cls">ElementRef</span>) {}
+
+  <span class="dec">@HostListener</span>(<span class="str">'mouseenter'</span>) <span class="fn">onEnter</span>() {
+    <span class="kw">this</span>.el.nativeElement.style
+      .backgroundColor = <span class="kw">this</span>.appHighlight;
+  }
+  <span class="dec">@HostListener</span>(<span class="str">'mouseleave'</span>) <span class="fn">onLeave</span>() {
+    <span class="kw">this</span>.el.nativeElement.style
+      .backgroundColor = <span class="str">''</span>;
+  }
+}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React Custom Hook</div>
+          <pre class="react-code"><span class="kw">function</span> <span class="fn">useHighlight</span>(color = <span class="str">'yellow'</span>) {
+  <span class="kw">const</span> ref = <span class="fn">useRef</span>&lt;<span class="cls">HTMLElement</span>&gt;(<span class="kw">null</span>);
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> el = ref.current;
+    <span class="kw">if</span> (!el) <span class="kw">return</span>;
+    <span class="kw">const</span> enter = () =>
+      el.style.backgroundColor = color;
+    <span class="kw">const</span> leave = () =>
+      el.style.backgroundColor = <span class="str">''</span>;
+    el.<span class="fn">addEventListener</span>(<span class="str">'mouseenter'</span>, enter);
+    el.<span class="fn">addEventListener</span>(<span class="str">'mouseleave'</span>, leave);
+    <span class="kw">return</span> () => {
+      el.<span class="fn">removeEventListener</span>(<span class="str">'mouseenter'</span>, enter);
+      el.<span class="fn">removeEventListener</span>(<span class="str">'mouseleave'</span>, leave);
+    };
+  }, [color]);
+  <span class="kw">return</span> ref;
+}
+<span class="cm">// Usage:</span>
+<span class="kw">const</span> ref = <span class="fn">useHighlight</span>(<span class="str">'lightblue'</span>);
+<span class="tag">&lt;p</span> <span class="attr">ref</span>={ref}<span class="tag">&gt;</span>Hover me<span class="tag">&lt;/p&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S14: CONTENT PROJECTION -->
+    <section class="section" id="s14">
+      <div class="section-header">
+        <span class="section-num">14</span>
+        <h2 class="section-title">Content Projection (ng-content → children)</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>ng-content slots</div>
+          <pre class="angular-code"><span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="str">"card"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;ng-content</span> <span class="attr">select</span>=<span class="str">"[header]"</span><span class="tag">&gt;&lt;/ng-content&gt;</span>
+  <span class="tag">&lt;ng-content&gt;&lt;/ng-content&gt;</span>
+  <span class="tag">&lt;ng-content</span> <span class="attr">select</span>=<span class="str">"[footer]"</span><span class="tag">&gt;&lt;/ng-content&gt;</span>
+<span class="tag">&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- Usage --&gt;</span>
+<span class="tag">&lt;app-card&gt;</span>
+  <span class="tag">&lt;h2</span> <span class="attr">header</span><span class="tag">&gt;</span>Title<span class="tag">&lt;/h2&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Body<span class="tag">&lt;/p&gt;</span>
+  <span class="tag">&lt;button</span> <span class="attr">footer</span><span class="tag">&gt;</span>OK<span class="tag">&lt;/button&gt;</span>
+<span class="tag">&lt;/app-card&gt;</span></pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>Named slot props</div>
+          <pre class="react-code"><span class="kw">function</span> <span class="fn">Card</span>({ header, children, footer }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"border rounded p-4"</span><span class="tag">&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"font-bold"</span><span class="tag">&gt;</span>{header}<span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"my-2"</span><span class="tag">&gt;</span>{children}<span class="tag">&lt;/div&gt;</span>
+      <span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"mt-4"</span><span class="tag">&gt;</span>{footer}<span class="tag">&lt;/div&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}
+
+<span class="tag">&lt;Card</span>
+  <span class="attr">header</span>={<span class="tag">&lt;h2&gt;</span>Title<span class="tag">&lt;/h2&gt;</span>}
+  <span class="attr">footer</span>={<span class="tag">&lt;button&gt;</span>OK<span class="tag">&lt;/button&gt;</span>}
+<span class="tag">&gt;</span>
+  <span class="tag">&lt;p&gt;</span>Body<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/Card&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S15: VIEWCHILD -->
+    <section class="section" id="s15">
+      <div class="section-header">
+        <span class="section-num">15</span>
+        <h2 class="section-title">ViewChild &amp; ElementRef</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Angular @ViewChild</div>
+          <pre class="angular-code"><span class="dec">@ViewChild</span>(<span class="str">'myInput'</span>) myInput!: <span class="cls">ElementRef</span>;
+<span class="dec">@ViewChild</span>(<span class="cls">ChildComponent</span>) child!: <span class="cls">ChildComponent</span>;
+
+<span class="fn">ngAfterViewInit</span>() {
+  <span class="kw">this</span>.myInput.nativeElement.<span class="fn">focus</span>();
+  <span class="kw">this</span>.child.<span class="fn">someMethod</span>();
+}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React useRef + forwardRef</div>
+          <pre class="react-code"><span class="kw">const</span> myInput = <span class="fn">useRef</span>&lt;<span class="cls">HTMLInputElement</span>&gt;(<span class="kw">null</span>);
+<span class="kw">const</span> childRef = <span class="fn">useRef</span>&lt;<span class="cls">ChildHandle</span>&gt;(<span class="kw">null</span>);
+
+<span class="fn">useEffect</span>(() => {
+  myInput.current?.<span class="fn">focus</span>();
+  childRef.current?.<span class="fn">someMethod</span>();
+}, []);
+
+<span class="tag">&lt;input</span> <span class="attr">ref</span>={myInput} <span class="tag">/&gt;</span>
+<span class="tag">&lt;Child</span> <span class="attr">ref</span>={childRef} <span class="tag">/&gt;</span>
+
+<span class="cm">// Child exposes methods via:</span>
+<span class="fn">useImperativeHandle</span>(ref, () => ({
+  someMethod: () => console.<span class="fn">log</span>(<span class="str">'called'</span>)
+}));</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S16: CHANGE DETECTION -->
+    <section class="section" id="s16">
+      <div class="section-header">
+        <span class="section-num">16</span>
+        <h2 class="section-title">Change Detection</h2>
+      </div>
+      <table class="map-table">
+        <thead><tr><th>Angular</th><th>React Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td>Default (zone.js auto-detect)</td><td>Re-renders on <code>setState</code> / hook state changes</td></tr>
+          <tr><td><code>ChangeDetectionStrategy.OnPush</code></td><td><code>React.memo</code> — skip re-render if props unchanged</td></tr>
+          <tr><td><code>ChangeDetectorRef.detectChanges()</code></td><td>Force re-render via state update</td></tr>
+          <tr><td>Memoized computed values</td><td><code>useMemo(() =&gt; compute(input), [input])</code></td></tr>
+          <tr><td>Stable callback references</td><td><code>useCallback(() =&gt; fn(id), [id])</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S17: MODULES -->
+    <section class="section" id="s17">
+      <div class="section-header">
+        <span class="section-num">17</span>
+        <h2 class="section-title">Modules vs Component Trees</h2>
+      </div>
+      <p class="section-intro">Angular requires <code>NgModule</code> to declare and import everything. React has no modules — components are just imported. App setup lives in <code>index.tsx</code> via Provider wrappers.</p>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>AppModule</div>
+          <pre class="angular-code"><span class="dec">@NgModule</span>({
+  declarations: [<span class="cls">AppComponent</span>, <span class="cls">HomeComponent</span>],
+  imports: [
+    <span class="cls">BrowserModule</span>,
+    <span class="cls">RouterModule</span>,
+    <span class="cls">FormsModule</span>,
+    <span class="cls">HttpClientModule</span>,
+  ],
+  providers: [<span class="cls">MyService</span>],
+  bootstrap: [<span class="cls">AppComponent</span>],
+})
+<span class="kw">export class</span> <span class="cls">AppModule</span> {}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>index.tsx (entry point)</div>
+          <pre class="react-code"><span class="cls">ReactDOM</span>.<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)!)
+  .<span class="fn">render</span>(
+    <span class="tag">&lt;React.StrictMode&gt;</span>
+      <span class="tag">&lt;BrowserRouter&gt;</span>         <span class="cm">{/* RouterModule */}</span>
+        <span class="tag">&lt;QueryClientProvider</span>    <span class="cm">{/* HttpClient */}</span>
+          <span class="attr">client</span>={queryClient}<span class="tag">&gt;</span>
+          <span class="tag">&lt;GlobalProvider&gt;</span>      <span class="cm">{/* Services */}</span>
+            <span class="tag">&lt;App /&gt;</span>
+          <span class="tag">&lt;/GlobalProvider&gt;</span>
+        <span class="tag">&lt;/QueryClientProvider&gt;</span>
+      <span class="tag">&lt;/BrowserRouter&gt;</span>
+    <span class="tag">&lt;/React.StrictMode&gt;</span>
+  );</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S18: DECORATORS -->
+    <section class="section" id="s18">
+      <div class="section-header">
+        <span class="section-num">18</span>
+        <h2 class="section-title">Decorators Reference</h2>
+      </div>
+      <table class="map-table">
+        <thead><tr><th>Angular Decorator</th><th>React Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td><code>@Component</code></td><td><code>export default function MyComponent()</code></td></tr>
+          <tr><td><code>@Injectable</code></td><td>Custom hook or Context</td></tr>
+          <tr><td><code>@NgModule</code></td><td><code>index.tsx</code> + Provider wrappers</td></tr>
+          <tr><td><code>@Input()</code></td><td>Destructured props</td></tr>
+          <tr><td><code>@Output()</code> + <code>EventEmitter</code></td><td>Callback prop (<code>onXxx</code>)</td></tr>
+          <tr><td><code>@ViewChild</code></td><td><code>useRef</code></td></tr>
+          <tr><td><code>@ContentChild</code></td><td><code>children</code> prop or <code>useRef</code></td></tr>
+          <tr><td><code>@HostListener</code></td><td><code>addEventListener</code> in <code>useEffect</code> or JSX event</td></tr>
+          <tr><td><code>@HostBinding</code></td><td><code>className</code>, <code>style</code>, or <code>ref</code> on root element</td></tr>
+          <tr><td><code>@Pipe</code></td><td>Utility function</td></tr>
+          <tr><td><code>@Directive</code></td><td>Custom hook or wrapper component</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S19: RXJS -->
+    <section class="section" id="s19">
+      <div class="section-header">
+        <span class="section-num">19</span>
+        <h2 class="section-title">RxJS vs React Equivalents</h2>
+      </div>
+      <div class="rxjs-grid">
+        <div class="rxjs-header">
+          <div class="rxjs-header-ang">RxJS (Angular)</div>
+          <div class="rxjs-header-rea">React / JS Equivalent</div>
+        </div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">Observable</div><div class="rxjs-cell rea">Promise / async-await</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">Subject</div><div class="rxjs-cell rea">useState + event handlers</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">BehaviorSubject</div><div class="rxjs-cell rea">useState / Zustand store</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">subscribe()</div><div class="rxjs-cell rea">useEffect + useState</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">pipe(map(...))</div><div class="rxjs-cell rea">.then() / .map()</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">pipe(filter(...))</div><div class="rxjs-cell rea">.filter()</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">combineLatest</div><div class="rxjs-cell rea">Promise.all()</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">switchMap</div><div class="rxjs-cell rea">useEffect + AbortController</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">debounceTime</div><div class="rxjs-cell rea">setTimeout / useDebounce hook</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">takeUntil</div><div class="rxjs-cell rea">useEffect cleanup fn</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">catchError</div><div class="rxjs-cell rea">try/catch in async fn</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">forkJoin</div><div class="rxjs-cell rea">Promise.all()</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">interval()</div><div class="rxjs-cell rea">setInterval in useEffect</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">fromEvent()</div><div class="rxjs-cell rea">addEventListener in useEffect</div></div>
+        <div class="rxjs-row"><div class="rxjs-cell ang">tap()</div><div class="rxjs-cell rea">Side effects in useEffect</div></div>
+      </div>
+    </section>
+
+    <!-- S20: ERROR HANDLING -->
+    <section class="section" id="s20">
+      <div class="section-header">
+        <span class="section-num">20</span>
+        <h2 class="section-title">Error Handling</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Global ErrorHandler</div>
+          <pre class="angular-code"><span class="dec">@Injectable</span>()
+<span class="kw">class</span> <span class="cls">GlobalErrorHandler</span>
+  <span class="kw">implements</span> <span class="cls">ErrorHandler</span> {
+
+  <span class="fn">handleError</span>(error: <span class="kw">unknown</span>) {
+    console.<span class="fn">error</span>(error);
+  }
+}</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>Error Boundary</div>
+          <pre class="react-code"><span class="kw">class</span> <span class="cls">ErrorBoundary</span> <span class="kw">extends</span> <span class="cls">Component</span> {
+  state = { hasError: <span class="kw">false</span> };
+
+  <span class="kw">static</span> <span class="fn">getDerivedStateFromError</span>() {
+    <span class="kw">return</span> { hasError: <span class="kw">true</span> };
+  }
+  <span class="fn">componentDidCatch</span>(err, info) {
+    console.<span class="fn">error</span>(err, info);
+  }
+  <span class="fn">render</span>() {
+    <span class="kw">if</span> (<span class="kw">this</span>.state.hasError)
+      <span class="kw">return</span> <span class="tag">&lt;h1</span> <span class="attr">className</span>=<span class="str">"text-red-500"</span><span class="tag">&gt;</span>
+               Something went wrong.
+             <span class="tag">&lt;/h1&gt;</span>;
+    <span class="kw">return this</span>.props.children;
+  }
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S21: LAZY LOADING -->
+    <section class="section" id="s21">
+      <div class="section-header">
+        <span class="section-num">21</span>
+        <h2 class="section-title">Lazy Loading</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>loadChildren</div>
+          <pre class="angular-code">{ path: <span class="str">'admin'</span>,
+  loadChildren: () =>
+    <span class="fn">import</span>(<span class="str">'./admin/admin.module'</span>)
+      .<span class="fn">then</span>(m => m.<span class="cls">AdminModule</span>) }</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>React.lazy + Suspense</div>
+          <pre class="react-code"><span class="kw">const</span> <span class="cls">AdminPage</span> = <span class="fn">lazy</span>(() =>
+  <span class="fn">import</span>(<span class="str">'./pages/AdminPage'</span>)
+);
+
+<span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;div</span> <span class="attr">className</span>=<span class="str">"animate-spin"</span><span class="tag">&gt;</span>
+  Loading...
+<span class="tag">&lt;/div&gt;</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;Route</span> <span class="attr">path</span>=<span class="str">"/admin"</span>
+         <span class="attr">element</span>={<span class="tag">&lt;AdminPage /&gt;</span>} <span class="tag">/&gt;</span>
+<span class="tag">&lt;/Suspense&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S22: GUARDS -->
+    <section class="section" id="s22">
+      <div class="section-header">
+        <span class="section-num">22</span>
+        <h2 class="section-title">Route Guards</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>CanActivate Guard</div>
+          <pre class="angular-code"><span class="dec">@Injectable</span>({ providedIn: <span class="str">'root'</span> })
+<span class="kw">export class</span> <span class="cls">AuthGuard</span>
+  <span class="kw">implements</span> <span class="cls">CanActivate</span> {
+
+  <span class="fn">canActivate</span>(): <span class="kw">boolean</span> {
+    <span class="kw">return</span> !!localStorage.<span class="fn">getItem</span>(<span class="str">'token'</span>);
+  }
+}
+<span class="cm">// Route config:</span>
+{ path: <span class="str">'dashboard'</span>,
+  component: <span class="cls">DashboardComponent</span>,
+  canActivate: [<span class="cls">AuthGuard</span>] }</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>ProtectedRoute component</div>
+          <pre class="react-code"><span class="kw">function</span> <span class="fn">ProtectedRoute</span>({ children }) {
+  <span class="kw">const</span> isLoggedIn =
+    !!localStorage.<span class="fn">getItem</span>(<span class="str">'token'</span>);
+  <span class="kw">return</span> isLoggedIn
+    ? &lt;&gt;{children}&lt;/&gt;
+    : <span class="tag">&lt;Navigate</span> <span class="attr">to</span>=<span class="str">"/login"</span> <span class="attr">replace</span> <span class="tag">/&gt;</span>;
+}
+
+<span class="cm">// Usage:</span>
+<span class="tag">&lt;Route</span> <span class="attr">path</span>=<span class="str">"/dashboard"</span>
+  <span class="attr">element</span>={
+    <span class="tag">&lt;ProtectedRoute&gt;</span>
+      <span class="tag">&lt;Dashboard /&gt;</span>
+    <span class="tag">&lt;/ProtectedRoute&gt;</span>
+  } <span class="tag">/&gt;</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S23: ANIMATIONS -->
+    <section class="section" id="s23">
+      <div class="section-header">
+        <span class="section-num">23</span>
+        <h2 class="section-title">Animations</h2>
+      </div>
+      <table class="map-table">
+        <thead><tr><th>Angular Animations</th><th>React Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td><code>trigger('fadeIn', [...])</code></td><td>Framer Motion <code>&lt;motion.div&gt;</code></td></tr>
+          <tr><td><code>transition(':enter')</code></td><td><code>initial={{ opacity: 0 }} animate={{ opacity: 1 }}</code></td></tr>
+          <tr><td><code>transition(':leave')</code></td><td><code>exit={{ opacity: 0 }}</code> in <code>&lt;AnimatePresence&gt;</code></td></tr>
+          <tr><td><code>style({ opacity: 0 })</code></td><td>Tailwind <code>opacity-0</code> or inline style</td></tr>
+          <tr><td><code>animate('300ms')</code></td><td>Tailwind <code>transition-all duration-300</code></td></tr>
+          <tr><td><code>state('active', ...)</code></td><td>Conditional Tailwind classes</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- S24: STYLING -->
+    <section class="section" id="s24">
+      <div class="section-header">
+        <span class="section-num">24</span>
+        <h2 class="section-title">Styling: Scoped CSS → Tailwind CSS</h2>
+      </div>
+      <p class="section-intro">Angular scopes CSS to the component via ViewEncapsulation. Tailwind replaces all CSS classes with utility classes directly in JSX — no separate stylesheet needed.</p>
+      <div class="tw-grid">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;background:rgba(255,255,255,.04);color:var(--text-secondary)">CSS Property</div>
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;background:rgba(97,218,251,.06);color:var(--react-blue)">Tailwind Class</div>
+        <div class="tw-css">display: flex</div><div class="tw-tw">flex</div>
+        <div class="tw-css">flex-direction: column</div><div class="tw-tw">flex-col</div>
+        <div class="tw-css">align-items: center</div><div class="tw-tw">items-center</div>
+        <div class="tw-css">justify-content: center</div><div class="tw-tw">justify-center</div>
+        <div class="tw-css">gap: 16px</div><div class="tw-tw">gap-4</div>
+        <div class="tw-css">padding: 16px</div><div class="tw-tw">p-4</div>
+        <div class="tw-css">margin: 8px</div><div class="tw-tw">m-2</div>
+        <div class="tw-css">width: 100%</div><div class="tw-tw">w-full</div>
+        <div class="tw-css">border-radius: 8px</div><div class="tw-tw">rounded-lg</div>
+        <div class="tw-css">font-weight: bold</div><div class="tw-tw">font-bold</div>
+        <div class="tw-css">font-size: 24px</div><div class="tw-tw">text-2xl</div>
+        <div class="tw-css">color: #3b82f6</div><div class="tw-tw">text-blue-500</div>
+        <div class="tw-css">background: #3b82f6</div><div class="tw-tw">bg-blue-500</div>
+        <div class="tw-css">box-shadow: medium</div><div class="tw-tw">shadow-md</div>
+        <div class="tw-css">display: none</div><div class="tw-tw">hidden</div>
+        <div class="tw-css">position: relative</div><div class="tw-tw">relative</div>
+        <div class="tw-css">position: absolute</div><div class="tw-tw">absolute</div>
+        <div class="tw-css">:hover { ... }</div><div class="tw-tw">hover:...</div>
+        <div class="tw-css">@media (min-width: 768px)</div><div class="tw-tw">md:...</div>
+        <div class="tw-css">transition: all 0.3s</div><div class="tw-tw">transition-all duration-300</div>
+        <div class="tw-css">grid-template-columns: repeat(3, 1fr)</div><div class="tw-tw">grid grid-cols-3</div>
+        <div class="tw-css">z-index: 10</div><div class="tw-tw">z-10</div>
+        <div class="tw-css">overflow: hidden</div><div class="tw-tw">overflow-hidden</div>
+        <div class="tw-css">cursor: pointer</div><div class="tw-tw">cursor-pointer</div>
+        <div class="tw-css">opacity: 0.5</div><div class="tw-tw">opacity-50</div>
+      </div>
+    </section>
+
+    <!-- S25: TESTING -->
+    <section class="section" id="s25">
+      <div class="section-header">
+        <span class="section-num">25</span>
+        <h2 class="section-title">Testing</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>Karma + Jasmine</div>
+          <pre class="angular-code"><span class="fn">describe</span>(<span class="str">'MyComponent'</span>, () => {
+  <span class="kw">let</span> component: <span class="cls">MyComponent</span>;
+  <span class="kw">let</span> fixture: <span class="cls">ComponentFixture</span>&lt;<span class="cls">MyComponent</span>&gt;;
+
+  <span class="fn">beforeEach</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> <span class="cls">TestBed</span>.<span class="fn">configureTestingModule</span>({
+      declarations: [<span class="cls">MyComponent</span>]
+    }).<span class="fn">compileComponents</span>();
+    fixture = <span class="cls">TestBed</span>
+      .<span class="fn">createComponent</span>(<span class="cls">MyComponent</span>);
+    component = fixture.componentInstance;
+  });
+
+  <span class="fn">it</span>(<span class="str">'should increment count'</span>, () => {
+    component.<span class="fn">increment</span>();
+    <span class="fn">expect</span>(component.count).<span class="fn">toBe</span>(<span class="num">1</span>);
+  });
+});</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>Vitest + React Testing Library</div>
+          <pre class="react-code"><span class="kw">import</span> { <span class="fn">render</span>, <span class="fn">screen</span>, <span class="fn">fireEvent</span> }
+  <span class="kw">from</span> <span class="str">'@testing-library/react'</span>;
+
+<span class="fn">describe</span>(<span class="str">'Counter'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'should render'</span>, () => {
+    <span class="fn">render</span>(<span class="tag">&lt;Counter /&gt;</span>);
+    <span class="fn">expect</span>(screen.<span class="fn">getByText</span>(<span class="str">/count/i</span>))
+      .<span class="fn">toBeInTheDocument</span>();
+  });
+
+  <span class="fn">it</span>(<span class="str">'should increment count'</span>, () => {
+    <span class="fn">render</span>(<span class="tag">&lt;Counter /&gt;</span>);
+    <span class="fn">fireEvent</span>.<span class="fn">click</span>(
+      screen.<span class="fn">getByRole</span>(<span class="str">'button'</span>,
+        { name: <span class="str">/increment/i</span> })
+    );
+    <span class="fn">expect</span>(screen.<span class="fn">getByText</span>(<span class="str">'1'</span>))
+      .<span class="fn">toBeInTheDocument</span>();
+  });
+});</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S26: ENV VARS -->
+    <section class="section" id="s26">
+      <div class="section-header">
+        <span class="section-num">26</span>
+        <h2 class="section-title">Environment Variables</h2>
+      </div>
+      <div class="comparison">
+        <div class="comp-panel">
+          <div class="comp-label angular"><span class="comp-dot angular"></span>environment.ts</div>
+          <pre class="angular-code"><span class="cm">// environment.ts</span>
+<span class="kw">export const</span> environment = {
+  production: <span class="kw">false</span>,
+  apiUrl: <span class="str">'https://dev.api.com'</span>,
+};
+<span class="cm">// Usage:</span>
+<span class="kw">import</span> { environment }
+  <span class="kw">from</span> <span class="str">'../environments/environment'</span>;
+<span class="fn">fetch</span>(environment.apiUrl + <span class="str">'/users'</span>);</pre>
+        </div>
+        <div class="comp-arrow"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+        <div class="comp-panel">
+          <div class="comp-label react"><span class="comp-dot react"></span>Vite .env</div>
+          <pre class="react-code"><span class="cm"># .env</span>
+VITE_API_URL=https://dev.api.com
+VITE_APP_TITLE=My App
+
+<span class="cm">// Usage (must prefix with VITE_):</span>
+<span class="kw">const</span> apiUrl = <span class="kw">import</span>.meta.env.VITE_API_URL;
+<span class="fn">fetch</span>(`${apiUrl}/users`);
+
+<span class="cm">// CRA: process.env.REACT_APP_*</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S27: CHEAT SHEET -->
+    <section class="section" id="s27">
+      <div class="section-header">
+        <span class="section-num">27</span>
+        <h2 class="section-title">Quick Cheat Sheet</h2>
+      </div>
+      <p class="section-intro">Every Angular concept → React equivalent, at a glance.</p>
+      <div class="cheat-grid">
+        <div class="cheat-row"><div class="cheat-cell ang">@Component</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">export default function</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">templateUrl / .html</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">JSX return statement</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">styleUrls / .css</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Tailwind classes inline</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">{{ value }}</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">{value}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">[property]="val"</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">property={val}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">(event)="fn()"</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">onEvent={fn}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">[(ngModel)]="val"</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">value={val} onChange={...}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">*ngIf="cond"</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">{cond && &lt;El /&gt;}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">*ngFor="let x of arr"</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">{arr.map(x =&gt; &lt;El key={x.id} /&gt;)}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">[ngClass]</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">className with clsx</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">[ngStyle]</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">style={'{}'}</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">ngOnInit</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useEffect(() =&gt; {}, [])</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">ngOnDestroy</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useEffect cleanup return</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">ngOnChanges</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useEffect(() =&gt; {}, [dep])</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">@Input()</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Props (destructured)</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">@Output() + EventEmitter</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">onXxx callback prop</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">@ViewChild</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useRef</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">ng-content</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">children prop</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Service + @Injectable</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Custom hook / Context</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">HttpClient</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">fetch / axios / React Query</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Pipe</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Utility function</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Directive</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Custom hook / wrapper component</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">RouterModule</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">react-router-dom</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">ActivatedRoute.params</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useParams()</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Router.navigate</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useNavigate()</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">routerLink</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">&lt;Link to="..."&gt;</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">routerLinkActive</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">&lt;NavLink className={...}&gt;</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">CanActivate Guard</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">&lt;ProtectedRoute&gt; wrapper</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">loadChildren (lazy)</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">React.lazy + &lt;Suspense&gt;</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">NgModule</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Provider wrappers in index.tsx</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">OnPush strategy</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">React.memo</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">async pipe</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">useEffect + useState / React Query</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Animations module</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Framer Motion / Tailwind transitions</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">environment.ts</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">import.meta.env.VITE_*</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">APP_INITIALIZER</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Wrapper component + loading state</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">NgRx Store</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Redux Toolkit / Zustand</div></div>
+        <div class="cheat-row"><div class="cheat-cell ang">Karma + Jasmine</div><div class="cheat-arrow">→</div><div class="cheat-cell rea">Vitest + React Testing Library</div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <div class="footer-brand">Angular → React Reference</div>
+    <div style="margin-top:4px">React 18+ · React Router v6 · Tailwind CSS v3 · TypeScript</div>
+  </div>
+  <div style="text-align:right">
+    <div>27 Categories · 100+ Mappings</div>
+    <div style="margin-top:4px">Stack: <span class="pill angular">Angular</span> → <span class="pill react">React</span></div>
+  </div>
+</footer>
+
+</body>
+</html>

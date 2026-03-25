@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>React — The Complete Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0c0c10;--bg2:#131318;--bg3:#1a1a22;--bg4:#22222e;--border:#28283a;--border2:#34344a;--text:#e2e2ee;--muted:#8282a2;--hint:#44445a;--purple:#9d7dff;--purple2:#c4aeff;--green:#3ddba0;--green-bg:#0a2a1e;--amber:#fbbf24;--amber-bg:#221a06;--coral:#ff7070;--coral-bg:#230e0e;--blue:#5badff;--blue-bg:#0a1828;--code-bg:#08080d;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.75;display:flex;}
+nav{position:fixed;top:0;left:0;width:228px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;}
+.nav-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.nav-logo .title{font-family:'Instrument Serif',serif;font-size:16px;color:var(--purple2);}
+.nav-logo .sub{font-size:9.5px;color:var(--hint);text-transform:uppercase;letter-spacing:0.13em;margin-top:2px;}
+.nav-grp{margin-top:4px;}
+.nav-lbl{padding:10px 16px 3px;font-size:9px;text-transform:uppercase;letter-spacing:0.14em;color:var(--hint);}
+nav a{display:flex;align-items:center;gap:7px;padding:5px 16px;color:var(--muted);text-decoration:none;font-size:12px;transition:all 0.12s;border-left:2px solid transparent;line-height:1.35;}
+nav a .d{width:5px;height:5px;border-radius:50%;background:var(--hint);flex-shrink:0;transition:0.12s;}
+nav a:hover{color:var(--text);background:var(--bg3);}
+nav a.active{color:var(--purple2);border-left-color:var(--purple);background:var(--bg3);}
+nav a.active .d{background:var(--purple);}
+main{margin-left:228px;padding:64px 68px 120px;max-width:970px;width:100%;}
+.hero{padding:0 0 68px;border-bottom:1px solid var(--border);margin-bottom:76px;}
+.hero-pill{display:inline-flex;align-items:center;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 13px;font-size:10.5px;color:var(--purple);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:22px;}
+.hero h1{font-family:'Instrument Serif',serif;font-size:52px;line-height:1.08;letter-spacing:-0.03em;color:var(--text);margin-bottom:16px;}
+.hero h1 em{font-style:italic;color:var(--purple2);}
+.hero p{font-size:15.5px;color:var(--muted);max-width:520px;line-height:1.6;}
+.tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:20px;}
+.tag{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 10px;font-size:10.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+section{margin-bottom:90px;scroll-margin-top:44px;}
+h2{font-family:'Instrument Serif',serif;font-size:32px;letter-spacing:-0.02em;color:var(--text);margin-bottom:5px;line-height:1.1;}
+h2 em{font-style:italic;color:var(--purple2);}
+.smeta{display:flex;align-items:center;gap:9px;margin-bottom:20px;}
+.snum{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--purple);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;}
+.stag{font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.1em;}
+h3{font-size:15.5px;font-weight:600;color:var(--text);margin:26px 0 9px;}
+p{color:var(--muted);margin-bottom:11px;font-size:14px;}
+strong{color:var(--text);font-weight:500;}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:9px;padding:18px 20px;overflow-x:auto;margin:14px 0;position:relative;}
+pre .lb{position:absolute;top:9px;right:11px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--hint);text-transform:uppercase;letter-spacing:0.08em;}
+code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.72;color:#c8c8e8;}
+.kw{color:#a78bfa;}.fn{color:#60a5fa;}.str{color:#34d399;}.cmt{color:#3a3a5a;font-style:italic;}.nm{color:#fbbf24;}.tag2{color:#f87171;}.pr{color:#7dd3fc;}.tp{color:#f472b6;}
+.ic{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--purple2);}
+.callout{border-radius:9px;padding:13px 17px;margin:16px 0;border-left:3px solid;font-size:13.5px;}
+.callout p{font-size:13px;margin:3px 0 0;}.callout strong{color:inherit;font-weight:600;}
+.callout.blue{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);}
+.callout.green{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.callout.amber{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+.callout.coral{background:var(--coral-bg);border-color:var(--coral);color:var(--coral);}
+.callout.purple{background:#1a1430;border-color:var(--purple);color:var(--purple2);}
+.diagram{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:24px;margin:16px 0;overflow-x:auto;}
+.flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.fb{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:6px 13px;font-size:11.5px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.fb.p{border-color:var(--purple);color:var(--purple2);background:#1a1430;}
+.fb.g{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.fb.a{border-color:var(--amber);color:var(--amber);background:var(--amber-bg);}
+.fb.c{border-color:var(--coral);color:var(--coral);background:var(--coral-bg);}
+.fb.b{border-color:var(--blue);color:var(--blue);background:var(--blue-bg);}
+.farr{color:var(--hint);font-size:15px;}
+.tl-row{display:flex;align-items:center;gap:7px;margin:5px 0;}
+.tl-label{width:86px;color:var(--muted);flex-shrink:0;font-size:10.5px;font-family:'JetBrains Mono',monospace;}
+.tl-seg{height:22px;border-radius:5px;display:flex;align-items:center;padding:0 8px;font-size:10px;white-space:nowrap;}
+.fiber-node{display:flex;align-items:center;gap:7px;padding:2px 0;font-family:'JetBrains Mono',monospace;font-size:11.5px;}
+.fbn{padding:4px 11px;border-radius:5px;border:1px solid;white-space:nowrap;min-width:90px;text-align:center;}
+.fbn.root{background:#1a1430;border-color:var(--purple);color:var(--purple2);}
+.fbn.host{background:var(--bg3);border-color:var(--border2);color:var(--muted);}
+.fbn.dirty{background:#230e0e;border-color:var(--coral);color:var(--coral);}
+.fbn.skip{background:var(--bg3);border-color:var(--hint);color:var(--hint);}
+.fbn.ok{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.flbl{font-size:10.5px;color:var(--hint);margin-left:3px;}
+.find{width:22px;height:1px;border-bottom:1px dashed var(--hint);margin-right:3px;}
+.hook-row{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:14px 18px;margin:9px 0;display:flex;gap:14px;align-items:flex-start;}
+.hook-name{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--purple2);background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 11px;white-space:nowrap;min-width:160px;text-align:center;margin-top:1px;}
+.hook-desc strong{display:block;font-size:13.5px;margin-bottom:3px;}
+.hook-desc p{font-size:12.5px;margin:0;}
+.tri-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}
+.tri-card{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:16px 14px;}
+.tri-card .tn{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--purple2);margin-bottom:7px;}
+.tri-card .tr{font-size:12.5px;color:var(--text);margin-bottom:5px;font-weight:500;}
+.tri-card .td{font-size:12px;color:var(--muted);line-height:1.5;}
+.tri-card .tw{margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:11px;color:var(--hint);}
+.tri-card .tw strong{color:var(--amber);font-size:11px;}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12.5px;}
+th{background:var(--bg3);padding:9px 13px;text-align:left;font-weight:500;color:var(--text);border-bottom:1px solid var(--border2);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;}
+td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;}
+tr:hover td{background:var(--bg2);}
+.asp{color:var(--text);font-weight:500;}
+.badge{display:inline-block;padding:2px 8px;border-radius:11px;font-size:10.5px;font-weight:500;}
+.badge.ctx{background:#0d2820;color:var(--green);border:1px solid #1a4030;}
+.badge.rdx{background:#1a1430;color:var(--purple2);border:1px solid #2e2050;}
+.badge.ok{background:var(--green-bg);color:var(--green);border:1px solid #1a4030;}
+.badge.warn{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2a10;}
+.dq{background:var(--bg3);border:1px solid var(--purple);border-radius:9px;padding:11px 16px;font-size:13.5px;color:var(--text);margin-bottom:9px;}
+.dq::before{content:'?  ';color:var(--purple);font-weight:700;}
+.dbranch{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px;}
+.dy{background:var(--green-bg);border:1px solid #1a4030;border-radius:7px;padding:9px 13px;font-size:12.5px;color:var(--green);}
+.dn{background:var(--blue-bg);border:1px solid #1a3a5e;border-radius:7px;padding:9px 13px;font-size:12.5px;color:var(--blue);}
+.dy::before{content:'✓ YES → ';font-weight:600;}
+.dn::before{content:'✗ NO → ';font-weight:600;}
+.q-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0;}
+.q-card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:18px 14px;}
+.q-card .qn{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:500;color:var(--purple);margin-bottom:7px;display:block;}
+.q-card .qt{font-size:13px;color:var(--text);font-weight:500;margin-bottom:7px;}
+.q-card .ql{font-size:11.5px;color:var(--muted);line-height:1.65;}
+.virt{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+.vc{flex:1;min-width:180px;}
+.vc h4{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;}
+.vi{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 11px;margin:3px 0;font-size:11.5px;font-family:'JetBrains Mono',monospace;}
+.vi.on{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);}
+.vi.re{background:var(--bg4);border-color:var(--hint);color:var(--hint);}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+@media(max-width:860px){nav{display:none;}main{margin-left:0;padding:28px 18px 80px;}.tri-grid,.q-grid{grid-template-columns:1fr;}.dbranch{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+ <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+<nav>
+  <div class="nav-logo"><div class="title">React Internals</div><div class="sub">Complete Deep Dive</div></div>
+  <div class="nav-grp"><div class="nav-lbl">Foundations</div>
+    <a href="#thread"><span class="d"></span>JS Single Thread</a>
+    <a href="#fiber"><span class="d"></span>Fiber Reconciler</a>
+    <a href="#state"><span class="d"></span>State & Prop Drilling</a>
+  </div>
+  <div class="nav-grp"><div class="nav-lbl">Context API</div>
+    <a href="#ctx-internals"><span class="d"></span>Context Internals</a>
+    <a href="#ctx-code"><span class="d"></span>Context — Usage Code</a>
+    <a href="#ctx-perf"><span class="d"></span>Context Perf Problem</a>
+    <a href="#ctx-fix"><span class="d"></span>Fixing Context Perf</a>
+  </div>
+  <div class="nav-grp"><div class="nav-lbl">Redux Toolkit</div>
+    <a href="#rdx-concepts"><span class="d"></span>Redux Concepts</a>
+    <a href="#rdx-code"><span class="d"></span>Redux — Full Code</a>
+    <a href="#selector"><span class="d"></span>Selector Internals</a>
+  </div>
+  <div class="nav-grp"><div class="nav-lbl">Memoization</div>
+    <a href="#memo-tri"><span class="d"></span>The Triangle</a>
+    <a href="#usememo"><span class="d"></span>useMemo</a>
+    <a href="#usecallback"><span class="d"></span>useCallback</a>
+    <a href="#reactmemo"><span class="d"></span>React.memo</a>
+  </div>
+  <div class="nav-grp"><div class="nav-lbl">React 18</div>
+    <a href="#concurrent"><span class="d"></span>Concurrent Rendering</a>
+    <a href="#transition"><span class="d"></span>useTransition</a>
+    <a href="#deferred"><span class="d"></span>useDeferredValue</a>
+  </div>
+  <div class="nav-grp"><div class="nav-lbl">Architecture</div>
+    <a href="#virt"><span class="d"></span>Virtualization</a>
+    <a href="#decision"><span class="d"></span>Context vs Redux</a>
+    <a href="#three-q"><span class="d"></span>The 3 Questions</a>
+    <a href="#full"><span class="d"></span>Full Example</a>
+  </div>
+</nav>
+
+<main>
+
+<div class="hero">
+  <div class="hero-pill">React · Performance · State · Internals</div>
+  <h1>React<br/><em>Complete</em><br/>Deep Dive</h1>
+  <p>From the JS single thread and Fiber internals, through Context and Redux, the memo triangle, Concurrent Mode, and Virtualization. Every concept with working code.</p>
+  <div class="tags">
+    <span class="tag">Fiber</span><span class="tag">Context</span><span class="tag">Redux Toolkit</span>
+    <span class="tag">useMemo</span><span class="tag">useCallback</span><span class="tag">React.memo</span>
+    <span class="tag">useTransition</span><span class="tag">useDeferredValue</span><span class="tag">Virtualization</span>
+  </div>
+</div>
+
+
+<!-- ── 01 JS THREAD ── -->
+<section id="thread">
+  <div class="smeta"><span class="snum">01</span><span class="stag">Foundation</span></div>
+  <h2>JavaScript is <em>Single-Threaded</em></h2>
+  <p>Every function, every state update, every React render — one call stack, no parallelism. Any work React does on that thread blocks everything: input, animations, layout, paint.</p>
+  <p>This isn't an implementation detail — it's the central constraint. Every React performance optimization you'll ever make is an answer to: <strong>how do I put less work on this one thread?</strong></p>
+
+  <div class="diagram">
+    <div style="font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Event loop — one thread, everything queued</div>
+    <div class="tl-row">
+      <span class="tl-label">JS Thread</span>
+      <div class="tl-seg" style="background:#1a1430;border:1px solid var(--purple);color:var(--purple2);width:80px">User click</div>
+      <div class="tl-seg" style="background:var(--green-bg);border:1px solid var(--green);color:var(--green);width:130px">React renders</div>
+      <div class="tl-seg" style="background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);width:90px">DOM commit</div>
+      <div class="tl-seg" style="background:var(--bg3);border:1px solid var(--hint);color:var(--hint);width:100px">idle</div>
+    </div>
+    <div class="tl-row">
+      <span class="tl-label">UI / Paint</span>
+      <div class="tl-seg" style="background:var(--bg3);border:1px solid var(--border);color:var(--hint);width:400px">⛔ BLOCKED — waits for JS thread to finish</div>
+    </div>
+    <div class="tl-row">
+      <span class="tl-label">Input</span>
+      <div class="tl-seg" style="background:var(--bg3);border:1px solid var(--border);color:var(--hint);width:400px">⛔ BLOCKED — events queue behind current task</div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>The direct implication:</strong>
+    <p>If React re-renders 40 components unnecessarily because of one state change, that's 40 function calls + 40 virtual DOM diffs + 40 DOM comparisons — all synchronously on that thread. Unnecessary re-renders are real CPU work that delays everything else.</p>
+  </div>
+</section>
+
+
+<!-- ── 02 FIBER ── -->
+<section id="fiber">
+  <div class="smeta"><span class="snum">02</span><span class="stag">React Internals</span></div>
+  <h2>The Fiber <em>Reconciler</em></h2>
+  <p>React doesn't touch the real DOM directly. It maintains a <strong>Fiber tree</strong> — an internal linked-list where each node (Fiber) represents one component. When state changes, React processes this tree first, then commits to the DOM in one atomic operation.</p>
+
+  <div class="callout blue">
+    <strong>Mental model — Fiber is a to-do list:</strong>
+    <p>Each Fiber node is a unit of work. React walks the tree depth-first, processes each node, marks dirty ones, skips clean ones. With React 18's Concurrent Mode, React can pause mid-walk, yield the thread to the browser for input, then resume. This is possible because each node stores its own state.</p>
+  </div>
+
+  <h3>What a Fiber node contains</h3>
+  <pre><code><span class="cmt">// Simplified — what React internally stores for every component</span>
+{
+  type:          <span class="fn">MyComponent</span>,   <span class="cmt">// function or class</span>
+  key:           <span class="str">'item-3'</span>,        <span class="cmt">// for list reconciliation</span>
+
+  <span class="cmt">// Tree links (linked list, not an array)</span>
+  child:         FiberNode,        <span class="cmt">// first child</span>
+  sibling:       FiberNode,        <span class="cmt">// next sibling</span>
+  return:        FiberNode,        <span class="cmt">// parent</span>
+
+  <span class="cmt">// State</span>
+  memoizedState: HookState,        <span class="cmt">// your useState / useReducer values</span>
+  memoizedProps: Props,            <span class="cmt">// current props</span>
+  pendingProps:  Props,            <span class="cmt">// incoming props (during render)</span>
+  flags:         WorkFlags,        <span class="cmt">// e.g. Update | Deletion | Placement</span>
+
+  <span class="cmt">// Double buffer</span>
+  alternate:     FiberNode,        <span class="cmt">// the "other" tree being built</span>
+}<div class="lb">fiber-node.js</div></code></pre>
+
+  <h3>Double buffering — current vs work-in-progress</h3>
+  <p>React maintains <strong>two Fiber trees simultaneously</strong>: the <em>current</em> tree (on screen) and the <em>work-in-progress</em> tree (being built). When work finishes, React swaps them atomically — no partial UI states ever reach the screen.</p>
+
+  <div class="diagram">
+    <div style="display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;">
+        <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:9px;">Current (on screen)</div>
+        <div class="fiber-node"><div class="fbn root">App</div><span class="flbl">✓ committed</span></div>
+        <div class="fiber-node" style="padding-left:18px"><div class="find"></div><div class="fbn host">Header</div></div>
+        <div class="fiber-node" style="padding-left:18px"><div class="find"></div><div class="fbn host">Main</div></div>
+        <div class="fiber-node" style="padding-left:36px"><div class="find"></div><div class="find"></div><div class="fbn host">CartIcon</div></div>
+        <div class="fiber-node" style="padding-left:36px"><div class="find"></div><div class="find"></div><div class="fbn host">UserMenu</div></div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:20px;color:var(--hint);padding-top:36px;">⇄</div>
+      <div style="flex:1;min-width:180px;">
+        <div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:9px;">Work-in-progress (building)</div>
+        <div class="fiber-node"><div class="fbn root">App</div><span class="flbl">alternate</span></div>
+        <div class="fiber-node" style="padding-left:18px"><div class="find"></div><div class="fbn skip">Header</div><span class="flbl">skipped</span></div>
+        <div class="fiber-node" style="padding-left:18px"><div class="find"></div><div class="fbn dirty">Main</div><span class="flbl">⚡ dirty</span></div>
+        <div class="fiber-node" style="padding-left:36px"><div class="find"></div><div class="find"></div><div class="fbn ok">CartIcon</div><span class="flbl">re-rendered</span></div>
+        <div class="fiber-node" style="padding-left:36px"><div class="find"></div><div class="find"></div><div class="fbn skip">UserMenu</div><span class="flbl">skipped (memo)</span></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:11.5px;color:var(--hint);">After reconciliation, React commits WIP tree to DOM then swaps pointers. Old current becomes next WIP slot.</div>
+  </div>
+
+  <h3>The reconciliation walk — why memo skips subtrees</h3>
+  <p>React does a depth-first walk. For each node: did type change? Did props change? If a component is wrapped in <span class="ic">React.memo</span> and props are shallowly equal — <strong>skip it and its entire subtree</strong>. That's the real win from memo: not just one component, but every child under it.</p>
+
+  <div class="diagram">
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="flow">
+        <div class="fb p">setState called</div><span class="farr">→</span>
+        <div class="fb">Fiber marked dirty</div><span class="farr">→</span>
+        <div class="fb">Scheduler queues render</div>
+      </div>
+      <div class="flow">
+        <div class="fb a">Render phase (pure JS)</div><span class="farr">→</span>
+        <div class="fb">Walk tree depth-first</div><span class="farr">→</span>
+        <div class="fb a">Check each node's flags</div>
+      </div>
+      <div class="flow" style="padding-left:16px;">
+        <div class="fb g">memo + same props → skip subtree ✓</div>
+        <span style="color:var(--hint);padding:0 5px;font-size:12px;">or</span>
+        <div class="fb c">props changed → re-run function</div>
+      </div>
+      <div class="flow">
+        <div class="fb b">Commit phase (touches real DOM)</div><span class="farr">→</span>
+        <div class="fb g">Swap current ↔ WIP trees</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout purple">
+    <strong>Why this matters:</strong>
+    <p>The render phase is pure JS on the single thread. The commit phase touches the DOM (expensive). Your job is to keep the render phase small — fewer Fiber nodes visited per state change. Every optimization (memo, useMemo, useSelector, context splitting) reduces how many nodes React must re-evaluate in the walk.</p>
+  </div>
+</section>
+
+
+<!-- ── 03 STATE & DRILLING ── -->
+<section id="state">
+  <div class="smeta"><span class="snum">03</span><span class="stag">Basics</span></div>
+  <h2>State & the <em>Prop Drilling</em> Problem</h2>
+  <p>When multiple components need the same data, you "lift state up" to a common ancestor and pass it down as props. At scale, this becomes <strong>prop drilling</strong>: middle components that don't use the data still must accept and forward it.</p>
+
+  <pre><code><span class="cmt">// Every middle layer must accept + forward props it doesn't care about</span>
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">return</span> <span class="tag2">&lt;Layout</span> <span class="pr">user</span>={user} <span class="pr">setUser</span>={setUser} <span class="tag2">/&gt;</span>;
+}
+<span class="kw">function</span> <span class="fn">Layout</span>({ user, setUser }) { <span class="cmt">// doesn't USE user, just passes it</span>
+  <span class="kw">return</span> <span class="tag2">&lt;Main</span> <span class="pr">user</span>={user} <span class="pr">setUser</span>={setUser} <span class="tag2">/&gt;</span>;
+}
+<span class="kw">function</span> <span class="fn">Main</span>({ user, setUser }) {   <span class="cmt">// doesn't USE user, just passes it</span>
+  <span class="kw">return</span> <span class="tag2">&lt;UserMenu</span> <span class="pr">user</span>={user} <span class="tag2">/&gt;</span>;
+}
+<span class="kw">function</span> <span class="fn">UserMenu</span>({ user }) {         <span class="cmt">// finally uses it — 3 levels deep</span>
+  <span class="kw">return</span> <span class="tag2">&lt;span&gt;</span>{user?.name}<span class="tag2">&lt;/span&gt;</span>;
+}<div class="lb">prop-drilling.jsx</div></code></pre>
+
+  <p>Both Context and Redux solve this: any component anywhere can read global state directly. The difference is <em>how</em> they trigger re-renders and <em>how precisely</em> you can target them.</p>
+</section>
+
+
+<!-- ── 04 CONTEXT INTERNALS ── -->
+<section id="ctx-internals">
+  <div class="smeta"><span class="snum">04</span><span class="stag">Context API</span></div>
+  <h2>Context <em>Internals</em></h2>
+  <p>When the Provider's <span class="ic">value</span> prop changes, React does an <span class="ic">Object.is(prevValue, nextValue)</span> check. If they differ, React <strong>walks the Fiber tree</strong> looking for all nodes that called <span class="ic">useContext(ThisContext)</span> and marks every one of them dirty — regardless of which keys they actually used.</p>
+
+  <div class="diagram">
+    <div style="font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:11px;">Context update propagation</div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="flow">
+        <div class="fb p">Provider value changes</div><span class="farr">→</span>
+        <div class="fb a">Object.is(prev, next) → false</div><span class="farr">→</span>
+        <div class="fb c">Walk entire Fiber tree</div>
+      </div>
+      <div class="flow">
+        <div class="fb c">Find all useContext(ThisCtx) nodes</div><span class="farr">→</span>
+        <div class="fb c">Mark ALL dirty</div><span class="farr">→</span>
+        <div class="fb c">Re-render ALL consumers</div>
+      </div>
+      <div style="font-size:11.5px;color:var(--coral);padding:7px 0;">⚠️ React has no key-level subscriptions in Context. No filtering. It's a broadcast.</div>
+    </div>
+  </div>
+
+  <div class="callout coral">
+    <strong>The fundamental limit:</strong>
+    <p>Context does not track which keys you destructured from the value. If your context holds <span class="ic">&#123; user, cartCount, theme &#125;</span> and <span class="ic">cartCount</span> changes, every component that called <span class="ic">useContext(AppContext)</span> re-renders — even those only reading <span class="ic">user</span>.</p>
+  </div>
+
+  <h3>The Object.is trap</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cart, setCart] = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+
+  <span class="cmt">// ❌ NEW object literal on every render of AppProvider</span>
+  <span class="cmt">// Even if user + cart didn't change, this is a new reference</span>
+  <span class="cmt">// Object.is({ user, cart }, { user, cart }) === false  ← always</span>
+  <span class="kw">return</span> <span class="tag2">&lt;Ctx.Provider</span> <span class="pr">value</span>={{ user, cart, setUser, setCart }}<span class="tag2">&gt;</span>{children}<span class="tag2">&lt;/Ctx.Provider&gt;</span>;
+}
+
+<span class="cmt">// ✅ useMemo stabilizes — only new object when deps actually change</span>
+<span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cart, setCart] = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+
+  <span class="kw">const</span> value = <span class="fn">useMemo</span>(
+    () => ({ user, cart, setUser, setCart }),
+    [user, cart]  <span class="cmt">// setUser/setCart are stable — don't need to be here</span>
+  );
+  <span class="kw">return</span> <span class="tag2">&lt;Ctx.Provider</span> <span class="pr">value</span>={value}<span class="tag2">&gt;</span>{children}<span class="tag2">&lt;/Ctx.Provider&gt;</span>;
+}<div class="lb">object-is-trap.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 05 CONTEXT CODE ── -->
+<section id="ctx-code">
+  <div class="smeta"><span class="snum">05</span><span class="stag">Context API</span></div>
+  <h2>Context — <em>Full Usage Code</em></h2>
+
+  <pre><code><span class="cmt">// context/UserContext.jsx — the correct full pattern</span>
+<span class="kw">import</span> { createContext, useContext, useState, useMemo, useCallback } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">const</span> UserContext = <span class="fn">createContext</span>(null);
+
+<span class="cmt">// Always a custom hook — never call useContext(UserContext) directly in components</span>
+<span class="kw">export function</span> <span class="fn">useUser</span>() {
+  <span class="kw">const</span> ctx = <span class="fn">useContext</span>(UserContext);
+  <span class="kw">if</span> (!ctx) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">'useUser must be inside &lt;UserProvider&gt;'</span>);
+  <span class="kw">return</span> ctx;
+}
+
+<span class="kw">export function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser]       = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="kw">const</span> login = <span class="fn">useCallback</span>(<span class="kw">async</span> (email, pw) => {
+    setLoading(<span class="kw">true</span>);
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="fn">loginAPI</span>(email, pw);
+    setUser(data.user); setLoading(<span class="kw">false</span>);
+  }, []);
+
+  <span class="kw">const</span> logout = <span class="fn">useCallback</span>(() => setUser(null), []);
+
+  <span class="kw">const</span> value = <span class="fn">useMemo</span>(
+    () => ({ user, loading, login, logout }),
+    [user, loading, login, logout]
+  );
+
+  <span class="kw">return</span> <span class="tag2">&lt;UserContext.Provider</span> <span class="pr">value</span>={value}<span class="tag2">&gt;</span>{children}<span class="tag2">&lt;/UserContext.Provider&gt;</span>;
+}
+<div class="lb">UserContext.jsx</div></code></pre>
+
+  <pre><code><span class="cmt">// main.jsx — wrap app in provider</span>
+<span class="kw">import</span> { UserProvider } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+<span class="fn">createRoot</span>(<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag2">&lt;UserProvider&gt;</span><span class="tag2">&lt;App /&gt;</span><span class="tag2">&lt;/UserProvider&gt;</span>
+);
+
+<span class="cmt">// Any component — no prop drilling, direct access</span>
+<span class="kw">import</span> { useUser } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user, logout } = <span class="fn">useUser</span>();
+  <span class="kw">return</span> <span class="tag2">&lt;header&gt;</span>{user?.name} <span class="tag2">&lt;button</span> <span class="pr">onClick</span>={logout}<span class="tag2">&gt;</span>Logout<span class="tag2">&lt;/button&gt;</span><span class="tag2">&lt;/header&gt;</span>;
+}
+<div class="lb">usage.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 06 CONTEXT PERF ── -->
+<section id="ctx-perf">
+  <div class="smeta"><span class="snum">06</span><span class="stag">Context API</span></div>
+  <h2>Context <em>Performance Problem</em></h2>
+  <p>Your question: "if user, cartIcon, ordersIcon are in one context, any change re-renders all subscribers?" Yes — exactly right.</p>
+
+  <pre><code><span class="kw">const</span> AppCtx = <span class="fn">createContext</span>();
+
+<span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser]           = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cartIcon, setCartIcon]   = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+  <span class="kw">const</span> [ordersIcon, setOrdersIcon] = <span class="fn">useState</span>({ badge: <span class="nm">0</span> });
+
+  <span class="kw">return</span> <span class="tag2">&lt;AppCtx.Provider</span> <span class="pr">value</span>={{ user, cartIcon, ordersIcon }}<span class="tag2">&gt;</span>
+    {children}
+  <span class="tag2">&lt;/AppCtx.Provider&gt;</span>;
+}
+
+<span class="cmt">// Header only cares about user.name</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useContext</span>(AppCtx); <span class="cmt">// ⚠️ subscribed to ENTIRE context</span>
+  <span class="kw">return</span> <span class="tag2">&lt;h1&gt;</span>{user?.name}<span class="tag2">&lt;/h1&gt;</span>;
+  <span class="cmt">// ⚠️ Re-renders when cartIcon changes — Header doesn't care about cart!</span>
+}<div class="lb">perf-problem.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 07 CONTEXT FIX ── -->
+<section id="ctx-fix">
+  <div class="smeta"><span class="snum">07</span><span class="stag">Context API</span></div>
+  <h2>Fixing Context <em>Performance</em></h2>
+  <p>The only structural fix: <strong>split contexts</strong>. One context per concern. Components subscribe only to what they need.</p>
+
+  <pre><code><span class="kw">const</span> UserCtx   = <span class="fn">createContext</span>();
+<span class="kw">const</span> CartCtx   = <span class="fn">createContext</span>();
+<span class="kw">const</span> OrdersCtx = <span class="fn">createContext</span>();
+
+<span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user]   = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cart]   = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+  <span class="kw">const</span> [orders] = <span class="fn">useState</span>({ badge: <span class="nm">0</span> });
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;UserCtx.Provider</span> <span class="pr">value</span>={user}<span class="tag2">&gt;</span>
+      <span class="tag2">&lt;CartCtx.Provider</span> <span class="pr">value</span>={cart}<span class="tag2">&gt;</span>
+        <span class="tag2">&lt;OrdersCtx.Provider</span> <span class="pr">value</span>={orders}<span class="tag2">&gt;</span>{children}<span class="tag2">&lt;/OrdersCtx.Provider&gt;</span>
+      <span class="tag2">&lt;/CartCtx.Provider&gt;</span>
+    <span class="tag2">&lt;/UserCtx.Provider&gt;</span>
+  );
+}
+
+<span class="cmt">// ✓ Header subscribes only to UserCtx — won't re-render on cart changes</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> user = <span class="fn">useContext</span>(UserCtx);
+  <span class="kw">return</span> <span class="tag2">&lt;h1&gt;</span>{user?.name}<span class="tag2">&lt;/h1&gt;</span>;
+}
+<span class="cmt">// ✓ CartIcon subscribes only to CartCtx — isolated</span>
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="kw">const</span> cart = <span class="fn">useContext</span>(CartCtx);
+  <span class="kw">return</span> <span class="tag2">&lt;span&gt;</span>{cart.count}<span class="tag2">&lt;/span&gt;</span>;
+}<div class="lb">split-contexts.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 08 REDUX CONCEPTS ── -->
+<section id="rdx-concepts">
+  <div class="smeta"><span class="snum">08</span><span class="stag">Redux Toolkit</span></div>
+  <h2>Redux — <em>Concepts First</em></h2>
+  <p>Redux is a separate library (not built into React). One global store, strict mutation rules, and <strong>selector-based subscriptions</strong> — each component subscribes to exactly the piece of state it needs.</p>
+
+  <div class="hook-row"><div class="hook-name">Store</div><div class="hook-desc"><strong>Single source of truth</strong><p>One JS object. Wrapped in <span class="ic">&lt;Provider&gt;</span>. Lives outside React — state doesn't reset on re-renders.</p></div></div>
+  <div class="hook-row"><div class="hook-name">Slice</div><div class="hook-desc"><strong>Domain of state + its logic</strong><p><span class="ic">createSlice</span> bundles initialState, reducers, and auto-generates action creators. One slice per domain.</p></div></div>
+  <div class="hook-row"><div class="hook-name">Action</div><div class="hook-desc"><strong>Description of what happened</strong><p><span class="ic">&#123; type: 'cart/addItem', payload: item &#125;</span>. You dispatch actions — never mutate state directly.</p></div></div>
+  <div class="hook-row"><div class="hook-name">Reducer</div><div class="hook-desc"><strong>Pure (state, action) → newState</strong><p>RTK uses Immer internally — write "mutating" code, get immutable updates automatically.</p></div></div>
+  <div class="hook-row"><div class="hook-name">useSelector</div><div class="hook-desc"><strong>Surgical subscription to one slice</strong><p>Creates an independent subscription. React-Redux runs <span class="ic">===</span> on the selected value after every dispatch. Re-render only if it changed.</p></div></div>
+  <div class="hook-row"><div class="hook-name">useDispatch</div><div class="hook-desc"><strong>Trigger a state change</strong><p>Returns the dispatch function. Stable reference — safe in useCallback deps.</p></div></div>
+</section>
+
+
+<!-- ── 09 REDUX CODE ── -->
+<section id="rdx-code">
+  <div class="smeta"><span class="snum">09</span><span class="stag">Redux Toolkit</span></div>
+  <h2>Redux Toolkit — <em>Full Code</em></h2>
+
+  <pre><code>npm install @reduxjs/toolkit react-redux<div class="lb">terminal</div></code></pre>
+
+  <pre><code><span class="cmt">// store/userSlice.js</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+<span class="kw">const</span> userSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'user'</span>,
+  initialState: { data: null, loading: <span class="kw">false</span> },
+  reducers: {
+    <span class="fn">setUser</span>:    (state, { payload }) => { state.data = payload; },
+    <span class="fn">clearUser</span>:  state => { state.data = null; },
+    <span class="fn">setLoading</span>: (state, { payload }) => { state.loading = payload; },
+  },
+});
+<span class="kw">export const</span> { setUser, clearUser, setLoading } = userSlice.actions;
+<span class="kw">export default</span> userSlice.reducer;
+
+<span class="cmt">// store/cartSlice.js</span>
+<span class="kw">const</span> cartSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'cart'</span>,
+  initialState: { items: [], count: <span class="nm">0</span> },
+  reducers: {
+    <span class="fn">addItem</span>:    (state, { payload }) => { state.items.<span class="fn">push</span>(payload); state.count++; },
+    <span class="fn">removeItem</span>: (state, { payload }) => {
+      state.items = state.items.<span class="fn">filter</span>(i => i.id !== payload);
+      state.count--;
+    },
+  },
+});
+<span class="kw">export const</span> { addItem, removeItem } = cartSlice.actions;
+<span class="kw">export default</span> cartSlice.reducer;
+<div class="lb">slices.js</div></code></pre>
+
+  <pre><code><span class="cmt">// store/index.js — combine slices into one store</span>
+<span class="kw">import</span> { configureStore } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+<span class="kw">import</span> userReducer  <span class="kw">from</span> <span class="str">'./userSlice'</span>;
+<span class="kw">import</span> cartReducer  <span class="kw">from</span> <span class="str">'./cartSlice'</span>;
+<span class="kw">import</span> ordersReducer <span class="kw">from</span> <span class="str">'./ordersSlice'</span>;
+
+<span class="kw">export const</span> store = <span class="fn">configureStore</span>({
+  reducer: { user: userReducer, cart: cartReducer, orders: ordersReducer },
+  <span class="cmt">// state.user, state.cart, state.orders</span>
+});
+<div class="lb">store/index.js</div></code></pre>
+
+  <pre><code><span class="cmt">// main.jsx</span>
+<span class="kw">import</span> { Provider } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="fn">createRoot</span>(<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag2">&lt;Provider</span> <span class="pr">store</span>={store}<span class="tag2">&gt;</span><span class="tag2">&lt;App /&gt;</span><span class="tag2">&lt;/Provider&gt;</span>
+);
+
+<span class="cmt">// Header — re-renders ONLY when state.user.data changes</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> user     = <span class="fn">useSelector</span>(s => s.user.data);
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+  <span class="kw">return</span> <span class="tag2">&lt;header&gt;</span>{user?.name} <span class="tag2">&lt;button</span> <span class="pr">onClick</span>={() => dispatch(<span class="fn">clearUser</span>())}<span class="tag2">&gt;</span>Logout<span class="tag2">&lt;/button&gt;</span><span class="tag2">&lt;/header&gt;</span>;
+}
+
+<span class="cmt">// CartIcon — re-renders ONLY when state.cart.count changes</span>
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="kw">const</span> count = <span class="fn">useSelector</span>(s => s.cart.count);
+  <span class="kw">return</span> <span class="tag2">&lt;span&gt;</span>{count}<span class="tag2">&lt;/span&gt;</span>; <span class="cmt">// won't re-render on user or orders changes</span>
+}<div class="lb">usage.jsx</div></code></pre>
+
+  <div class="callout green">
+    <strong>✓ Answering your exact question:</strong>
+    <p>Header, CartIcon, OrdersIcon all read from the same store. But each <span class="ic">useSelector</span> is an independent subscription. Header's selector returns <span class="ic">state.user.data</span>. When cart changes, Redux dispatches, runs Header's selector, gets the same user object, <span class="ic">===</span> passes — Header does NOT re-render. This is the core performance advantage over a single Context.</p>
+  </div>
+</section>
+
+
+<!-- ── 10 SELECTOR INTERNALS ── -->
+<section id="selector">
+  <div class="smeta"><span class="snum">10</span><span class="stag">Redux Toolkit</span></div>
+  <h2>Selector <em>Internals</em> & shallowEqual</h2>
+
+  <div class="diagram">
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="flow"><div class="fb p">dispatch(action)</div><span class="farr">→</span><div class="fb">Reducer runs → new state</div></div>
+      <div class="flow"><div class="fb a">For every useSelector subscriber</div><span class="farr">→</span><div class="fb a">run selector(newState)</div><span class="farr">→</span><div class="fb a">compare with prev result</div></div>
+      <div class="flow"><div class="fb g">result === prev → skip re-render ✓</div><span style="color:var(--hint);padding:0 5px;font-size:12px;">or</span><div class="fb c">result !== prev → schedule re-render</div></div>
+    </div>
+  </div>
+
+  <pre><code><span class="cmt">// ❌ BAD — returns a NEW object every call → always triggers re-render</span>
+<span class="kw">const</span> { name, email } = <span class="fn">useSelector</span>(s => ({ name: s.user.data?.name, email: s.user.data?.email }));
+<span class="cmt">// {} !== {} in JS — even if values are identical</span>
+
+<span class="cmt">// ✅ OPTION 1 — select primitives separately (simplest)</span>
+<span class="kw">const</span> name  = <span class="fn">useSelector</span>(s => s.user.data?.name);
+<span class="kw">const</span> email = <span class="fn">useSelector</span>(s => s.user.data?.email);
+
+<span class="cmt">// ✅ OPTION 2 — shallowEqual as second arg (compares properties, not reference)</span>
+<span class="kw">import</span> { shallowEqual } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">const</span> { name, email } = <span class="fn">useSelector</span>(
+  s => ({ name: s.user.data?.name, email: s.user.data?.email }),
+  shallowEqual
+);
+
+<span class="cmt">// ✅ OPTION 3 — createSelector for derived/computed values (memoized)</span>
+<span class="kw">import</span> { createSelector } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> selectExpensiveOrders = <span class="fn">createSelector</span>(
+  s => s.orders.list,                          <span class="cmt">// input selector</span>
+  orders => orders.<span class="fn">filter</span>(o => o.amount > <span class="nm">1000</span>) <span class="cmt">// result memoized until list changes</span>
+);
+
+<span class="kw">function</span> <span class="fn">ExpensiveList</span>() {
+  <span class="kw">const</span> orders = <span class="fn">useSelector</span>(selectExpensiveOrders);
+  <span class="cmt">// Re-renders only when filtered result actually changes</span>
+}<div class="lb">selectors.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 11 MEMO TRIANGLE ── -->
+<section id="memo-tri">
+  <div class="smeta"><span class="snum">11</span><span class="stag">Memoization</span></div>
+  <h2>The <em>Memoization Triangle</em></h2>
+  <p><span class="ic">React.memo</span>, <span class="ic">useMemo</span>, and <span class="ic">useCallback</span> are almost always misused in isolation. They only work as a system — all three together, or the whole thing collapses.</p>
+
+  <div class="tri-grid">
+    <div class="tri-card">
+      <div class="tn">React.memo</div>
+      <div class="tr">Skip re-rendering a component</div>
+      <div class="td">Wraps a component. If props are shallowly equal to previous render, React skips running the function and reuses last output — including entire subtree.</div>
+      <div class="tw"><strong>Fails if:</strong> parent passes inline objects or functions — new reference every render, shallow equality breaks.</div>
+    </div>
+    <div class="tri-card">
+      <div class="tn">useCallback</div>
+      <div class="tr">Stable function reference</div>
+      <div class="td">Memoizes a function so the same reference is returned across renders (while deps unchanged). Prevents memo'd children seeing "new" function props.</div>
+      <div class="tw"><strong>Useless without:</strong> React.memo on the child. Stable references only matter if the child checks prop equality.</div>
+    </div>
+    <div class="tri-card">
+      <div class="tn">useMemo</div>
+      <div class="tr">Cache computed values</div>
+      <div class="td">Memoizes a computed value. Used for (1) expensive calculations, (2) stabilizing object/array references passed as props to memo'd children.</div>
+      <div class="tw"><strong>Useless without:</strong> React.memo on the child for case 2. For expensive calculations, standalone useMemo is valid.</div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>The pattern that works:</strong>
+    <p>1. Wrap child in <span class="ic">React.memo</span>. 2. Wrap any function you pass it in <span class="ic">useCallback</span>. 3. Wrap any object/array you pass it in <span class="ic">useMemo</span>. Miss any one step and the whole thing collapses.</p>
+  </div>
+
+  <pre><code><span class="cmt">// The triangle in action</span>
+<span class="kw">const</span> CartIcon = <span class="fn">memo</span>(<span class="kw">function</span> <span class="fn">CartIcon</span>({ count, onOpen }) {
+  <span class="kw">return</span> <span class="tag2">&lt;button</span> <span class="pr">onClick</span>={onOpen}<span class="tag2">&gt;</span>🛒 {count}<span class="tag2">&lt;/button&gt;</span>; <span class="cmt">// skips if count+onOpen unchanged</span>
+});
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> [user]  = <span class="fn">useState</span>({ name: <span class="str">'Alice'</span> });
+  <span class="kw">const</span> [count] = <span class="fn">useState</span>(<span class="nm">0</span>);
+
+  <span class="kw">const</span> handleOpen = <span class="fn">useCallback</span>(() => console.<span class="fn">log</span>(<span class="str">'cart opened'</span>), []);
+  <span class="cmt">// useCallback: stable fn ref → CartIcon doesn't see "new" onOpen on every Header render</span>
+
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;header&gt;</span>
+      <span class="tag2">&lt;span&gt;</span>{user.name}<span class="tag2">&lt;/span&gt;</span>
+      <span class="tag2">&lt;CartIcon</span> <span class="pr">count</span>={count} <span class="pr">onOpen</span>={handleOpen} <span class="tag2">/&gt;</span>
+      <span class="cmt">// CartIcon skipped when user.name changes — count and onOpen are same ✓</span>
+    <span class="tag2">&lt;/header&gt;</span>
+  );
+}<div class="lb">triangle.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 12 useMemo ── -->
+<section id="usememo">
+  <div class="smeta"><span class="snum">12</span><span class="stag">Memoization</span></div>
+  <h2>useMemo — <em>Deep Dive</em></h2>
+  <p>Stores the return value of a function. Runs the function only when dependencies change; otherwise returns the cached result.</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">OrderStats</span>({ orders, filter }) {
+  <span class="cmt">// Use case 1: expensive computation</span>
+  <span class="kw">const</span> stats = <span class="fn">useMemo</span>(() => ({
+    total:   orders.<span class="fn">reduce</span>((s, o) => s + o.amount, <span class="nm">0</span>),
+    highest: Math.<span class="fn">max</span>(...orders.<span class="fn">map</span>(o => o.amount)),
+  }), [orders]);
+
+  <span class="cmt">// Use case 2: stable array ref → prevents memo'd child re-renders</span>
+  <span class="kw">const</span> filtered = <span class="fn">useMemo</span>(
+    () => orders.<span class="fn">filter</span>(o => o.status === filter),
+    [orders, filter]
+  );
+
+  <span class="kw">return</span> <span class="tag2">&lt;OrderList</span> <span class="pr">items</span>={filtered} <span class="tag2">/&gt;</span>; <span class="cmt">// OrderList is memo'd — stable ref = skip</span>
+}
+<div class="lb">useMemo.jsx</div></code></pre>
+  <div class="callout amber">
+    <strong>Don't wrap everything:</strong>
+    <p>useMemo has its own cost — memory + comparison on every render. Only use it for genuinely expensive calculations (sorting/filtering large arrays) or stable references for memo'd child props. Simple <span class="ic">a + b</span> doesn't need it.</p>
+  </div>
+</section>
+
+
+<!-- ── 13 useCallback ── -->
+<section id="usecallback">
+  <div class="smeta"><span class="snum">13</span><span class="stag">Memoization</span></div>
+  <h2>useCallback — <em>Deep Dive</em></h2>
+  <p>Every render creates a new function object. <span class="ic">useCallback</span> memoizes the function so you get the same reference across renders (while deps unchanged).</p>
+
+  <pre><code><span class="kw">function</span> <span class="fn">Parent</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="nm">0</span>);
+
+  <span class="cmt">// ❌ New function on every render → memo'd child always re-renders</span>
+  <span class="kw">const</span> handleBad = () => setCount(c => c + <span class="nm">1</span>);
+
+  <span class="cmt">// ✅ Same reference → memo'd child is skipped</span>
+  <span class="kw">const</span> handleGood = <span class="fn">useCallback</span>(() => setCount(c => c + <span class="nm">1</span>), []);
+  <span class="cmt">// Empty deps safe here — functional update avoids stale closure on count</span>
+
+  <span class="cmt">// With a dependency — recreated only when it changes</span>
+  <span class="kw">const</span> handleSubmit = <span class="fn">useCallback</span>(() => submitOrder(count), [count]);
+
+  <span class="kw">return</span> <span class="tag2">&lt;MemoChild</span> <span class="pr">onClick</span>={handleGood} <span class="tag2">/&gt;</span>;
+}
+<div class="lb">useCallback.jsx</div></code></pre>
+  <div class="callout blue">
+    <strong>useCallback is just useMemo for functions:</strong>
+    <p><span class="ic">useCallback(fn, deps)</span> === <span class="ic">useMemo(() => fn, deps)</span>. Use whichever reads more naturally in context.</p>
+  </div>
+</section>
+
+
+<!-- ── 14 React.memo ── -->
+<section id="reactmemo">
+  <div class="smeta"><span class="snum">14</span><span class="stag">Memoization</span></div>
+  <h2>React.memo — <em>Deep Dive</em></h2>
+  <p>Wraps a component. If all props are shallowly equal to the previous render, React skips running the function and reuses the last JSX output — including all children. That's the real win: skipping entire subtrees.</p>
+
+  <pre><code><span class="kw">import</span> { memo } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cmt">// Default: shallow equality on all props</span>
+<span class="kw">const</span> ProductCard = <span class="fn">memo</span>(<span class="kw">function</span> <span class="fn">ProductCard</span>({ product, onAdd }) {
+  <span class="kw">return</span> <span class="tag2">&lt;div&gt;</span><span class="tag2">&lt;h3&gt;</span>{product.name}<span class="tag2">&lt;/h3&gt;</span><span class="tag2">&lt;button</span> <span class="pr">onClick</span>={onAdd}<span class="tag2">&gt;</span>Add<span class="tag2">&lt;/button&gt;</span><span class="tag2">&lt;/div&gt;</span>;
+});
+
+<span class="cmt">// Custom comparison — true = skip re-render, false = do re-render</span>
+<span class="kw">const</span> ProductCard = <span class="fn">memo</span>(ProductCard, (prev, next) => {
+  <span class="kw">return</span> prev.product.id === next.product.id
+      && prev.product.price === next.product.price;
+});<div class="lb">react-memo.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 15 CONCURRENT ── -->
+<section id="concurrent">
+  <div class="smeta"><span class="snum">15</span><span class="stag">React 18</span></div>
+  <h2>Concurrent Rendering — <em>React 18</em></h2>
+  <p>Prior optimizations reduce <em>how much</em> work React does. Concurrent Mode addresses: what if the work is unavoidable — can we do it without blocking input?</p>
+
+  <div class="callout purple">
+    <strong>Key idea — yielding the thread:</strong>
+    <p>Concurrent Mode doesn't add parallelism. Still one thread. Instead, React's scheduler breaks rendering into small chunks and yields control back to the browser between them. User input can jump in between chunks. The render is interruptible.</p>
+  </div>
+
+  <div class="diagram">
+    <div style="font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:11px;">Sync (legacy) vs Concurrent (React 18)</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:var(--coral);margin-bottom:5px;">Sync — thread blocked for entire render</div>
+      <div class="tl-row">
+        <span class="tl-label">JS Thread</span>
+        <div class="tl-seg" style="background:#230e0e;border:1px solid var(--coral);color:var(--coral);width:320px">⛔ Render 200 items (150ms — jank)</div>
+        <div class="tl-seg" style="background:var(--bg3);border:1px solid var(--hint);color:var(--hint);width:70px">input</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--green);margin-bottom:5px;">Concurrent — interleaved, input stays responsive</div>
+      <div class="tl-row">
+        <span class="tl-label">JS Thread</span>
+        <div class="tl-seg" style="background:var(--green-bg);border:1px solid var(--green);color:var(--green);width:55px">render</div>
+        <div class="tl-seg" style="background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue);width:44px">⌨️ input</div>
+        <div class="tl-seg" style="background:var(--green-bg);border:1px solid var(--green);color:var(--green);width:55px">resume</div>
+        <div class="tl-seg" style="background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue);width:38px">⌨️</div>
+        <div class="tl-seg" style="background:var(--green-bg);border:1px solid var(--green);color:var(--green);width:55px">resume</div>
+        <div class="tl-seg" style="background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);width:75px">commit</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── 16 useTransition ── -->
+<section id="transition">
+  <div class="smeta"><span class="snum">16</span><span class="stag">React 18</span></div>
+  <h2>useTransition — <em>Low-Priority Updates</em></h2>
+  <p>Mark a state update as "low priority." React renders it in the background, pausing to handle urgent work (typing) first. UI stays responsive during expensive renders.</p>
+
+  <pre><code><span class="kw">import</span> { useState, useTransition } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">function</span> <span class="fn">SearchPage</span>() {
+  <span class="kw">const</span> [query,   setQuery]   = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [results, setResults] = <span class="fn">useState</span>([]);
+  <span class="kw">const</span> [isPending, startTransition] = <span class="fn">useTransition</span>();
+
+  <span class="kw">const</span> handleChange = e => {
+    setQuery(e.target.value);              <span class="cmt">// urgent — update input immediately</span>
+
+    <span class="fn">startTransition</span>(() => {               <span class="cmt">// non-urgent — can be interrupted</span>
+      setResults(bigList.<span class="fn">filter</span>(item =>
+        item.name.<span class="fn">toLowerCase</span>().<span class="fn">includes</span>(e.target.value)
+      ));
+    });
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;div&gt;</span>
+      <span class="tag2">&lt;input</span> <span class="pr">value</span>={query} <span class="pr">onChange</span>={handleChange} <span class="tag2">/&gt;</span>
+      {isPending && <span class="tag2">&lt;span&gt;</span>Updating...<span class="tag2">&lt;/span&gt;</span>}
+      <span class="tag2">&lt;ResultList</span> <span class="pr">items</span>={results} <span class="tag2">/&gt;</span>
+    <span class="tag2">&lt;/div&gt;</span>
+  );
+}
+<span class="cmt">// React may restart the transition render if new input arrives mid-render</span>
+<div class="lb">useTransition.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 17 useDeferredValue ── -->
+<section id="deferred">
+  <div class="smeta"><span class="snum">17</span><span class="stag">React 18</span></div>
+  <h2>useDeferredValue — <em>Lagged Values</em></h2>
+  <p>Like <span class="ic">useTransition</span> but for values you don't control — like a prop from a parent. Gives you a "lagged" version that updates in the background.</p>
+
+  <pre><code><span class="kw">import</span> { useDeferredValue, memo, useMemo } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">function</span> <span class="fn">SearchPage</span>({ query }) {
+  <span class="kw">const</span> deferredQuery = <span class="fn">useDeferredValue</span>(query);
+  <span class="cmt">// deferredQuery lags behind query — React renders old value first,</span>
+  <span class="cmt">// then does a background render with new value</span>
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;div&gt;</span>
+      <span class="tag2">&lt;input</span> <span class="pr">value</span>={query} <span class="tag2">/&gt;</span>            {<span class="cmt">/* live query — snappy */</span>}
+      <span class="tag2">&lt;ResultList</span> <span class="pr">query</span>={deferredQuery} <span class="tag2">/&gt;</span> {<span class="cmt">/* deferred — background */</span>}
+    <span class="tag2">&lt;/div&gt;</span>
+  );
+}
+
+<span class="cmt">// ResultList MUST be memo'd — otherwise deferring has no effect</span>
+<span class="kw">const</span> ResultList = <span class="fn">memo</span>(<span class="kw">function</span> <span class="fn">ResultList</span>({ query }) {
+  <span class="kw">const</span> results = <span class="fn">useMemo</span>(
+    () => bigList.<span class="fn">filter</span>(item => item.name.<span class="fn">includes</span>(query)),
+    [query]
+  );
+  <span class="kw">return</span> results.<span class="fn">map</span>(r => <span class="tag2">&lt;div</span> <span class="pr">key</span>={r.id}<span class="tag2">&gt;</span>{r.name}<span class="tag2">&lt;/div&gt;</span>);
+});
+<div class="lb">useDeferredValue.jsx</div></code></pre>
+
+  <table>
+    <thead><tr><th>Hook</th><th>When to use</th><th>What you control</th></tr></thead>
+    <tbody>
+      <tr><td class="asp"><span class="ic">useTransition</span></td><td>You own the setState call</td><td>Mark your own state update as low-priority</td></tr>
+      <tr><td class="asp"><span class="ic">useDeferredValue</span></td><td>You receive a value as prop</td><td>Create a lagged version of an external value</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ── 18 VIRTUALIZATION ── -->
+<section id="virt">
+  <div class="smeta"><span class="snum">18</span><span class="stag">Architecture</span></div>
+  <h2>Virtualization — <em>DOM is the Bottleneck</em></h2>
+  <p>Previous optimizations reduce JS work. Virtualization solves a different problem: <strong>DOM nodes are expensive</strong>. Each one has event listeners, layout boxes, style computation, accessibility entries, and GC cost.</p>
+  <p>Rendering 10,000 list items creates 10,000 DOM nodes — even if only 20 are visible. Virtualization keeps the DOM node count constant by recycling a small pool of nodes as you scroll.</p>
+
+  <div class="diagram">
+    <div class="virt">
+      <div class="vc">
+        <h4 style="color:var(--coral)">❌ Without — 10,000 items</h4>
+        <div class="vi on">Row 1 (visible)</div>
+        <div class="vi on">Row 2 (visible)</div>
+        <div class="vi on">Row 3 (visible)</div>
+        <div class="vi" style="color:var(--hint)">Row 4 (off-screen, in DOM)</div>
+        <div class="vi" style="color:var(--hint)">Row 5 (off-screen, in DOM)</div>
+        <div style="font-size:10.5px;color:var(--hint);text-align:center;padding:3px;">... 9,995 more DOM nodes ...</div>
+        <div style="font-size:11px;color:var(--coral);margin-top:7px;">10,000 nodes in memory + layout</div>
+      </div>
+      <div class="vc">
+        <h4 style="color:var(--green)">✓ With react-window</h4>
+        <div class="vi on">Row 1 (real DOM node)</div>
+        <div class="vi on">Row 2 (real DOM node)</div>
+        <div class="vi on">Row 3 (real DOM node)</div>
+        <div class="vi re">recycled node (repositioned)</div>
+        <div class="vi re">recycled node (repositioned)</div>
+        <div style="font-size:10.5px;color:var(--hint);text-align:center;padding:3px;">~20 nodes total, always</div>
+        <div style="font-size:11px;color:var(--green);margin-top:7px;">constant DOM cost regardless of data size</div>
+      </div>
+    </div>
+  </div>
+
+  <pre><code><span class="kw">import</span> { FixedSizeList } <span class="kw">from</span> <span class="str">'react-window'</span>;
+
+<span class="kw">const</span> Row = ({ index, style }) => (
+  <span class="tag2">&lt;div</span> <span class="pr">style</span>={style}<span class="tag2">&gt;</span>  {<span class="cmt">/* style MUST be applied — sets position for virtualization */</span>}
+    {myData[index].name}
+  <span class="tag2">&lt;/div&gt;</span>
+);
+
+<span class="kw">function</span> <span class="fn">MyList</span>() {
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;FixedSizeList</span>
+      <span class="pr">height</span>={<span class="nm">600</span>}       <span class="cmt">// scrollable container height</span>
+      <span class="pr">itemCount</span>={<span class="nm">10000</span>}  <span class="cmt">// total items</span>
+      <span class="pr">itemSize</span>={<span class="nm">50</span>}      <span class="cmt">// each row height (px)</span>
+      <span class="pr">width</span>=<span class="str">"100%"</span>
+    <span class="tag2">&gt;</span>
+      {Row}
+    <span class="tag2">&lt;/FixedSizeList&gt;</span>
+  );
+}
+<span class="cmt">// React renders ~12 visible rows + small overscan buffer.
+// As you scroll, it recycles and repositions those same DOM nodes.</span>
+<div class="lb">virtualization.jsx</div></code></pre>
+</section>
+
+
+<!-- ── 19 DECISION ── -->
+<section id="decision">
+  <div class="smeta"><span class="snum">19</span><span class="stag">Architecture</span></div>
+  <h2>Context vs Redux — <em>Decision Guide</em></h2>
+
+  <table>
+    <thead><tr><th>Dimension</th><th><span class="badge ctx">Context</span></th><th><span class="badge rdx">Redux Toolkit</span></th></tr></thead>
+    <tbody>
+      <tr><td class="asp">Bundle size</td><td>0kb (built-in)</td><td>~10kb (RTK + react-redux)</td></tr>
+      <tr><td class="asp">Setup</td><td><span class="badge ok">Simple</span> — 2 files</td><td><span class="badge warn">More pieces</span> — slices, store, selectors</td></tr>
+      <tr><td class="asp">Re-render control</td><td>All consumers on any value change</td><td><span class="badge ok">Surgical</span> — per useSelector</td></tr>
+      <tr><td class="asp">DevTools</td><td>React DevTools only</td><td><span class="badge ok">Redux DevTools</span> — time travel, diffs</td></tr>
+      <tr><td class="asp">Async flows</td><td>Manual useEffect + fetch</td><td>createAsyncThunk — built-in</td></tr>
+      <tr><td class="asp">Best for</td><td>Theme, auth, locale, rare-change config</td><td>Cart, notifications, complex feature state</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Decision tree</h3>
+  <div class="dq">Is this state only used by 1–2 nearby components?</div>
+  <div class="dbranch"><div class="dy">local useState — keep it simple</div><div class="dn">keep going ↓</div></div>
+  <div class="dq">Does it change rarely? (theme, auth, locale)</div>
+  <div class="dbranch"><div class="dy">Context — split per concern, useMemo the value</div><div class="dn">keep going ↓</div></div>
+  <div class="dq">High update frequency or many independent consumers needing different slices?</div>
+  <div class="dbranch"><div class="dy">Redux Toolkit — useSelector gives surgical control</div><div class="dn">Context with split providers is likely fine</div></div>
+</section>
+
+
+<!-- ── 20 THREE QUESTIONS ── -->
+<section id="three-q">
+  <div class="smeta"><span class="snum">20</span><span class="stag">Mental Model</span></div>
+  <h2>The <em>Three Questions</em></h2>
+  <p>Every React optimization answers one of three questions about the single JS thread. Know which question you're answering before reaching for any tool.</p>
+
+  <div class="q-grid">
+    <div class="q-card">
+      <span class="qn">01</span>
+      <div class="qt">Can I do less work per frame?</div>
+      <div class="ql">
+        <span class="ic">React.memo</span><br/>
+        <span class="ic">useCallback</span><br/>
+        <span class="ic">useMemo</span><br/>
+        <span class="ic">useSelector</span><br/>
+        Context splitting<br/>
+        Colocate state
+      </div>
+    </div>
+    <div class="q-card">
+      <span class="qn">02</span>
+      <div class="qt">Can I do less work total?</div>
+      <div class="ql">
+        Virtualization<br/>
+        Code splitting<br/>
+        <span class="ic">React.lazy()</span><br/>
+        <span class="ic">Suspense</span><br/>
+        Colocation<br/>
+        Don't over-store
+      </div>
+    </div>
+    <div class="q-card">
+      <span class="qn">03</span>
+      <div class="qt">Can I defer work so thread stays free?</div>
+      <div class="ql">
+        <span class="ic">useTransition</span><br/>
+        <span class="ic">useDeferredValue</span><br/>
+        <span class="ic">Suspense</span><br/>
+        Web Workers<br/>
+        (true parallelism)
+      </div>
+    </div>
+  </div>
+
+  <div class="callout purple">
+    <strong>State architecture is the most impactful:</strong>
+    <p>The best optimization is avoiding unnecessary state centralization. If only two components share state, lift to their parent — don't put it in a global store. Less scope = fewer potential re-renders. A well-colocated component tree beats any amount of memo/useCallback on a poorly-structured one.</p>
+  </div>
+</section>
+
+
+<!-- ── 21 FULL EXAMPLE ── -->
+<section id="full">
+  <div class="smeta"><span class="snum">21</span><span class="stag">Synthesis</span></div>
+  <h2>Full Example — <em>Everything Together</em></h2>
+  <p>A real app combining all concepts: Redux for high-frequency feature state, Context for rarely-changing config, the full memo triangle, and Concurrent Mode for a large filtered list.</p>
+
+  <pre><code><span class="cmt">// Theme + locale change rarely → Context. Everything else → Redux.</span>
+<span class="kw">const</span> ThemeCtx = <span class="fn">createContext</span>(<span class="str">'dark'</span>);
+
+<span class="cmt">// main.jsx — Redux wraps Context wraps App</span>
+<span class="fn">createRoot</span>(<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag2">&lt;Provider</span> <span class="pr">store</span>={store}<span class="tag2">&gt;</span>
+    <span class="tag2">&lt;ThemeCtx.Provider</span> <span class="pr">value</span>=<span class="str">"dark"</span><span class="tag2">&gt;</span>
+      <span class="tag2">&lt;App /&gt;</span>
+    <span class="tag2">&lt;/ThemeCtx.Provider&gt;</span>
+  <span class="tag2">&lt;/Provider&gt;</span>
+);
+
+<span class="cmt">// ProductCard: memo triangle + Context + Redux selector</span>
+<span class="kw">const</span> ProductCard = <span class="fn">memo</span>(<span class="kw">function</span> <span class="fn">ProductCard</span>({ product }) {
+  <span class="kw">const</span> theme    = <span class="fn">useContext</span>(ThemeCtx);                   <span class="cmt">// from Context</span>
+  <span class="kw">const</span> user     = <span class="fn">useSelector</span>(s => s.user.data);           <span class="cmt">// from Redux — surgical</span>
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+
+  <span class="kw">const</span> handleAdd = <span class="fn">useCallback</span>(() =>
+    dispatch(<span class="fn">addItem</span>({ id: product.id, price: product.price }))
+  , [dispatch, product.id, product.price]);
+
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;div</span> <span class="pr">className</span>={`card card--${theme}`}<span class="tag2">&gt;</span>
+      <span class="tag2">&lt;h3&gt;</span>{product.name}<span class="tag2">&lt;/h3&gt;</span>
+      {user ? <span class="tag2">&lt;button</span> <span class="pr">onClick</span>={handleAdd}<span class="tag2">&gt;</span>Add<span class="tag2">&lt;/button&gt;</span> : <span class="tag2">&lt;button&gt;</span>Log in<span class="tag2">&lt;/button&gt;</span>}
+    <span class="tag2">&lt;/div&gt;</span>
+  );
+});
+
+<span class="cmt">// ProductList: virtualization + useTransition for search</span>
+<span class="kw">function</span> <span class="fn">ProductList</span>({ products }) {
+  <span class="kw">const</span> [search, setSearch]           = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">const</span> [filtered, setFiltered]       = <span class="fn">useState</span>(products);
+  <span class="kw">const</span> [isPending, startTransition]  = <span class="fn">useTransition</span>();
+
+  <span class="kw">const</span> handleSearch = e => {
+    setSearch(e.target.value);
+    <span class="fn">startTransition</span>(() =>                      <span class="cmt">// low-priority — can be interrupted</span>
+      setFiltered(products.<span class="fn">filter</span>(p =>
+        p.name.<span class="fn">toLowerCase</span>().<span class="fn">includes</span>(e.target.value)
+      ))
+    );
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag2">&lt;div&gt;</span>
+      <span class="tag2">&lt;input</span> <span class="pr">value</span>={search} <span class="pr">onChange</span>={handleSearch} <span class="pr">placeholder</span>=<span class="str">"search..."</span> <span class="tag2">/&gt;</span>
+      {isPending && <span class="tag2">&lt;span&gt;</span>Filtering...<span class="tag2">&lt;/span&gt;</span>}
+      <span class="tag2">&lt;FixedSizeList</span> <span class="pr">height</span>={<span class="nm">600</span>} <span class="pr">itemCount</span>={filtered.<span class="nm">length</span>} <span class="pr">itemSize</span>={<span class="nm">80</span>} <span class="pr">width</span>=<span class="str">"100%"</span><span class="tag2">&gt;</span>
+        {({ index, style }) => (
+          <span class="tag2">&lt;div</span> <span class="pr">style</span>={style}<span class="tag2">&gt;</span><span class="tag2">&lt;ProductCard</span> <span class="pr">product</span>={filtered[index]} <span class="tag2">/&gt;</span><span class="tag2">&lt;/div&gt;</span>
+        )}
+      <span class="tag2">&lt;/FixedSizeList&gt;</span>
+    <span class="tag2">&lt;/div&gt;</span>
+  );
+}<div class="lb">full-example.jsx</div></code></pre>
+
+  <div class="callout green">
+    <strong>✓ Every concept from this guide lives in that example:</strong>
+    <p>Single-thread awareness → Fiber walk (why memo skips subtrees) → Context for theme (rare change) → Redux for user/cart/orders (surgical selectors, no over-rendering) → memo + useCallback triangle on ProductCard → useTransition for search (input stays snappy at 10k items) → react-window virtualization (DOM stays at ~20 nodes regardless of data size).</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('section');
+const links = document.querySelectorAll('nav a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+  });
+}, { rootMargin: '-15% 0px -75% 0px' });
+sections.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

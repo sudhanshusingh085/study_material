@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>React Production Architecture — Best Practices</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ede9e0;
+  --ink: #1a1814;
+  --ink2: #3d3a33;
+  --ink3: #7a7567;
+  --rule: #d4cfc3;
+  --rule2: #c8c2b4;
+  --accent: #c8390a;
+  --accent2: #e8b84b;
+  --accent3: #2b6cb0;
+  --accent4: #276749;
+  --code-bg: #1c1a17;
+  --code-text: #e8e2d4;
+  --tag-do: #276749;
+  --tag-dont: #c8390a;
+  --tag-note: #2b6cb0;
+  --tag-perf: #7b3fa0;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* PAPER TEXTURE */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:999;
+  opacity:.6;
+}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--rule2);border-radius:2px}
+
+/* ─── HERO ─── */
+.hero {
+  padding: 72px 80px 56px;
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+  background: var(--bg2);
+}
+
+.hero-lines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 39px,
+    var(--rule) 39px,
+    var(--rule) 40px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  animation: fadeUp .5s ease both;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(64px, 9vw, 128px);
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  margin-bottom: 8px;
+  position: relative;
+  animation: fadeUp .5s .1s ease both;
+}
+
+.hero-title span { color: var(--accent); }
+
+.hero-subtitle-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  position: relative;
+  animation: fadeUp .5s .2s ease both;
+}
+
+.hero-desc {
+  font-size: 16px;
+  color: var(--ink2);
+  max-width: 520px;
+  margin-top: 16px;
+  line-height: 1.8;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  margin-top: 16px;
+  flex-shrink: 0;
+}
+
+.hero-stat { text-align: right; }
+.hero-stat-n {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--ink);
+}
+.hero-stat-l {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* ─── LAYOUT ─── */
+.layout { display: flex; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--rule2);
+  padding: 32px 0;
+  background: var(--bg2);
+}
+
+.sidebar::-webkit-scrollbar{width:3px}
+
+.nav-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding: 20px 24px 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 24px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink2);
+  border-left: 3px solid transparent;
+  transition: all .15s;
+  line-height: 1.3;
+}
+
+.nav-item:hover {
+  background: var(--bg);
+  border-left-color: var(--accent);
+  color: var(--ink);
+}
+
+.nav-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--ink3);
+  min-width: 18px;
+}
+
+/* ─── MAIN ─── */
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: 0 80px 120px;
+  max-width: calc(100% - 280px);
+}
+
+/* ─── CHAPTER ─── */
+.chapter {
+  padding: 64px 0 48px;
+  border-bottom: 1px solid var(--rule2);
+}
+
+.chapter-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.chapter-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--rule2);
+  flex-shrink: 0;
+  margin-top: -4px;
+}
+
+.chapter-title-block { flex: 1; }
+
+.chapter-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.chapter-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.chapter-intro {
+  font-size: 15px;
+  color: var(--ink2);
+  line-height: 1.85;
+  margin-bottom: 32px;
+  padding-left: 76px;
+  border-left: none;
+}
+
+/* ─── RULE CARDS ─── */
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.rule-card {
+  background: white;
+  border: 1px solid var(--rule2);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+
+.rule-card:hover {
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: translate(-2px, -2px);
+}
+
+.rule-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.rule-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+.badge-do { background: #d1fae5; color: var(--tag-do); }
+.badge-dont { background: #fee2e2; color: var(--tag-dont); }
+.badge-note { background: #dbeafe; color: var(--tag-note); }
+.badge-perf { background: #ede9fe; color: var(--tag-perf); }
+.badge-rule { background: #fef3c7; color: #92400e; }
+
+.rule-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rule-body { padding: 14px 16px; }
+
+.rule-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+/* ─── CODE ─── */
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 16px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 0;
+  border-left: 3px solid var(--accent);
+}
+
+pre.good { border-left-color: #2f855a; }
+pre.bad { border-left-color: #c53030; }
+pre.neutral { border-left-color: #2b6cb0; }
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: rgba(0,0,0,0.07);
+  color: var(--accent);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+/* SYNTAX */
+.kw{color:#ff79c6}
+.fn{color:#8be9fd}
+.str{color:#f1fa8c}
+.cm{color:#6272a4;font-style:italic}
+.cls{color:#50fa7b}
+.num{color:#bd93f9}
+.prop{color:#ffb86c}
+.tag{color:#ff79c6}
+.attr{color:#50fa7b}
+.dec{color:#ff6e6e}
+.type{color:#8be9fd}
+
+/* ─── CODE LABEL ─── */
+.code-block { margin: 12px 0; }
+.code-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  display: inline-block;
+}
+.code-label.good { background: #2f855a; color: white; }
+.code-label.bad { background: #c53030; color: white; }
+.code-label.neutral { background: var(--ink); color: white; }
+
+/* ─── FOLDER TREE ─── */
+.folder-tree {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 20px 24px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.9;
+  border-left: 3px solid var(--accent2);
+  margin: 16px 0;
+}
+
+.ft-dir { color: #8be9fd; font-weight: 700; }
+.ft-file { color: #f8f8f2; }
+.ft-comment { color: #6272a4; font-style: italic; }
+.ft-special { color: #ff79c6; }
+
+/* ─── COMPARISON ─── */
+.vs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--rule2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.vs-head {
+  padding: 9px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--rule2);
+}
+.vs-head.good { background: #f0fff4; color: #276749; }
+.vs-head.bad { background: #fff5f5; color: #c53030; }
+
+.vs-pre { margin: 0; border-radius: 0; border-left: none; border-right: 1px solid var(--rule2); }
+.vs-pre:last-child { border-right: none; }
+
+/* ─── TABLE ─── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  border: 1px solid var(--rule2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.data-table th {
+  background: var(--ink);
+  color: white;
+  padding: 11px 16px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 10px 16px;
+  border-top: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.data-table tr:hover td { background: rgba(0,0,0,.02); }
+.data-table td code { font-size: 11.5px; }
+
+/* ─── CALLOUT ─── */
+.callout {
+  display: flex;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: 4px;
+  margin: 16px 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  border: 1px solid;
+}
+
+.callout.do { background: #f0fff4; border-color: #9ae6b4; color: #22543d; }
+.callout.dont { background: #fff5f5; border-color: #fed7d7; color: #742a2a; }
+.callout.info { background: #ebf8ff; border-color: #90cdf4; color: #1a365d; }
+.callout.warn { background: #fffaf0; border-color: #fbd38d; color: #7b341e; }
+
+.callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── HOOK CATALOG ─── */
+.hook-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.hook-card {
+  background: white;
+  border: 1px solid var(--rule2);
+  border-radius: 4px;
+  padding: 16px;
+  transition: box-shadow .2s, transform .2s;
+}
+
+.hook-card:hover {
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translate(-1px,-1px);
+}
+
+.hook-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent3);
+  margin-bottom: 6px;
+}
+
+.hook-use {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 8px;
+}
+
+.hook-desc {
+  font-size: 12.5px;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+
+/* ─── CHECKLIST ─── */
+.checklist { list-style: none; margin: 16px 0; }
+.checklist li {
+  display: flex;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13.5px;
+  color: var(--ink2);
+  border-bottom: 1px solid var(--rule);
+  align-items: flex-start;
+}
+.checklist li::before {
+  content: '□';
+  font-size: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+/* ─── PILL ─── */
+.pill {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+.pill-green { background: #d1fae5; color: #065f46; }
+.pill-red { background: #fee2e2; color: #991b1b; }
+.pill-blue { background: #dbeafe; color: #1e40af; }
+.pill-amber { background: #fef3c7; color: #92400e; }
+.pill-purple { background: #ede9fe; color: #5b21b6; }
+
+/* ─── SECTION DIVIDER ─── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 24px;
+}
+.divider-line { flex: 1; height: 1px; background: var(--rule2); }
+.divider-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* ─── ARCHITECTURE DIAGRAM ─── */
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 20px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.arch-layer {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.arch-label {
+  width: 100px;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  padding-right: 12px;
+  justify-content: flex-end;
+}
+
+.arch-items {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.arch-box {
+  padding: 8px 14px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.arch-box.pages { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.arch-box.features { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.arch-box.shared { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+.arch-box.hooks { background: #fdf4ff; border-color: #e9d5ff; color: #6b21a8; }
+.arch-box.services { background: #fefce8; border-color: #fef08a; color: #854d0e; }
+.arch-box.utils { background: #f0fdfa; border-color: #99f6e4; color: #134e4a; }
+.arch-box.store { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+.arch-box.types { background: #f8fafc; border-color: #cbd5e1; color: #334155; }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── FOOTER ─── */
+.footer {
+  padding: 40px 80px;
+  border-top: 2px solid var(--ink);
+  background: var(--ink);
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 280px;
+}
+
+.footer-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: white;
+  letter-spacing: 0.05em;
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{max-width:100%;padding:0 24px 80px}
+  .hero{padding:40px 24px 32px}
+  .vs-grid{grid-template-columns:1fr}
+  .footer{margin-left:0;padding:24px;flex-direction:column;gap:8px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+   <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+<!-- ═══════════════════════════════════════════════════ HERO -->
+<header class="hero">
+  <div class="hero-lines"></div>
+  <div class="hero-eyebrow">React Production Architecture</div>
+  <h1 class="hero-title">BUILD IT<br/><span>RIGHT.</span></h1>
+  <div class="hero-subtitle-row">
+    <p class="hero-desc">The complete playbook for production-grade React. Where to put hooks, how to structure features, when to use what — every architectural decision answered with code.</p>
+    <div class="hero-meta">
+      <div class="hero-stat"><div class="hero-stat-n">14</div><div class="hero-stat-l">Chapters</div></div>
+      <div class="hero-stat"><div class="hero-stat-n">80+</div><div class="hero-stat-l">Patterns</div></div>
+      <div class="hero-stat"><div class="hero-stat-n">100+</div><div class="hero-stat-l">Code Examples</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ═══════════════════════════════════════════════════ SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-cat">Foundation</div>
+  <a href="#c1" class="nav-item"><span class="nav-num">01</span>Folder Structure</a>
+  <a href="#c2" class="nav-item"><span class="nav-num">02</span>Component Rules</a>
+  <a href="#c3" class="nav-item"><span class="nav-num">03</span>Hooks Architecture</a>
+  <div class="nav-cat">State</div>
+  <a href="#c4" class="nav-item"><span class="nav-num">04</span>State Management</a>
+  <a href="#c5" class="nav-item"><span class="nav-num">05</span>Server State</a>
+  <a href="#c6" class="nav-item"><span class="nav-num">06</span>Forms</a>
+  <div class="nav-cat">Performance</div>
+  <a href="#c7" class="nav-item"><span class="nav-num">07</span>Rendering Optimizations</a>
+  <a href="#c8" class="nav-item"><span class="nav-num">08</span>Code Splitting</a>
+  <div class="nav-cat">Patterns</div>
+  <a href="#c9" class="nav-item"><span class="nav-num">09</span>API Layer</a>
+  <a href="#c10" class="nav-item"><span class="nav-num">10</span>Error Handling</a>
+  <a href="#c11" class="nav-item"><span class="nav-num">11</span>TypeScript Patterns</a>
+  <a href="#c12" class="nav-item"><span class="nav-num">12</span>Testing Strategy</a>
+  <a href="#c13" class="nav-item"><span class="nav-num">13</span>Security &amp; Auth</a>
+  <a href="#c14" class="nav-item"><span class="nav-num">14</span>Production Checklist</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════ MAIN -->
+<main class="main">
+
+<!-- ═══ C1: FOLDER STRUCTURE ═══ -->
+<section class="chapter" id="c1">
+  <div class="chapter-header">
+    <div class="chapter-num">01</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Foundation</div>
+      <h2 class="chapter-title">Folder Structure</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Structure by <strong>feature</strong>, not by type. "All hooks in /hooks, all components in /components" breaks down at scale. Feature-based colocation keeps everything that changes together, together.</p>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-label">Production Structure</div><div class="divider-line"></div></div>
+
+  <div class="folder-tree">
+<span class="ft-dir">src/</span>
+├── <span class="ft-dir">app/</span>                    <span class="ft-comment">// app-wide setup: router, providers, global layout</span>
+│   ├── <span class="ft-file">App.tsx</span>
+│   ├── <span class="ft-file">router.tsx</span>            <span class="ft-comment">// all route definitions</span>
+│   └── <span class="ft-file">providers.tsx</span>         <span class="ft-comment">// QueryClient, ThemeProvider, etc.</span>
+│
+├── <span class="ft-dir">pages/</span>                  <span class="ft-comment">// route-level components only (thin wrappers)</span>
+│   ├── <span class="ft-file">DashboardPage.tsx</span>
+│   └── <span class="ft-file">UserProfilePage.tsx</span>
+│
+├── <span class="ft-dir">features/</span>               <span class="ft-comment">// ★ most of your code lives here</span>
+│   ├── <span class="ft-dir">auth/</span>
+│   │   ├── <span class="ft-file">LoginForm.tsx</span>
+│   │   ├── <span class="ft-file">useAuth.ts</span>
+│   │   ├── <span class="ft-file">authStore.ts</span>
+│   │   ├── <span class="ft-file">authApi.ts</span>
+│   │   ├── <span class="ft-file">auth.types.ts</span>
+│   │   └── <span class="ft-special">index.ts</span>             <span class="ft-comment">// public API — only export what's needed</span>
+│   ├── <span class="ft-dir">dashboard/</span>
+│   └── <span class="ft-dir">users/</span>
+│
+├── <span class="ft-dir">components/</span>             <span class="ft-comment">// shared, truly generic UI components</span>
+│   ├── <span class="ft-dir">ui/</span>                   <span class="ft-comment">// Button, Input, Modal, Tooltip…</span>
+│   └── <span class="ft-dir">layout/</span>               <span class="ft-comment">// Sidebar, Header, PageShell…</span>
+│
+├── <span class="ft-dir">hooks/</span>                  <span class="ft-comment">// shared hooks used across 2+ features</span>
+│   ├── <span class="ft-file">useDebounce.ts</span>
+│   ├── <span class="ft-file">useLocalStorage.ts</span>
+│   ├── <span class="ft-file">useMediaQuery.ts</span>
+│   └── <span class="ft-file">useClickOutside.ts</span>
+│
+├── <span class="ft-dir">services/</span>               <span class="ft-comment">// axios instances, API base config, interceptors</span>
+│   ├── <span class="ft-file">apiClient.ts</span>
+│   └── <span class="ft-file">websocket.ts</span>
+│
+├── <span class="ft-dir">store/</span>                  <span class="ft-comment">// global client state (Zustand / Redux)</span>
+│   ├── <span class="ft-file">uiStore.ts</span>
+│   └── <span class="ft-file">userStore.ts</span>
+│
+├── <span class="ft-dir">utils/</span>                  <span class="ft-comment">// pure functions, no React</span>
+│   ├── <span class="ft-file">formatters.ts</span>
+│   ├── <span class="ft-file">validators.ts</span>
+│   └── <span class="ft-file">cn.ts</span>                 <span class="ft-comment">// clsx + tailwind-merge helper</span>
+│
+├── <span class="ft-dir">types/</span>                  <span class="ft-comment">// global shared TypeScript types</span>
+│   ├── <span class="ft-file">api.types.ts</span>
+│   └── <span class="ft-file">common.types.ts</span>
+│
+└── <span class="ft-dir">config/</span>                 <span class="ft-comment">// env vars, constants, feature flags</span>
+    └── <span class="ft-file">env.ts</span>
+  </div>
+
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="arch-label">Pages</div>
+      <div class="arch-items">
+        <div class="arch-box pages">DashboardPage</div>
+        <div class="arch-box pages">UserPage</div>
+        <div class="arch-box pages">SettingsPage</div>
+        <div class="arch-box pages" style="opacity:.5">…</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Features</div>
+      <div class="arch-items">
+        <div class="arch-box features">auth/</div>
+        <div class="arch-box features">dashboard/</div>
+        <div class="arch-box features">users/</div>
+        <div class="arch-box features">billing/</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Shared</div>
+      <div class="arch-items">
+        <div class="arch-box shared">components/ui</div>
+        <div class="arch-box hooks">hooks/</div>
+        <div class="arch-box services">services/</div>
+        <div class="arch-box store">store/</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-label">Core</div>
+      <div class="arch-items">
+        <div class="arch-box utils">utils/</div>
+        <div class="arch-box types">types/</div>
+        <div class="arch-box utils">config/</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <div><strong>The Barrel Rule:</strong> Every feature folder gets an <code>index.ts</code> that explicitly exports only what other features are allowed to use. If it's not in <code>index.ts</code>, it's private to that feature. This prevents spaghetti imports and enforces encapsulation.</div>
+  </div>
+
+  <div class="vs-grid">
+    <div>
+      <div class="vs-head bad">❌ Don't — Type-based structure</div>
+      <pre class="vs-pre bad"><span class="cm">// imports cross-cut everywhere</span>
+<span class="kw">import</span> { <span class="cls">LoginForm</span> } <span class="kw">from</span> <span class="str">'../../components/LoginForm'</span>
+<span class="kw">import</span> { <span class="fn">useAuth</span> } <span class="kw">from</span> <span class="str">'../../hooks/useAuth'</span>
+<span class="kw">import</span> { <span class="fn">login</span> } <span class="kw">from</span> <span class="str">'../../services/authService'</span>
+<span class="kw">import</span> { <span class="cls">AuthState</span> } <span class="kw">from</span> <span class="str">'../../types/auth'</span></pre>
+    </div>
+    <div>
+      <div class="vs-head good">✅ Do — Feature-based structure</div>
+      <pre class="vs-pre good"><span class="cm">// single import from feature barrel</span>
+<span class="kw">import</span> {
+  <span class="cls">LoginForm</span>,
+  <span class="fn">useAuth</span>,
+  <span class="kw">type</span> <span class="cls">AuthState</span>
+} <span class="kw">from</span> <span class="str">'@/features/auth'</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C2: COMPONENT RULES ═══ -->
+<section class="chapter" id="c2">
+  <div class="chapter-header">
+    <div class="chapter-num">02</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Foundation</div>
+      <h2 class="chapter-title">Component Rules</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Components should be dumb about data and smart about UI. The golden rule: a component that fetches data, holds state, AND renders JSX is doing too much.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Rule</span><span class="rule-title">One Component, One Responsibility</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">If your component does data fetching + business logic + rendering, split it. Container/Presenter pattern: container handles data, presenter handles UI.</div>
+        <pre class="good"><span class="cm">// UserContainer.tsx — handles data</span>
+<span class="kw">export function</span> <span class="fn">UserContainer</span>() {
+  <span class="kw">const</span> { data, isLoading } = <span class="fn">useUser</span>();
+  <span class="kw">return</span> <span class="tag">&lt;UserCard</span> <span class="attr">user</span>={data}
+               <span class="attr">loading</span>={isLoading} <span class="tag">/&gt;</span>;
+}
+<span class="cm">// UserCard.tsx — pure UI, no side effects</span>
+<span class="kw">export function</span> <span class="fn">UserCard</span>({ user, loading }) {
+  <span class="kw">if</span> (loading) <span class="kw">return</span> <span class="tag">&lt;Skeleton /&gt;</span>;
+  <span class="kw">return</span> <span class="tag">&lt;div&gt;</span>{user.name}<span class="tag">&lt;/div&gt;</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-do">Do</span><span class="rule-title">Co-locate Component Files</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">A component's styles, tests, types and sub-components live next to it — not in separate top-level folders.</div>
+        <div class="folder-tree" style="padding:12px 16px;font-size:11.5px">
+<span class="ft-dir">UserCard/</span>
+├── <span class="ft-file">UserCard.tsx</span>
+├── <span class="ft-file">UserCard.test.tsx</span>
+├── <span class="ft-file">UserCard.types.ts</span>
+├── <span class="ft-file">UserAvatar.tsx</span>     <span class="ft-comment">// sub-component</span>
+└── <span class="ft-special">index.ts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-dont">Don't</span><span class="rule-title">No Anonymous Default Exports</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Anonymous exports break refactoring tools, make stack traces unreadable, and prevent fast refresh in dev.</div>
+        <div class="vs-grid" style="margin:0">
+          <div>
+            <div class="vs-head bad" style="font-size:9px;padding:6px 10px">❌ Bad</div>
+            <pre class="vs-pre bad" style="font-size:11px;padding:10px"><span class="kw">export default</span> () => (
+  <span class="tag">&lt;div&gt;</span>Hello<span class="tag">&lt;/div&gt;</span>
+);</pre>
+          </div>
+          <div>
+            <div class="vs-head good" style="font-size:9px;padding:6px 10px">✅ Good</div>
+            <pre class="vs-pre good" style="font-size:11px;padding:10px"><span class="kw">export function</span> <span class="fn">Greeting</span>() {
+  <span class="kw">return</span> <span class="tag">&lt;div&gt;</span>Hello<span class="tag">&lt;/div&gt;</span>;
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Rule</span><span class="rule-title">Props Interface Always Named</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Name your props interface <code>ComponentNameProps</code>. Never use inline types for props — they can't be reused or documented.</div>
+        <pre class="good"><span class="cm">// ✅ Correct</span>
+<span class="kw">interface</span> <span class="cls">ButtonProps</span> {
+  label: <span class="type">string</span>;
+  onClick: () => <span class="type">void</span>;
+  variant?: <span class="str">'primary'</span> | <span class="str">'ghost'</span>;
+  disabled?: <span class="type">boolean</span>;
+}
+
+<span class="kw">export function</span> <span class="fn">Button</span>({ label, onClick,
+  variant = <span class="str">'primary'</span>, disabled
+}: <span class="cls">ButtonProps</span>) { ... }</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-note">Note</span><span class="rule-title">Max Props Rule</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">If a component takes more than <strong>5–6 props</strong>, it's probably doing too much. Either split it or group related props into a config object.</div>
+        <pre class="neutral"><span class="cm">// Too many props → use a data object</span>
+<span class="kw">interface</span> <span class="cls">UserCardProps</span> {
+  user: <span class="cls">User</span>;             <span class="cm">// group data</span>
+  actions: <span class="cls">UserActions</span>;  <span class="cm">// group callbacks</span>
+  config?: <span class="cls">CardConfig</span>;   <span class="cm">// group settings</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">Avoid Prop Drilling > 2 Levels</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">If you're passing a prop through more than 2 components that don't use it, extract to Context or Zustand. Prop drilling is a maintenance hazard.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C3: HOOKS ARCHITECTURE ═══ -->
+<section class="chapter" id="c3">
+  <div class="chapter-header">
+    <div class="chapter-num">03</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Foundation</div>
+      <h2 class="chapter-title">Hooks Architecture</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Hooks are the backbone of React logic. The key architecture decision: <strong>where does a hook live?</strong> The answer depends entirely on how many places use it.</p>
+
+  <div class="data-table" style="margin-bottom:20px">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th>Hook Type</th>
+          <th>Where to Put It</th>
+          <th>Examples</th>
+          <th>Rule</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill pill-red">Component-local</span></td><td>Inline in component file</td><td><code>useState</code>, <code>useEffect</code></td><td>Used in exactly 1 component</td></tr>
+        <tr><td><span class="pill pill-green">Feature hook</span></td><td><code>features/auth/useAuth.ts</code></td><td><code>useAuth</code>, <code>useCart</code></td><td>Used only within a feature</td></tr>
+        <tr><td><span class="pill pill-blue">Shared hook</span></td><td><code>hooks/useDebounce.ts</code></td><td><code>useDebounce</code>, <code>useLocalStorage</code></td><td>Used by 2+ features</td></tr>
+        <tr><td><span class="pill pill-purple">API hook</span></td><td><code>features/users/useUsers.ts</code></td><td><code>useUsers</code>, <code>useUpdateUser</code></td><td>Wraps React Query calls</td></tr>
+        <tr><td><span class="pill pill-amber">Store hook</span></td><td><code>store/uiStore.ts</code></td><td><code>useUIStore</code>, <code>useTheme</code></td><td>Accesses global Zustand state</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-label">Essential Shared Hooks Catalog</div><div class="divider-line"></div></div>
+
+  <div class="hook-catalog">
+    <div class="hook-card">
+      <div class="hook-name">useDebounce&lt;T&gt;</div>
+      <div class="hook-use">When to use → search inputs, autocomplete, resize handlers</div>
+      <div class="hook-desc">Delays updating a value until the user stops changing it. Prevents spamming API calls on every keystroke.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useLocalStorage&lt;T&gt;</div>
+      <div class="hook-use">When to use → persisted preferences, last-used filters, theme</div>
+      <div class="hook-desc">Synced useState that reads/writes to localStorage. SSR-safe with fallback to default value.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useClickOutside</div>
+      <div class="hook-use">When to use → dropdowns, modals, tooltips, popovers</div>
+      <div class="hook-desc">Fires a callback when user clicks outside a referenced element. Attach via <code>ref</code>.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useMediaQuery</div>
+      <div class="hook-use">When to use → responsive conditional rendering</div>
+      <div class="hook-desc">Returns a boolean for a CSS media query string. Replaces window.matchMedia boilerplate. SSR-safe.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">usePrevious&lt;T&gt;</div>
+      <div class="hook-use">When to use → animate on change, diff old vs new value</div>
+      <div class="hook-desc">Stores the previous render's value using a ref. One-liner but used everywhere.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useAsync</div>
+      <div class="hook-use">When to use → one-off async actions (not data fetching)</div>
+      <div class="hook-desc">Wraps an async fn and tracks its loading/error/data state. For actions outside React Query.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useEventListener</div>
+      <div class="hook-use">When to use → keyboard shortcuts, scroll, custom DOM events</div>
+      <div class="hook-desc">Attaches/removes event listeners safely with cleanup. Works on window, document, or any element ref.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useIntersectionObserver</div>
+      <div class="hook-use">When to use → lazy images, infinite scroll, scroll animations</div>
+      <div class="hook-desc">Wraps IntersectionObserver API and returns whether an element is in viewport.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hook-name">useTimeout / useInterval</div>
+      <div class="hook-use">When to use → polling, auto-dismiss toasts, countdowns</div>
+      <div class="hook-desc">Declarative timers that auto-clean on unmount. Never write setInterval in useEffect again.</div>
+    </div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-label">Hook Patterns — With Code</div><div class="divider-line"></div></div>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">useDebounce</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">function</span> <span class="fn">useDebounce</span>&lt;T&gt;(
+  value: T,
+  delay: <span class="type">number</span>
+): T {
+  <span class="kw">const</span> [debounced, setDebounced] =
+    <span class="fn">useState</span>&lt;T&gt;(value);
+
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> timer = <span class="fn">setTimeout</span>(
+      () => <span class="fn">setDebounced</span>(value), delay
+    );
+    <span class="kw">return</span> () => <span class="fn">clearTimeout</span>(timer);
+  }, [value, delay]);
+
+  <span class="kw">return</span> debounced;
+}
+
+<span class="cm">// Usage:</span>
+<span class="kw">const</span> debouncedSearch = <span class="fn">useDebounce</span>(search, <span class="num">400</span>);
+<span class="cm">// query only fires after 400ms pause</span></pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">useLocalStorage</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">function</span> <span class="fn">useLocalStorage</span>&lt;T&gt;(
+  key: <span class="type">string</span>,
+  initial: T
+) {
+  <span class="kw">const</span> [value, setValue] = <span class="fn">useState</span>&lt;T&gt;(() => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> item = window.localStorage
+        .<span class="fn">getItem</span>(key);
+      <span class="kw">return</span> item
+        ? <span class="cls">JSON</span>.<span class="fn">parse</span>(item)
+        : initial;
+    } <span class="kw">catch</span> { <span class="kw">return</span> initial; }
+  });
+
+  <span class="kw">const</span> set = (val: T) => {
+    <span class="fn">setValue</span>(val);
+    localStorage.<span class="fn">setItem</span>(
+      key, <span class="cls">JSON</span>.<span class="fn">stringify</span>(val)
+    );
+  };
+  <span class="kw">return</span> [value, set] <span class="kw">as const</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">useClickOutside</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">function</span> <span class="fn">useClickOutside</span>(
+  ref: <span class="cls">RefObject</span>&lt;<span class="cls">HTMLElement</span>&gt;,
+  handler: () => <span class="type">void</span>
+) {
+  <span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> listener = (e: <span class="cls">MouseEvent</span>) => {
+      <span class="kw">if</span> (!ref.current ||
+          ref.current.<span class="fn">contains</span>(
+            e.target <span class="kw">as</span> <span class="cls">Node</span>)
+      ) <span class="kw">return</span>;
+      <span class="fn">handler</span>();
+    };
+    document.<span class="fn">addEventListener</span>(
+      <span class="str">'mousedown'</span>, listener
+    );
+    <span class="kw">return</span> () =>
+      document.<span class="fn">removeEventListener</span>(
+        <span class="str">'mousedown'</span>, listener
+      );
+  }, [ref, handler]);
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Feature Data Hook (useUsers)</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Wrap all React Query calls for a feature in one hook. Components never call <code>useQuery</code> directly.</div>
+        <pre class="good"><span class="cm">// features/users/useUsers.ts</span>
+<span class="kw">export function</span> <span class="fn">useUsers</span>() {
+  <span class="kw">return</span> <span class="fn">useQuery</span>({
+    queryKey: [<span class="str">'users'</span>],
+    queryFn: <span class="fn">fetchUsers</span>,
+    staleTime: <span class="num">5</span> * <span class="num">60</span> * <span class="num">1000</span>,
+  });
+}
+
+<span class="kw">export function</span> <span class="fn">useUpdateUser</span>() {
+  <span class="kw">const</span> qc = <span class="fn">useQueryClient</span>();
+  <span class="kw">return</span> <span class="fn">useMutation</span>({
+    mutationFn: <span class="fn">updateUser</span>,
+    onSuccess: () =>
+      qc.<span class="fn">invalidateQueries</span>({ queryKey: [<span class="str">'users'</span>] }),
+  });
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout dont">
+    <span class="callout-icon">🚫</span>
+    <div><strong>Never do this in a hook:</strong> Don't put JSX in a hook. Don't call hooks conditionally. Don't create hooks that return components. A hook returns data/state/functions — never markup.</div>
+  </div>
+</section>
+
+<!-- ═══ C4: STATE MANAGEMENT ═══ -->
+<section class="chapter" id="c4">
+  <div class="chapter-header">
+    <div class="chapter-num">04</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">State</div>
+      <h2 class="chapter-title">State Management</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">The #1 React mistake: putting everything in global state. The decision tree is simple — start local, go global only when needed.</p>
+
+  <div class="callout info">
+    <span class="callout-icon">🗺️</span>
+    <div><strong>The State Decision Tree:</strong><br/>
+    1. Does only one component need this? → <code>useState</code><br/>
+    2. Do sibling components need it? → Lift to nearest parent<br/>
+    3. Do many components across the tree need it? → Zustand / Context<br/>
+    4. Does it come from the server? → React Query (never useState for this)<br/>
+    5. Does it need to survive page refresh? → localStorage / URL params
+    </div>
+  </div>
+
+  <div class="divider"><div class="divider-line"></div><div class="divider-label">Zustand — Production Patterns</div><div class="divider-line"></div></div>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Slice Pattern (one store per domain)</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Don't put everything in one monster store. Create small focused stores per domain.</div>
+        <pre class="good"><span class="cm">// store/uiStore.ts</span>
+<span class="kw">interface</span> <span class="cls">UIStore</span> {
+  sidebarOpen: <span class="type">boolean</span>;
+  theme: <span class="str">'light'</span> | <span class="str">'dark'</span>;
+  toggleSidebar: () => <span class="type">void</span>;
+  setTheme: (t: <span class="cls">UIStore</span>[<span class="str">'theme'</span>]) => <span class="type">void</span>;
+}
+
+<span class="kw">export const</span> useUIStore =
+  <span class="fn">create</span>&lt;<span class="cls">UIStore</span>&gt;()(<span class="fn">set</span> => ({
+    sidebarOpen: <span class="kw">false</span>,
+    theme: <span class="str">'light'</span>,
+    toggleSidebar: () =>
+      <span class="fn">set</span>(s => ({ sidebarOpen: !s.sidebarOpen })),
+    setTheme: theme => <span class="fn">set</span>({ theme }),
+  }));</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">Select Only What You Need</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Always use selectors. Subscribing to the whole store re-renders on any state change.</div>
+        <pre class="good"><span class="cm">// ✅ Subscribes only to sidebarOpen</span>
+<span class="kw">const</span> isOpen = <span class="fn">useUIStore</span>(
+  s => s.sidebarOpen
+);
+
+<span class="cm">// ❌ Re-renders on ANY store change</span>
+<span class="kw">const</span> { sidebarOpen } = <span class="fn">useUIStore</span>();</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Persist to LocalStorage</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">import</span> { <span class="fn">persist</span> } <span class="kw">from</span> <span class="str">'zustand/middleware'</span>;
+
+<span class="kw">export const</span> useSettingsStore =
+  <span class="fn">create</span>()(<span class="fn">persist</span>(
+    (<span class="fn">set</span>) => ({
+      language: <span class="str">'en'</span>,
+      setLanguage: (lang) => <span class="fn">set</span>({ language: lang }),
+    }),
+    { name: <span class="str">'app-settings'</span> }
+  ));</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-dont">Don't</span><span class="rule-title">Never Store Derived Data</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">If a value can be computed from other state, compute it — don't store it. Stored derived data always gets out of sync.</div>
+        <pre class="bad"><span class="cm">// ❌ fullName is derived — don't store it</span>
+{ firstName: <span class="str">'John'</span>, lastName: <span class="str">'Doe'</span>,
+  fullName: <span class="str">'John Doe'</span> }
+
+<span class="cm">// ✅ Compute it</span>
+<span class="kw">const</span> fullName = `${firstName} ${lastName}`</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="data-table">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th>State Tool</th><th>Use For</th><th>Not For</th></tr></thead>
+      <tbody>
+        <tr><td><code>useState</code></td><td>Local UI state (open/closed, input value)</td><td>Server data, global UI state</td></tr>
+        <tr><td><code>useReducer</code></td><td>Complex state with multiple sub-values or transitions</td><td>Simple boolean toggles</td></tr>
+        <tr><td><strong>Zustand</strong></td><td>Global client UI state (sidebar, theme, user session)</td><td>Server/async data</td></tr>
+        <tr><td><strong>React Query</strong></td><td>ALL server data — fetching, caching, mutations</td><td>UI-only state</td></tr>
+        <tr><td><strong>Context</strong></td><td>Rarely-changing config (theme, locale, auth user)</td><td>Frequently changing data</td></tr>
+        <tr><td><strong>URL / Params</strong></td><td>Shareable state (filters, pagination, selected ID)</td><td>Ephemeral UI state</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ C5: SERVER STATE ═══ -->
+<section class="chapter" id="c5">
+  <div class="chapter-header">
+    <div class="chapter-num">05</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">State</div>
+      <h2 class="chapter-title">Server State (React Query)</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Server state is fundamentally different from client state — it's asynchronous, can be stale, and is shared across users. <strong>Never use useState for data that comes from an API.</strong> React Query handles this category entirely.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Query Key Factory</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Centralize all query keys in one object. Prevents typos and makes invalidation trivial.</div>
+        <pre class="good"><span class="cm">// lib/queryKeys.ts</span>
+<span class="kw">export const</span> queryKeys = {
+  users: {
+    all: [<span class="str">'users'</span>] <span class="kw">as const</span>,
+    list: (filters: <span class="cls">Filters</span>) =>
+      [<span class="str">'users'</span>, <span class="str">'list'</span>, filters] <span class="kw">as const</span>,
+    detail: (id: <span class="type">string</span>) =>
+      [<span class="str">'users'</span>, <span class="str">'detail'</span>, id] <span class="kw">as const</span>,
+  },
+};
+
+<span class="cm">// Usage:</span>
+<span class="fn">useQuery</span>({ queryKey: queryKeys.users.detail(userId) })
+<span class="cm">// Invalidate all user queries:</span>
+qc.<span class="fn">invalidateQueries</span>({ queryKey: queryKeys.users.all })</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Optimistic Updates</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Update the UI immediately, roll back on error. Makes the app feel instant.</div>
+        <pre class="good"><span class="fn">useMutation</span>({
+  mutationFn: <span class="fn">toggleTodo</span>,
+  <span class="fn">onMutate</span>: <span class="kw">async</span> (id) => {
+    <span class="kw">await</span> qc.<span class="fn">cancelQueries</span>({ queryKey: [<span class="str">'todos'</span>] });
+    <span class="kw">const</span> prev = qc.<span class="fn">getQueryData</span>([<span class="str">'todos'</span>]);
+    qc.<span class="fn">setQueryData</span>([<span class="str">'todos'</span>], old =>
+      old.<span class="fn">map</span>(t => t.id === id
+        ? { ...t, done: !t.done } : t)
+    );
+    <span class="kw">return</span> { prev }; <span class="cm">// context for rollback</span>
+  },
+  <span class="fn">onError</span>: (_, __, ctx) =>
+    qc.<span class="fn">setQueryData</span>([<span class="str">'todos'</span>], ctx?.prev),
+  <span class="fn">onSettled</span>: () =>
+    qc.<span class="fn">invalidateQueries</span>({ queryKey: [<span class="str">'todos'</span>] }),
+});</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">staleTime vs cacheTime</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Set <code>staleTime</code> appropriately. Default is 0 (refetch on every focus). Most data doesn't change that fast.</div>
+        <pre class="good"><span class="cm">// Rarely-changing reference data</span>
+<span class="fn">useQuery</span>({
+  queryKey: [<span class="str">'countries'</span>],
+  queryFn: <span class="fn">fetchCountries</span>,
+  staleTime: <span class="cls">Infinity</span>, <span class="cm">// never refetch</span>
+});
+
+<span class="cm">// User-specific data</span>
+<span class="fn">useQuery</span>({
+  queryKey: [<span class="str">'user'</span>, id],
+  queryFn: () => <span class="fn">fetchUser</span>(id),
+  staleTime: <span class="num">5</span> * <span class="num">60</span> * <span class="num">1000</span>, <span class="cm">// 5 min</span>
+});</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Infinite Scroll / Pagination</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">const</span> { data, fetchNextPage,
+         hasNextPage, isFetchingNextPage }
+  = <span class="fn">useInfiniteQuery</span>({
+    queryKey: [<span class="str">'posts'</span>],
+    queryFn: ({ pageParam = <span class="num">1</span> }) =>
+      <span class="fn">fetchPosts</span>(pageParam),
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore
+        ? lastPage.nextCursor
+        : <span class="kw">undefined</span>,
+  });</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C6: FORMS ═══ -->
+<section class="chapter" id="c6">
+  <div class="chapter-header">
+    <div class="chapter-num">06</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">State</div>
+      <h2 class="chapter-title">Forms — React Hook Form + Zod</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">The production standard: <strong>React Hook Form</strong> for form state (uncontrolled, performant) + <strong>Zod</strong> for schema validation. Never build form validation logic by hand at scale.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card" style="grid-column:1/-1">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Full Production Form Setup</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="kw">import</span> { <span class="fn">useForm</span> } <span class="kw">from</span> <span class="str">'react-hook-form'</span>;
+<span class="kw">import</span> { <span class="fn">zodResolver</span> } <span class="kw">from</span> <span class="str">'@hookform/resolvers/zod'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="cm">// 1. Define schema (reusable, shareable)</span>
+<span class="kw">const</span> loginSchema = z.<span class="fn">object</span>({
+  email: z.<span class="fn">string</span>().<span class="fn">email</span>(<span class="str">'Invalid email'</span>),
+  password: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">8</span>, <span class="str">'Min 8 characters'</span>),
+});
+<span class="kw">type</span> <span class="cls">LoginFormData</span> = z.<span class="fn">infer</span>&lt;<span class="kw">typeof</span> loginSchema&gt;;
+
+<span class="kw">export function</span> <span class="fn">LoginForm</span>() {
+  <span class="kw">const</span> { register, handleSubmit, formState } =
+    <span class="fn">useForm</span>&lt;<span class="cls">LoginFormData</span>&gt;({
+      resolver: <span class="fn">zodResolver</span>(loginSchema),
+      defaultValues: { email: <span class="str">''</span>, password: <span class="str">''</span> },
+    });
+
+  <span class="kw">const</span> onSubmit = (data: <span class="cls">LoginFormData</span>) => {
+    <span class="cm">// data is fully type-safe and validated</span>
+  };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;form</span> <span class="attr">onSubmit</span>={<span class="fn">handleSubmit</span>(onSubmit)}<span class="tag">&gt;</span>
+      <span class="tag">&lt;input</span> {...<span class="fn">register</span>(<span class="str">'email'</span>)} <span class="tag">/&gt;</span>
+      {formState.errors.email <span class="kw">&amp;&amp;</span>
+        <span class="tag">&lt;p&gt;</span>{formState.errors.email.message}<span class="tag">&lt;/p&gt;</span>}
+      <span class="tag">&lt;button</span> <span class="attr">disabled</span>={formState.isSubmitting}<span class="tag">&gt;</span>
+        {formState.isSubmitting ? <span class="str">'Logging in…'</span> : <span class="str">'Login'</span>}
+      <span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/form&gt;</span>
+  );
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">Use watch() Sparingly</span></div>
+      <div class="rule-body">
+        <div class="rule-desc"><code>watch()</code> re-renders on every keystroke. Prefer <code>getValues()</code> in callbacks, or <code>useWatch</code> with a specific field name to limit re-renders.</div>
+        <pre class="good"><span class="cm">// ✅ Only re-renders when 'email' changes</span>
+<span class="kw">const</span> email = <span class="fn">useWatch</span>({
+  control, name: <span class="str">'email'</span>
+});</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Reusable Field Components</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Wrap each field type into a reusable component that accepts <code>name</code>, <code>label</code>, <code>control</code>. Never repeat error/label logic.</div>
+        <pre class="good"><span class="kw">function</span> <span class="fn">TextField</span>({ name, label, control }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;Controller</span> <span class="attr">name</span>={name} <span class="attr">control</span>={control}
+      <span class="attr">render</span>={({ field, fieldState }) => (
+        <span class="tag">&lt;div&gt;</span>
+          <span class="tag">&lt;label&gt;</span>{label}<span class="tag">&lt;/label&gt;</span>
+          <span class="tag">&lt;input</span> {...field} <span class="tag">/&gt;</span>
+          {fieldState.error <span class="kw">&amp;&amp;</span>
+            <span class="tag">&lt;span&gt;</span>{fieldState.error.message}<span class="tag">&lt;/span&gt;</span>}
+        <span class="tag">&lt;/div&gt;</span>
+      )} <span class="tag">/&gt;</span>
+  );
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C7: RENDERING OPTIMIZATIONS ═══ -->
+<section class="chapter" id="c7">
+  <div class="chapter-header">
+    <div class="chapter-num">07</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Performance</div>
+      <h2 class="chapter-title">Rendering Optimizations</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Optimize last, not first. Measure with React DevTools Profiler before reaching for <code>memo</code>/<code>useMemo</code>/<code>useCallback</code>. Premature optimization adds complexity without benefit.</p>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <div><strong>The Memo Trap:</strong> <code>React.memo</code>, <code>useMemo</code>, and <code>useCallback</code> all have overhead. They're only beneficial when (a) the component is actually re-rendering unnecessarily AND (b) the re-render is measurably expensive. Profile first.</div>
+  </div>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">React.memo — When to Use</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Wrap a component with <code>memo</code> when it renders the same output given the same props and its parent re-renders frequently.</div>
+        <pre class="good"><span class="cm">// ✅ Good candidate: heavy list item</span>
+<span class="cm">// rendered 100x, parent updates often</span>
+<span class="kw">const</span> <span class="cls">UserRow</span> = <span class="cls">React</span>.<span class="fn">memo</span>(
+  <span class="kw">function</span> <span class="fn">UserRow</span>({ user, onSelect }) {
+    <span class="kw">return</span> <span class="tag">&lt;tr&gt;</span>...<span class="tag">&lt;/tr&gt;</span>;
+  },
+  <span class="cm">// Optional custom comparator</span>
+  (prev, next) => prev.user.id === next.user.id
+);</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">useCallback — Stable References</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Use <code>useCallback</code> only when passing callbacks to memoized children or as <code>useEffect</code> deps. Otherwise it's overhead with no benefit.</div>
+        <pre class="good"><span class="cm">// ✅ Needed — onSelect passed to memo'd child</span>
+<span class="kw">const</span> handleSelect = <span class="fn">useCallback</span>(
+  (id: <span class="type">string</span>) => <span class="fn">setSelected</span>(id),
+  [] <span class="cm">// setSelected is stable</span>
+);
+
+<span class="cm">// ❌ Pointless — no memoized child using it</span>
+<span class="kw">const</span> handleClick = <span class="fn">useCallback</span>(
+  () => console.<span class="fn">log</span>(<span class="str">'click'</span>), []
+);</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">useMemo — Expensive Computations</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Use <code>useMemo</code> for computationally expensive transforms, not for avoiding object reference equality issues.</div>
+        <pre class="good"><span class="cm">// ✅ Expensive sort/filter over large array</span>
+<span class="kw">const</span> sortedUsers = <span class="fn">useMemo</span>(() =>
+  [...users]
+    .<span class="fn">filter</span>(u => u.active)
+    .<span class="fn">sort</span>((a, b) =>
+      a.name.<span class="fn">localeCompare</span>(b.name)
+    ),
+  [users]
+);
+
+<span class="cm">// ❌ Not worth memoizing</span>
+<span class="kw">const</span> title = <span class="fn">useMemo</span>(
+  () => `Hello ${name}`, [name]
+);</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">State Colocation</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">The single biggest performance win that requires no memoization: put state as close to where it's used as possible. State higher up = larger re-render subtrees.</div>
+        <pre class="good"><span class="cm">// ✅ Input state lives in the input, not App</span>
+<span class="kw">function</span> <span class="fn">SearchInput</span>() {
+  <span class="kw">const</span> [val, setVal] = <span class="fn">useState</span>(<span class="str">''</span>);
+  <span class="kw">return</span> <span class="tag">&lt;input</span> <span class="attr">value</span>={val}
+           <span class="attr">onChange</span>={e => <span class="fn">setVal</span>(e.target.value)}<span class="tag">/&gt;</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">List Virtualization</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">For lists with 50+ items, use <strong>TanStack Virtual</strong> or <strong>react-window</strong>. Rendering 1000 DOM nodes is always slow — virtualization renders only visible rows.</div>
+        <pre class="good"><span class="kw">import</span> { <span class="fn">useVirtualizer</span> }
+  <span class="kw">from</span> <span class="str">'@tanstack/react-virtual'</span>;
+
+<span class="kw">const</span> virtualizer = <span class="fn">useVirtualizer</span>({
+  count: items.length,
+  getScrollElement: () => parentRef.current,
+  estimateSize: () => <span class="num">40</span>, <span class="cm">// row height in px</span>
+});</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Avoid Object/Array Literals in JSX</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">New objects/arrays created inline in JSX break shallow equality checks and cause unnecessary re-renders in memoized children.</div>
+        <pre class="bad"><span class="cm">// ❌ New array on every render</span>
+<span class="tag">&lt;Chart</span> <span class="attr">colors</span>={[<span class="str">'red'</span>, <span class="str">'blue'</span>]} <span class="tag">/&gt;</span>
+
+<span class="cm">// ✅ Stable reference outside component</span>
+<span class="kw">const</span> CHART_COLORS = [<span class="str">'red'</span>, <span class="str">'blue'</span>];
+<span class="tag">&lt;Chart</span> <span class="attr">colors</span>={CHART_COLORS} <span class="tag">/&gt;</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C8: CODE SPLITTING ═══ -->
+<section class="chapter" id="c8">
+  <div class="chapter-header">
+    <div class="chapter-num">08</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Performance</div>
+      <h2 class="chapter-title">Code Splitting &amp; Lazy Loading</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Ship only what the user needs right now. Every route should be a separate chunk. Heavy libraries (charts, rich text editors, maps) should be loaded on demand.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Route-Level Splitting (Standard)</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="cm">// router.tsx — every page is lazy</span>
+<span class="kw">const</span> <span class="cls">Dashboard</span> = <span class="fn">lazy</span>(() =>
+  <span class="fn">import</span>(<span class="str">'@/pages/DashboardPage'</span>));
+<span class="kw">const</span> <span class="cls">Settings</span> = <span class="fn">lazy</span>(() =>
+  <span class="fn">import</span>(<span class="str">'@/pages/SettingsPage'</span>));
+
+<span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;PageSkeleton /&gt;</span>}<span class="tag">&gt;</span>
+  <span class="tag">&lt;Routes&gt;</span>
+    <span class="tag">&lt;Route</span> <span class="attr">path</span>=<span class="str">"/dashboard"</span>
+           <span class="attr">element</span>={<span class="tag">&lt;Dashboard /&gt;</span>} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;Route</span> <span class="attr">path</span>=<span class="str">"/settings"</span>
+           <span class="attr">element</span>={<span class="tag">&lt;Settings /&gt;</span>} <span class="tag">/&gt;</span>
+  <span class="tag">&lt;/Routes&gt;</span>
+<span class="tag">&lt;/Suspense&gt;</span></pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Component-Level Splitting</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Lazy load heavy components (modals, charts, rich editors) only when they're actually needed.</div>
+        <pre class="good"><span class="cm">// Only loads chart lib when modal opens</span>
+<span class="kw">const</span> <span class="cls">HeavyChartModal</span> = <span class="fn">lazy</span>(() =>
+  <span class="fn">import</span>(<span class="str">'./HeavyChartModal'</span>));
+
+<span class="kw">function</span> <span class="fn">Dashboard</span>() {
+  <span class="kw">const</span> [open, setOpen] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">return</span> (
+    &lt;&gt;
+      <span class="tag">&lt;button</span> <span class="attr">onClick</span>={() => <span class="fn">setOpen</span>(<span class="kw">true</span>)}<span class="tag">&gt;</span>
+        View Charts
+      <span class="tag">&lt;/button&gt;</span>
+      {open <span class="kw">&amp;&amp;</span>
+        <span class="tag">&lt;Suspense</span> <span class="attr">fallback</span>={<span class="tag">&lt;Spinner /&gt;</span>}<span class="tag">&gt;</span>
+          <span class="tag">&lt;HeavyChartModal /&gt;</span>
+        <span class="tag">&lt;/Suspense&gt;</span>}
+    &lt;/&gt;
+  );
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Perf</span><span class="rule-title">Preload on Hover</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Start loading the next page's chunk when user hovers a link — by the time they click, it's ready.</div>
+        <pre class="good"><span class="kw">const</span> settingsLoader = () =>
+  <span class="fn">import</span>(<span class="str">'@/pages/SettingsPage'</span>);
+
+<span class="tag">&lt;Link</span>
+  <span class="attr">to</span>=<span class="str">"/settings"</span>
+  <span class="attr">onMouseEnter</span>={settingsLoader}
+  <span class="attr">onFocus</span>={settingsLoader}
+<span class="tag">&gt;</span>
+  Settings
+<span class="tag">&lt;/Link&gt;</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C9: API LAYER ═══ -->
+<section class="chapter" id="c9">
+  <div class="chapter-header">
+    <div class="chapter-num">09</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Patterns</div>
+      <h2 class="chapter-title">API Layer</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Components should never call <code>fetch()</code> directly. All HTTP logic lives in a dedicated API layer that's completely separate from React. This makes it testable, swappable, and consistent.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card" style="grid-column:1/-1">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Axios Instance with Interceptors</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="cm">// services/apiClient.ts</span>
+<span class="kw">import</span> axios <span class="kw">from</span> <span class="str">'axios'</span>;
+
+<span class="kw">export const</span> apiClient = axios.<span class="fn">create</span>({
+  baseURL: <span class="kw">import</span>.meta.env.VITE_API_URL,
+  timeout: <span class="num">10000</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+});
+
+<span class="cm">// Attach auth token on every request</span>
+apiClient.interceptors.request.<span class="fn">use</span>(config => {
+  <span class="kw">const</span> token = <span class="fn">getToken</span>(); <span class="cm">// from Zustand or localStorage</span>
+  <span class="kw">if</span> (token) config.headers.Authorization = `Bearer ${token}`;
+  <span class="kw">return</span> config;
+});
+
+<span class="cm">// Global error handling — auto-redirect on 401</span>
+apiClient.interceptors.response.<span class="fn">use</span>(
+  res => res,
+  async error => {
+    <span class="kw">if</span> (error.response?.status === <span class="num">401</span>) {
+      <span class="fn">clearAuthAndRedirect</span>();
+    }
+    <span class="kw">return</span> <span class="cls">Promise</span>.<span class="fn">reject</span>(error);
+  }
+);
+
+<span class="cm">// features/users/usersApi.ts — typed API functions</span>
+<span class="kw">export const</span> usersApi = {
+  <span class="fn">getAll</span>: (): <span class="cls">Promise</span>&lt;<span class="cls">User</span>[]&gt; =>
+    apiClient.<span class="fn">get</span>(<span class="str">'/users'</span>).<span class="fn">then</span>(r => r.data),
+  <span class="fn">getById</span>: (id: <span class="type">string</span>): <span class="cls">Promise</span>&lt;<span class="cls">User</span>&gt; =>
+    apiClient.<span class="fn">get</span>(`/users/${id}`).<span class="fn">then</span>(r => r.data),
+  <span class="fn">update</span>: (id: <span class="type">string</span>, data: <span class="cls">Partial</span>&lt;<span class="cls">User</span>&gt;) =>
+    apiClient.<span class="fn">patch</span>(`/users/${id}`, data).<span class="fn">then</span>(r => r.data),
+};</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Rule</span><span class="rule-title">3-Layer Architecture</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Components call hooks → hooks call API functions → API functions call apiClient. Never skip a layer.</div>
+        <pre class="good"><span class="cm">// Layer 1: Component</span>
+<span class="kw">function</span> <span class="fn">UserList</span>() {
+  <span class="kw">const</span> { data } = <span class="fn">useUsers</span>(); <span class="cm">// ← hook</span>
+}
+
+<span class="cm">// Layer 2: Hook</span>
+<span class="kw">function</span> <span class="fn">useUsers</span>() {
+  <span class="kw">return</span> <span class="fn">useQuery</span>({
+    queryFn: usersApi.<span class="fn">getAll</span> <span class="cm">// ← api fn</span>
+  });
+}
+
+<span class="cm">// Layer 3: API function</span>
+<span class="kw">const</span> usersApi = {
+  <span class="fn">getAll</span>: () => apiClient.<span class="fn">get</span>(<span class="str">'/users'</span>)
+};</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C10: ERROR HANDLING ═══ -->
+<section class="chapter" id="c10">
+  <div class="chapter-header">
+    <div class="chapter-num">10</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Patterns</div>
+      <h2 class="chapter-title">Error Handling</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Production apps need 3 layers of error handling: Error Boundaries (React tree errors), React Query error states (API errors), and a global toast/notification system.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Error Boundary Per Route</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Wrap each route in its own Error Boundary. One crash doesn't bring down the whole app.</div>
+        <pre class="good"><span class="kw">function</span> <span class="fn">RouteErrorBoundary</span>({ children }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;ErrorBoundary</span>
+      <span class="attr">fallback</span>={<span class="tag">&lt;PageErrorFallback /&gt;</span>}
+      <span class="attr">onError</span>={(err, info) =>
+        <span class="fn">logToSentry</span>(err, info)}
+    <span class="tag">&gt;</span>
+      {children}
+    <span class="tag">&lt;/ErrorBoundary&gt;</span>
+  );
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Global Error Toast (React Query)</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Set a default error handler in QueryClient so every failed query shows a toast — without any per-hook try/catch.</div>
+        <pre class="good"><span class="kw">const</span> queryClient = <span class="kw">new</span> <span class="cls">QueryClient</span>({
+  defaultOptions: {
+    queries: {
+      retry: <span class="num">1</span>,
+      <span class="fn">throwOnError</span>: <span class="kw">false</span>,
+    },
+    mutations: {
+      <span class="fn">onError</span>: (error) => {
+        toast.<span class="fn">error</span>(
+          error.message || <span class="str">'Something went wrong'</span>
+        );
+      },
+    },
+  },
+});</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Typed API Errors</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Create a typed error class for API errors so you can check error codes and display user-friendly messages.</div>
+        <pre class="good"><span class="kw">class</span> <span class="cls">ApiError</span> <span class="kw">extends</span> <span class="cls">Error</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> status: <span class="type">number</span>,
+    <span class="kw">public</span> code: <span class="type">string</span>,
+    message: <span class="type">string</span>
+  ) { <span class="kw">super</span>(message); }
+}
+
+<span class="kw">function</span> <span class="fn">isApiError</span>(e: <span class="kw">unknown</span>):
+  e <span class="kw">is</span> <span class="cls">ApiError</span> {
+  <span class="kw">return</span> e <span class="kw">instanceof</span> <span class="cls">ApiError</span>;
+}
+
+<span class="cm">// Usage:</span>
+<span class="kw">if</span> (<span class="fn">isApiError</span>(error) &&
+    error.status === <span class="num">404</span>) {
+  <span class="kw">return</span> <span class="tag">&lt;NotFound /&gt;</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C11: TYPESCRIPT ═══ -->
+<section class="chapter" id="c11">
+  <div class="chapter-header">
+    <div class="chapter-num">11</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Patterns</div>
+      <h2 class="chapter-title">TypeScript Patterns</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">TypeScript is not optional at production scale. These patterns ensure type safety flows end-to-end without unnecessary <code>any</code>.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Discriminated Unions for State</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Model async state as a discriminated union instead of separate booleans. Impossible states become impossible types.</div>
+        <pre class="good"><span class="cm">// ❌ Boolean soup — invalid states possible</span>
+<span class="kw">type</span> <span class="cls">Bad</span> = {
+  loading: <span class="type">boolean</span>;
+  error: <span class="cls">Error</span> | <span class="kw">null</span>;
+  data: <span class="cls">User</span>[] | <span class="kw">null</span>;
+}
+
+<span class="cm">// ✅ Discriminated union</span>
+<span class="kw">type</span> <span class="cls">UserState</span> =
+  | { status: <span class="str">'idle'</span> }
+  | { status: <span class="str">'loading'</span> }
+  | { status: <span class="str">'success'</span>; data: <span class="cls">User</span>[] }
+  | { status: <span class="str">'error'</span>; error: <span class="cls">Error</span> };</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Infer Types from Zod Schemas</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Define Zod schemas as the single source of truth. Infer TS types from them — never duplicate type definitions.</div>
+        <pre class="good"><span class="kw">const</span> userSchema = z.<span class="fn">object</span>({
+  id: z.<span class="fn">string</span>().<span class="fn">uuid</span>(),
+  name: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
+  email: z.<span class="fn">string</span>().<span class="fn">email</span>(),
+  role: z.<span class="fn">enum</span>([<span class="str">'admin'</span>, <span class="str">'user'</span>]),
+});
+
+<span class="cm">// Type inferred — single source of truth</span>
+<span class="kw">type</span> <span class="cls">User</span> = z.<span class="fn">infer</span>&lt;<span class="kw">typeof</span> userSchema&gt;;</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-dont">Don't</span><span class="rule-title">Never Use 'any'</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Use <code>unknown</code> instead of <code>any</code> for values you don't know yet. <code>unknown</code> forces you to narrow the type before using it.</div>
+        <pre class="good"><span class="cm">// ❌ any disables type checking</span>
+<span class="kw">function</span> <span class="fn">handleError</span>(e: <span class="type">any</span>) {
+  console.<span class="fn">log</span>(e.message); <span class="cm">// no check</span>
+}
+
+<span class="cm">// ✅ unknown forces narrowing</span>
+<span class="kw">function</span> <span class="fn">handleError</span>(e: <span class="type">unknown</span>) {
+  <span class="kw">if</span> (e <span class="kw">instanceof</span> <span class="cls">Error</span>)
+    console.<span class="fn">log</span>(e.message); <span class="cm">// safe</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">ComponentPropsWithout for Extends</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">When building a wrapper component that extends a native element, use <code>ComponentPropsWithoutRef</code> to forward all native props.</div>
+        <pre class="good"><span class="kw">interface</span> <span class="cls">ButtonProps</span>
+  <span class="kw">extends</span> <span class="cls">ComponentPropsWithoutRef</span>&lt;<span class="str">'button'</span>&gt; {
+  variant?: <span class="str">'primary'</span> | <span class="str">'ghost'</span>;
+  loading?: <span class="type">boolean</span>;
+}
+
+<span class="kw">export function</span> <span class="fn">Button</span>({
+  variant, loading, children,
+  ...rest  <span class="cm">// all native button props</span>
+}: <span class="cls">ButtonProps</span>) {
+  <span class="kw">return</span> <span class="tag">&lt;button</span> {...rest}<span class="tag">&gt;</span>{children}<span class="tag">&lt;/button&gt;</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C12: TESTING ═══ -->
+<section class="chapter" id="c12">
+  <div class="chapter-header">
+    <div class="chapter-num">12</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Patterns</div>
+      <h2 class="chapter-title">Testing Strategy</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Test behavior, not implementation. Users click buttons, fill forms, and see text — your tests should do the same. Delete tests that mock internals or test implementation details.</p>
+
+  <div class="data-table">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th>Test Type</th><th>Tool</th><th>What to Test</th><th>Ratio</th></tr></thead>
+      <tbody>
+        <tr><td>Unit</td><td>Vitest</td><td>Pure utils, formatters, validators, Zustand stores</td><td>Many</td></tr>
+        <tr><td>Integration</td><td>RTL + Vitest</td><td>Components with interactions, forms, routing</td><td>Most</td></tr>
+        <tr><td>E2E</td><td>Playwright</td><td>Critical user flows (login, checkout, core actions)</td><td>Few</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">renderWithProviders Wrapper</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Wrap RTL's <code>render</code> with your providers so every test works with full context. No more boilerplate per test.</div>
+        <pre class="good"><span class="cm">// test/utils.tsx</span>
+<span class="kw">function</span> <span class="fn">renderWithProviders</span>(
+  ui: <span class="cls">ReactElement</span>,
+  options = {}
+) {
+  <span class="kw">const</span> queryClient = <span class="kw">new</span> <span class="cls">QueryClient</span>({
+    defaultOptions: {
+      queries: { retry: <span class="kw">false</span> }
+    }
+  });
+  <span class="kw">return</span> <span class="fn">render</span>(
+    <span class="tag">&lt;QueryClientProvider</span> <span class="attr">client</span>={queryClient}<span class="tag">&gt;</span>
+      <span class="tag">&lt;MemoryRouter&gt;</span>
+        {ui}
+      <span class="tag">&lt;/MemoryRouter&gt;</span>
+    <span class="tag">&lt;/QueryClientProvider&gt;</span>,
+    options
+  );
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Mock API with MSW</span></div>
+      <div class="rule-body">
+        <div class="rule-desc">Use <strong>Mock Service Worker (MSW)</strong> to intercept real HTTP requests in tests. Tests behave like real users with real API responses.</div>
+        <pre class="good"><span class="cm">// test/handlers.ts</span>
+<span class="kw">import</span> { http, HttpResponse }
+  <span class="kw">from</span> <span class="str">'msw'</span>;
+
+<span class="kw">export const</span> handlers = [
+  http.<span class="fn">get</span>(<span class="str">'/api/users'</span>, () =>
+    <span class="cls">HttpResponse</span>.<span class="fn">json</span>([
+      { id: <span class="str">'1'</span>, name: <span class="str">'Alice'</span> },
+    ])
+  ),
+  http.<span class="fn">post</span>(<span class="str">'/api/users'</span>, <span class="kw">async</span> ({ request }) => {
+    <span class="kw">const</span> body = <span class="kw">await</span> request.<span class="fn">json</span>();
+    <span class="kw">return</span> <span class="cls">HttpResponse</span>.<span class="fn">json</span>(
+      { id: <span class="str">'2'</span>, ...body }, { status: <span class="num">201</span> }
+    );
+  }),
+];</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout do">
+    <span class="callout-icon">✅</span>
+    <div><strong>Testing rules of thumb:</strong> Query by role, label, or text — never by class name or test IDs unless absolutely necessary. Use <code>userEvent</code> not <code>fireEvent</code> for realistic interactions. Test what the user sees, not what the component stores internally.</div>
+  </div>
+</section>
+
+<!-- ═══ C13: SECURITY & AUTH ═══ -->
+<section class="chapter" id="c13">
+  <div class="chapter-header">
+    <div class="chapter-num">13</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Patterns</div>
+      <h2 class="chapter-title">Security &amp; Auth</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Never store JWTs in localStorage for sensitive apps — use httpOnly cookies. Implement auth at the router level, not per-component.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Auth Context + Protected Routes</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="cm">// features/auth/AuthProvider.tsx</span>
+<span class="kw">const</span> <span class="cls">AuthContext</span> = <span class="fn">createContext</span>&lt;<span class="cls">AuthCtx</span>&gt;(<span class="kw">null</span>!);
+
+<span class="kw">export function</span> <span class="fn">AuthProvider</span>({ children }) {
+  <span class="kw">const</span> { data: user, isLoading } =
+    <span class="fn">useQuery</span>({
+      queryKey: [<span class="str">'me'</span>],
+      queryFn: authApi.<span class="fn">getMe</span>,
+      retry: <span class="kw">false</span>,
+    });
+
+  <span class="kw">if</span> (isLoading) <span class="kw">return</span> <span class="tag">&lt;FullPageSpinner /&gt;</span>;
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;AuthContext.Provider</span> <span class="attr">value</span>={{ user }}<span class="tag">&gt;</span>
+      {children}
+    <span class="tag">&lt;/AuthContext.Provider&gt;</span>
+  );
+}
+
+<span class="kw">export const</span> <span class="fn">useAuth</span> = () =>
+  <span class="fn">useContext</span>(<span class="cls">AuthContext</span>);
+
+<span class="cm">// ProtectedRoute.tsx</span>
+<span class="kw">export function</span> <span class="fn">ProtectedRoute</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useAuth</span>();
+  <span class="kw">if</span> (!user) <span class="kw">return</span> <span class="tag">&lt;Navigate</span> <span class="attr">to</span>=<span class="str">"/login"</span><span class="tag">/&gt;</span>;
+  <span class="kw">return</span> <span class="tag">&lt;Outlet /&gt;</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-dont">Don't</span><span class="rule-title">Security Checklist</span></div>
+      <div class="rule-body">
+        <ul class="checklist">
+          <li>Never use <code>dangerouslySetInnerHTML</code> with user input</li>
+          <li>Store sensitive tokens in httpOnly cookies, not localStorage</li>
+          <li>Validate ALL user input server-side (not just client Zod)</li>
+          <li>Use Content Security Policy (CSP) headers</li>
+          <li>Sanitize any user-generated HTML with DOMPurify</li>
+          <li>Verify token expiry on every protected route</li>
+          <li>Implement CSRF protection for mutation endpoints</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Pattern</span><span class="rule-title">Role-Based Access</span></div>
+      <div class="rule-body">
+        <pre class="good"><span class="cm">// hooks/usePermission.ts</span>
+<span class="kw">export function</span> <span class="fn">usePermission</span>(
+  permission: <span class="cls">Permission</span>
+) {
+  <span class="kw">const</span> { user } = <span class="fn">useAuth</span>();
+  <span class="kw">return</span> user?.permissions
+    .<span class="fn">includes</span>(permission) ?? <span class="kw">false</span>;
+}
+
+<span class="cm">// Component usage:</span>
+<span class="kw">function</span> <span class="fn">AdminPanel</span>() {
+  <span class="kw">const</span> canEdit = <span class="fn">usePermission</span>(<span class="str">'users:write'</span>);
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      {canEdit <span class="kw">&amp;&amp;</span> <span class="tag">&lt;EditButton /&gt;</span>}
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ C14: PRODUCTION CHECKLIST ═══ -->
+<section class="chapter" id="c14">
+  <div class="chapter-header">
+    <div class="chapter-num">14</div>
+    <div class="chapter-title-block">
+      <div class="chapter-tag">Ship It</div>
+      <h2 class="chapter-title">Production Checklist</h2>
+    </div>
+  </div>
+  <p class="chapter-intro">Before you deploy, run through this. Every item here has caused a production incident somewhere.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Architecture</span><span class="rule-title">Architecture Checklist</span></div>
+      <div class="rule-body">
+        <ul class="checklist">
+          <li>Feature-based folder structure with barrel exports</li>
+          <li>No prop drilling beyond 2 levels</li>
+          <li>All server data managed by React Query</li>
+          <li>Global UI state in Zustand (not Context)</li>
+          <li>Forms use react-hook-form + Zod</li>
+          <li>API layer completely separate from components</li>
+          <li>TypeScript strict mode enabled</li>
+          <li>Zero <code>any</code> types (ESLint rule enforced)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-perf">Performance</span><span class="rule-title">Performance Checklist</span></div>
+      <div class="rule-body">
+        <ul class="checklist">
+          <li>Every page/route is lazy loaded</li>
+          <li>Images use lazy loading + proper sizing</li>
+          <li>Heavy libraries loaded on demand only</li>
+          <li>Lists with 50+ items are virtualized</li>
+          <li>Lighthouse score ≥ 90 on mobile</li>
+          <li>Bundle analyzed (no duplicate deps)</li>
+          <li>staleTime configured on all queries</li>
+          <li>No unnecessary re-renders (Profiler checked)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-rule">Reliability</span><span class="rule-title">Error &amp; Testing Checklist</span></div>
+      <div class="rule-body">
+        <ul class="checklist">
+          <li>Error Boundary on every route</li>
+          <li>Error monitoring (Sentry) integrated</li>
+          <li>All mutations have error handling</li>
+          <li>Loading and empty states for all async data</li>
+          <li>Integration tests for all critical flows</li>
+          <li>E2E tests for login + core user journey</li>
+          <li>CI runs tests on every PR</li>
+          <li>Environment variables validated at startup</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-header"><span class="rule-badge badge-dont">Security</span><span class="rule-title">Security Checklist</span></div>
+      <div class="rule-body">
+        <ul class="checklist">
+          <li>Auth tokens in httpOnly cookies</li>
+          <li>No sensitive data in localStorage</li>
+          <li>All routes protected by auth check</li>
+          <li>User input sanitized before rendering as HTML</li>
+          <li>CSP headers configured on server</li>
+          <li>Dependencies audited (<code>npm audit</code>)</li>
+          <li>API keys never committed or exposed to client</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="data-table" style="margin-top:24px">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th>Category</th><th>Tool</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Build</td><td><strong>Vite</strong></td><td>Fast dev server, optimized production builds</td></tr>
+        <tr><td>Routing</td><td><strong>React Router v6</strong></td><td>Declarative routing, nested layouts, loaders</td></tr>
+        <tr><td>Server State</td><td><strong>TanStack Query v5</strong></td><td>Caching, syncing, refetching server data</td></tr>
+        <tr><td>Client State</td><td><strong>Zustand</strong></td><td>Simple global UI state with minimal boilerplate</td></tr>
+        <tr><td>Forms</td><td><strong>React Hook Form + Zod</strong></td><td>Performant forms with schema validation</td></tr>
+        <tr><td>Styling</td><td><strong>Tailwind CSS + clsx</strong></td><td>Utility-first styling with conditional classes</td></tr>
+        <tr><td>HTTP</td><td><strong>Axios</strong></td><td>HTTP client with interceptors for auth/errors</td></tr>
+        <tr><td>Testing</td><td><strong>Vitest + RTL + MSW</strong></td><td>Fast unit/integration tests with real API mocking</td></tr>
+        <tr><td>E2E</td><td><strong>Playwright</strong></td><td>Cross-browser E2E tests</td></tr>
+        <tr><td>Monitoring</td><td><strong>Sentry</strong></td><td>Error tracking and performance monitoring</td></tr>
+        <tr><td>Virtualization</td><td><strong>TanStack Virtual</strong></td><td>Large list rendering</td></tr>
+        <tr><td>Animation</td><td><strong>Framer Motion</strong></td><td>Declarative animations and gestures</td></tr>
+        <tr><td>Linting</td><td><strong>ESLint + Prettier</strong></td><td>Code quality and formatting</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <div class="footer-brand">React Production Architecture</div>
+    <div style="margin-top:4px">React 18+ · TypeScript · Vite · TanStack · Zustand · Tailwind</div>
+  </div>
+  <div style="text-align:right;color:rgba(255,255,255,0.4)">
+    14 Chapters · 80+ Patterns<br/>Production-grade from day one
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OpenShift Master Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2128;
+    --bg4: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --red: #e05c5c;
+    --orange: #e8813a;
+    --yellow: #e3b341;
+    --green: #3fb950;
+    --cyan: #39d0d8;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+    --ocp-red: #ee0000;
+    --ocp-dark: #141414;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--ocp-red);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 14px; color: #fff;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 16px;
+    color: var(--text);
+  }
+  .logo-sub { color: var(--text3); font-size: 11px; }
+
+  .search-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    width: 280px;
+  }
+  .search-wrap input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; width: 100%;
+  }
+  .search-wrap input::placeholder { color: var(--text3); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    gap: 4px;
+  }
+  .tab {
+    padding: 10px 18px;
+    cursor: pointer;
+    color: var(--text2);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--ocp-red); border-bottom-color: var(--ocp-red); }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    height: calc(100vh - 97px);
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+    padding: 12px 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .nav-group-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 10px 16px 4px;
+    margin-top: 4px;
+  }
+  .nav-item {
+    padding: 6px 16px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 12px;
+    border-left: 2px solid transparent;
+    transition: all 0.1s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--bg3); color: var(--blue); border-left-color: var(--blue); }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+  }
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 40px;
+    scroll-margin-top: 24px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    display: flex; 
+    align-items: center; gap: 10px;
+  }
+  .section-title .badge {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px;
+    background: var(--bg4); color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: 10px;
+  }
+  .section-desc {
+    color: var(--text2); font-size: 12px;
+    margin-bottom: 16px; line-height: 1.6;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .code-block:hover { border-color: #444c56; }
+
+  .code-header {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 7px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .code-label {
+    font-size: 11px; font-weight: 500;
+    color: var(--text2);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .code-label .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-bash { background: var(--green); }
+  .dot-ps { background: var(--blue); }
+  .dot-yaml { background: var(--yellow); }
+  .dot-info { background: var(--purple); }
+
+  .copy-btn {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--bg); color: var(--text); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  pre {
+    padding: 14px 16px;
+    overflow-x: auto;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  pre::-webkit-scrollbar { height: 4px; }
+  pre::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* Syntax tokens */
+  .kw { color: var(--red); }        /* keywords: oc, kubectl */
+  .cmd { color: var(--blue); }      /* subcommands */
+  .flag { color: var(--orange); }   /* --flags */
+  .val { color: var(--green); }     /* values */
+  .str { color: var(--yellow); }    /* strings/paths */
+  .cmt { color: var(--text3); font-style: italic; } /* comments */
+  .pipe { color: var(--purple); }   /* | pipes */
+  .var { color: var(--cyan); }      /* variables */
+  .key { color: var(--blue); }      /* yaml keys */
+  .yamlval { color: var(--green); } /* yaml values */
+  .yamlstr { color: var(--yellow); }/* yaml strings */
+  .yamlbool { color: var(--orange); }
+  .anchor { color: var(--pink); }   /* anchors */
+
+  /* GRID */
+  .grid2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* DIVIDER */
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  /* TIP BOX */
+  .tip {
+    background: rgba(88, 166, 255, 0.07);
+    border: 1px solid rgba(88, 166, 255, 0.25);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .tip strong { color: var(--blue); }
+  .warn {
+    background: rgba(227, 179, 65, 0.07);
+    border-color: rgba(227, 179, 65, 0.3);
+  }
+  .warn strong { color: var(--yellow); }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* SEARCH HIGHLIGHT */
+  mark { background: rgba(227, 179, 65, 0.3); color: inherit; border-radius: 2px; }
+
+  /* INLINE CODE */
+  code {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 5px;
+    font-size: 11px; color: var(--cyan);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">OCP</div>
+    <div>
+      <div class="logo-text">OpenShift Master Reference</div>
+      <div class="logo-sub">oc commands · helm · yaml manifests · pipes</div>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <span style="color:var(--text3)">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search commands, flags, yaml keys..."/>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('commands')">⚡ OC Commands</div>
+  <div class="tab" onclick="switchTab('yaml')">📄 YAML Manifests</div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR COMMANDS -->
+  <div class="sidebar" id="sidebar-commands">
+    <div class="nav-group-title">Auth & Context</div>
+    <div class="nav-item active" onclick="scrollTo('auth')">Login & Context</div>
+    <div class="nav-item" onclick="scrollTo('projects')">Projects</div>
+
+    <div class="nav-group-title">Core Ops</div>
+    <div class="nav-item" onclick="scrollTo('get')">Get & Describe</div>
+    <div class="nav-item" onclick="scrollTo('apply')">Apply / Delete / Edit</div>
+    <div class="nav-item" onclick="scrollTo('patch')">Patch & Label</div>
+
+    <div class="nav-group-title">Output & Filtering</div>
+    <div class="nav-item" onclick="scrollTo('output')">Output Formats</div>
+    <div class="nav-item" onclick="scrollTo('jsonpath')">JSONPath Queries</div>
+    <div class="nav-item" onclick="scrollTo('custcols')">Custom Columns</div>
+    <div class="nav-item" onclick="scrollTo('bash-pipes')">Bash Pipes</div>
+    <div class="nav-item" onclick="scrollTo('ps-pipes')">PowerShell Pipes</div>
+
+    <div class="nav-group-title">Workloads</div>
+    <div class="nav-item" onclick="scrollTo('pods')">Pods</div>
+    <div class="nav-item" onclick="scrollTo('deploy')">Deployments</div>
+    <div class="nav-item" onclick="scrollTo('rollout')">Rollout</div>
+    <div class="nav-item" onclick="scrollTo('scale')">Scale & HPA</div>
+
+    <div class="nav-group-title">Networking</div>
+    <div class="nav-item" onclick="scrollTo('svc-route')">Service & Route</div>
+    <div class="nav-item" onclick="scrollTo('port-forward')">Port Forward</div>
+
+    <div class="nav-group-title">Config</div>
+    <div class="nav-item" onclick="scrollTo('configsecret')">ConfigMap & Secret</div>
+    <div class="nav-item" onclick="scrollTo('storage')">Storage / PVC</div>
+
+    <div class="nav-group-title">OCP Specific</div>
+    <div class="nav-item" onclick="scrollTo('dc')">DeploymentConfig</div>
+    <div class="nav-item" onclick="scrollTo('builds')">Builds & Images</div>
+    <div class="nav-item" onclick="scrollTo('rbac')">RBAC & Policy</div>
+    <div class="nav-item" onclick="scrollTo('adm')">oc adm</div>
+    <div class="nav-item" onclick="scrollTo('debug')">Debug & Exec</div>
+
+    <div class="nav-group-title">Helm</div>
+    <div class="nav-item" onclick="scrollTo('helm')">Helm Commands</div>
+    <div class="nav-item" onclick="scrollTo('helm-adv')">Helm Advanced</div>
+
+    <div class="nav-group-title">Monitoring</div>
+    <div class="nav-item" onclick="scrollTo('top')">Top & Events</div>
+  </div>
+
+  <!-- SIDEBAR YAML -->
+  <div class="sidebar hidden" id="sidebar-yaml">
+    <div class="nav-group-title">Workloads</div>
+    <div class="nav-item active" onclick="scrollTo('y-pod')">Pod Spec</div>
+    <div class="nav-item" onclick="scrollTo('y-deploy')">Deployment</div>
+    <div class="nav-item" onclick="scrollTo('y-dc')">DeploymentConfig</div>
+    <div class="nav-item" onclick="scrollTo('y-sts')">StatefulSet</div>
+    <div class="nav-item" onclick="scrollTo('y-ds')">DaemonSet</div>
+    <div class="nav-item" onclick="scrollTo('y-job')">Job & CronJob</div>
+
+    <div class="nav-group-title">Container Config</div>
+    <div class="nav-item" onclick="scrollTo('y-env')">Environment Vars</div>
+    <div class="nav-item" onclick="scrollTo('y-envfrom')">envFrom</div>
+    <div class="nav-item" onclick="scrollTo('y-volumes')">Volumes (All Types)</div>
+    <div class="nav-item" onclick="scrollTo('y-vmounts')">VolumeMounts</div>
+    <div class="nav-item" onclick="scrollTo('y-init')">Init Containers</div>
+    <div class="nav-item" onclick="scrollTo('y-resources')">Resources & Limits</div>
+    <div class="nav-item" onclick="scrollTo('y-probes')">Probes</div>
+    <div class="nav-item" onclick="scrollTo('y-secctx')">Security Context</div>
+
+    <div class="nav-group-title">Networking</div>
+    <div class="nav-item" onclick="scrollTo('y-svc')">Service</div>
+    <div class="nav-item" onclick="scrollTo('y-route')">Route (OCP)</div>
+    <div class="nav-item" onclick="scrollTo('y-netpol')">NetworkPolicy</div>
+    <div class="nav-item" onclick="scrollTo('y-ingress')">Ingress</div>
+
+    <div class="nav-group-title">Config & Storage</div>
+    <div class="nav-item" onclick="scrollTo('y-cm')">ConfigMap</div>
+    <div class="nav-item" onclick="scrollTo('y-secret')">Secret</div>
+    <div class="nav-item" onclick="scrollTo('y-pvc')">PVC & PV</div>
+    <div class="nav-item" onclick="scrollTo('y-sc')">StorageClass</div>
+
+    <div class="nav-group-title">Scheduling</div>
+    <div class="nav-item" onclick="scrollTo('y-affinity')">Affinity & Taint</div>
+    <div class="nav-item" onclick="scrollTo('y-hpa')">HPA</div>
+    <div class="nav-item" onclick="scrollTo('y-pdb')">PodDisruptionBudget</div>
+
+    <div class="nav-group-title">RBAC</div>
+    <div class="nav-item" onclick="scrollTo('y-sa')">ServiceAccount</div>
+    <div class="nav-item" onclick="scrollTo('y-rbac')">Role & Binding</div>
+    <div class="nav-item" onclick="scrollTo('y-scc')">SCC (OCP)</div>
+
+    <div class="nav-group-title">OCP Specific</div>
+    <div class="nav-item" onclick="scrollTo('y-is')">ImageStream</div>
+    <div class="nav-item" onclick="scrollTo('y-bc')">BuildConfig</div>
+    <div class="nav-item" onclick="scrollTo('y-oauth')">OAuth & Identity</div>
+  </div>
+
+  <!-- CONTENT COMMANDS -->
+  <div class="content panel active" id="panel-commands">
+
+    <!-- AUTH -->
+    <div class="section" id="auth">
+      <div class="section-title">Login & Context <span class="badge">auth</span></div>
+      <div class="section-desc"># Authenticate and manage cluster contexts</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Login with credentials</span>
+<span class="kw">oc</span> <span class="cmd">login</span> <span class="str">https://api.cluster.example.com:6443</span> <span class="flag">-u</span> <span class="val">admin</span> <span class="flag">-p</span> <span class="val">password</span>
+<span class="kw">oc</span> <span class="cmd">login</span> <span class="flag">--token</span>=<span class="val">sha256~xxxxx</span> <span class="flag">--server</span>=<span class="str">https://api.cluster.example.com:6443</span>
+
+<span class="cmt"># Who am I</span>
+<span class="kw">oc</span> <span class="cmd">whoami</span>
+<span class="kw">oc</span> <span class="cmd">whoami</span> <span class="flag">--show-server</span>
+<span class="kw">oc</span> <span class="cmd">whoami</span> <span class="flag">-t</span>                                  <span class="cmt"># print token</span>
+
+<span class="cmt"># Context management</span>
+<span class="kw">oc</span> <span class="cmd">config</span> get-contexts
+<span class="kw">oc</span> <span class="cmd">config</span> current-context
+<span class="kw">oc</span> <span class="cmd">config</span> use-context <span class="val">my-context</span>
+<span class="kw">oc</span> <span class="cmd">config</span> set-context <span class="flag">--current</span> <span class="flag">--namespace</span>=<span class="val">my-ns</span>
+<span class="kw">oc</span> <span class="cmd">config</span> view <span class="flag">--minify</span>                        <span class="cmt"># current context only</span>
+
+<span class="cmt"># Logout</span>
+<span class="kw">oc</span> <span class="cmd">logout</span></pre>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="section" id="projects">
+      <div class="section-title">Projects <span class="badge">namespace</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">project</span>                                     <span class="cmt"># show current project</span>
+<span class="kw">oc</span> <span class="cmd">project</span> <span class="val">my-project</span>                           <span class="cmt"># switch project</span>
+<span class="kw">oc</span> <span class="cmd">projects</span>                                    <span class="cmt"># list all projects</span>
+<span class="kw">oc</span> <span class="cmd">new-project</span> <span class="val">my-app</span> <span class="flag">--description</span>=<span class="str">"My App"</span> <span class="flag">--display-name</span>=<span class="str">"My App"</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> project <span class="val">my-app</span>
+
+<span class="cmt"># Cross-namespace flag (-n / --namespace)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-n</span> <span class="val">kube-system</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-A</span>                                  <span class="cmt"># all namespaces</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--all-namespaces</span>                    <span class="cmt"># same as -A</span></pre>
+      </div>
+    </div>
+
+    <!-- GET & DESCRIBE -->
+    <div class="section" id="get">
+      <div class="section-title">Get & Describe <span class="badge">read</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Get resources</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods
+<span class="kw">oc</span> <span class="cmd">get</span> pods,svc,deploy                          <span class="cmt"># multiple resource types</span>
+<span class="kw">oc</span> <span class="cmd">get</span> all                                      <span class="cmt"># all common resources</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-l</span> <span class="str">app=frontend</span>                     <span class="cmt"># by label selector</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-l</span> <span class="str">'env in (prod,staging)'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--field-selector</span>=<span class="str">status.phase=Running</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--field-selector</span>=<span class="str">spec.nodeName=node1</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-w</span>                                  <span class="cmt"># watch (live updates)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--watch-only</span>                        <span class="cmt"># only new events</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--sort-by</span>=<span class="str">.metadata.creationTimestamp</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">--sort-by</span>=<span class="str">.status.podIP</span>
+
+<span class="cmt"># Describe (human readable detail)</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> pod <span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> node <span class="val">worker-1</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> deploy <span class="val">my-deploy</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> pvc <span class="val">my-pvc</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> pods <span class="flag">-l</span> <span class="str">app=web</span>                     <span class="cmt"># describe all matching</span>
+
+<span class="cmt"># Show API resources</span>
+<span class="kw">oc</span> api-resources
+<span class="kw">oc</span> api-resources <span class="flag">--namespaced</span>=<span class="val">true</span>
+<span class="kw">oc</span> explain pod.spec
+<span class="kw">oc</span> explain pod.spec.containers.volumeMounts</pre>
+      </div>
+    </div>
+
+    <!-- APPLY DELETE EDIT -->
+    <div class="section" id="apply">
+      <div class="section-title">Apply / Delete / Edit <span class="badge">write</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Apply manifests</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> <span class="str">./manifests/</span>                        <span class="cmt"># apply whole directory</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-k</span> <span class="str">./overlays/prod</span>                     <span class="cmt"># kustomize</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> <span class="str">https://raw.github.com/.../deploy.yaml</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span> <span class="flag">--dry-run</span>=<span class="val">client</span>    <span class="cmt"># dry run</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span> <span class="flag">--dry-run</span>=<span class="val">server</span>    <span class="cmt"># server side</span>
+
+<span class="cmt"># Create (imperative)</span>
+<span class="kw">oc</span> <span class="cmd">create</span> deployment <span class="val">my-app</span> <span class="flag">--image</span>=<span class="str">nginx:latest</span>
+<span class="kw">oc</span> <span class="cmd">create</span> <span class="flag">-f</span> <span class="str">resource.yaml</span>
+
+<span class="cmt"># Replace (full overwrite)</span>
+<span class="kw">oc</span> <span class="cmd">replace</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span>
+<span class="kw">oc</span> <span class="cmd">replace</span> <span class="flag">--force</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span>           <span class="cmt"># delete then recreate</span>
+
+<span class="cmt"># Delete resources</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> pod <span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> pod <span class="val">my-pod</span> <span class="flag">--grace-period</span>=<span class="val">0</span> <span class="flag">--force</span>   <span class="cmt"># force kill</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> pods <span class="flag">-l</span> <span class="str">app=frontend</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> <span class="flag">-f</span> <span class="str">deployment.yaml</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> all <span class="flag">-l</span> <span class="str">app=myapp</span>                      <span class="cmt"># delete all labelled</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> all <span class="flag">--all</span>                              <span class="cmt"># delete all in ns (careful!)</span>
+
+<span class="cmt"># Edit (opens $EDITOR)</span>
+<span class="kw">oc</span> <span class="cmd">edit</span> deployment <span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">edit</span> cm <span class="val">my-configmap</span>
+<span class="kw">KUBE_EDITOR</span>=<span class="str">"code --wait"</span> <span class="kw">oc</span> <span class="cmd">edit</span> deployment <span class="val">my-app</span>  <span class="cmt"># use VSCode</span></pre>
+      </div>
+    </div>
+
+    <!-- PATCH & LABEL -->
+    <div class="section" id="patch">
+      <div class="section-title">Patch & Label & Annotate <span class="badge">mutate</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Patch (strategic merge)</span>
+<span class="kw">oc</span> <span class="cmd">patch</span> deployment <span class="val">my-app</span> <span class="flag">-p</span> <span class="str">'{"spec":{"replicas":3}}'</span>
+<span class="kw">oc</span> <span class="cmd">patch</span> deployment <span class="val">my-app</span> <span class="flag">--type</span>=<span class="val">json</span> <span class="flag">-p</span> <span class="str">'[{"op":"replace","path":"/spec/replicas","value":3}]'</span>
+<span class="kw">oc</span> <span class="cmd">patch</span> svc <span class="val">my-svc</span> <span class="flag">--type</span>=<span class="val">merge</span> <span class="flag">-p</span> <span class="str">'{"spec":{"type":"NodePort"}}'</span>
+
+<span class="cmt"># Patch image (very common in CD)</span>
+<span class="kw">oc</span> <span class="cmd">patch</span> deployment <span class="val">my-app</span> <span class="flag">-p</span> <span class="str">'{"spec":{"template":{"spec":{"containers":[{"name":"app","image":"my-reg/app:v2"}]}}}}'</span>
+
+<span class="cmt"># Set image (shortcut)</span>
+<span class="kw">oc</span> <span class="cmd">set</span> image deployment/<span class="val">my-app</span> <span class="str">app=my-reg/app:v2</span>
+<span class="kw">oc</span> <span class="cmd">set</span> image deploy/<span class="val">my-app</span> <span class="str">*=my-reg/app:v2</span>      <span class="cmt"># all containers</span>
+
+<span class="cmt"># Labels</span>
+<span class="kw">oc</span> <span class="cmd">label</span> pod <span class="val">my-pod</span> <span class="str">env=prod</span>
+<span class="kw">oc</span> <span class="cmd">label</span> pod <span class="val">my-pod</span> <span class="str">env-</span>                         <span class="cmt"># remove label</span>
+<span class="kw">oc</span> <span class="cmd">label</span> pods <span class="flag">-l</span> <span class="str">app=web</span> <span class="str">tier=frontend</span>
+<span class="kw">oc</span> <span class="cmd">label</span> node <span class="val">worker-1</span> <span class="str">gpu=true</span>
+<span class="kw">oc</span> <span class="cmd">label</span> ns <span class="val">my-ns</span> <span class="str">team=backend</span>
+
+<span class="cmt"># Annotations</span>
+<span class="kw">oc</span> <span class="cmd">annotate</span> deployment <span class="val">my-app</span> <span class="str">deployment.kubernetes.io/revision="2"</span>
+<span class="kw">oc</span> <span class="cmd">annotate</span> pod <span class="val">my-pod</span> <span class="str">note-</span>                     <span class="cmt"># remove annotation</span>
+
+<span class="cmt"># Taint nodes</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> taint node <span class="val">worker-1</span> <span class="str">key=value:NoSchedule</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> taint node <span class="val">worker-1</span> <span class="str">key:NoSchedule-</span>       <span class="cmt"># remove taint</span></pre>
+      </div>
+    </div>
+
+    <!-- OUTPUT FORMATS -->
+    <div class="section" id="output">
+      <div class="section-title">Output Formats <span class="badge">-o</span></div>
+      <div class="tip"><strong>Tip:</strong> Combine <code>-o</code> with pipes for powerful filtering. All formats below work with any resource.</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Standard output formats</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> <span class="val">wide</span>                              <span class="cmt"># extra columns (node, IP)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> <span class="val">yaml</span>                              <span class="cmt"># full yaml</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> <span class="val">json</span>                              <span class="cmt"># full json</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> <span class="val">name</span>                              <span class="cmt"># resource/name format</span>
+
+<span class="cmt"># Export clean yaml (remove cluster-specific fields)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deployment <span class="val">my-app</span> <span class="flag">-o</span> <span class="val">yaml</span> <span class="pipe">|</span> \
+  <span class="cmd">yq</span> <span class="str">'del(.metadata.resourceVersion, .metadata.uid, .metadata.creationTimestamp, .status)'</span>
+
+<span class="cmt"># Get specific field with -o go-template</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> go-template=<span class="str">'{{.status.podIP}}'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> go-template=<span class="str">'{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'</span></pre>
+      </div>
+    </div>
+
+    <!-- JSONPATH -->
+    <div class="section" id="jsonpath">
+      <div class="section-title">JSONPath Queries <span class="badge">-o jsonpath</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Single pod fields</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.status.podIP}'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.spec.nodeName}'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.status.phase}'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.spec.containers[0].image}'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.spec.containers[*].name}'</span>
+
+<span class="cmt"># Multiple fields with newline</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pod <span class="val">my-pod</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.metadata.name}{"\t"}{.status.podIP}{"\n"}'</span>
+
+<span class="cmt"># List all pods: name + status + node</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> jsonpath=<span class="str">'{range .items[*]}{.metadata.name}{"\t"}{.status.phase}{"\t"}{.spec.nodeName}{"\n"}{end}'</span>
+
+<span class="cmt"># All pod images</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> jsonpath=<span class="str">'{range .items[*]}{.metadata.name}{"\t"}{.spec.containers[*].image}{"\n"}{end}'</span>
+
+<span class="cmt"># Get a specific secret value (base64 decoded)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> secret <span class="val">my-secret</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.data.password}'</span> <span class="pipe">|</span> base64 <span class="flag">-d</span>
+
+<span class="cmt"># Get service ClusterIP</span>
+<span class="kw">oc</span> <span class="cmd">get</span> svc <span class="val">my-svc</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.spec.clusterIP}'</span>
+
+<span class="cmt"># Get all node names</span>
+<span class="kw">oc</span> <span class="cmd">get</span> nodes <span class="flag">-o</span> jsonpath=<span class="str">'{.items[*].metadata.name}'</span>
+
+<span class="cmt"># Nodes with capacity CPU</span>
+<span class="kw">oc</span> <span class="cmd">get</span> nodes <span class="flag">-o</span> jsonpath=<span class="str">'{range .items[*]}{.metadata.name}{"\t"}{.status.capacity.cpu}{"\n"}{end}'</span>
+
+<span class="cmt"># Deployment ready replicas</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deploy <span class="val">my-app</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.status.readyReplicas}'</span>
+
+<span class="cmt"># Filter with @.field (conditional)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="str">'.items[] | select(.status.phase=="Running") | .metadata.name'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="str">'.items[] | select(.spec.nodeName=="worker-1") | .metadata.name'</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="str">-r '.items[] | [.metadata.name, .status.podIP, .spec.nodeName] | @tsv'</span></pre>
+      </div>
+    </div>
+
+    <!-- CUSTOM COLUMNS -->
+    <div class="section" id="custcols">
+      <div class="section-title">Custom Columns <span class="badge">-o custom-columns</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Syntax: -o custom-columns=HEADER:.path,HEADER:.path</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,STATUS:.status.phase,NODE:.spec.nodeName</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,IP:.status.podIP,READY:.status.containerStatuses[0].ready</span>
+<span class="kw">oc</span> <span class="cmd">get</span> nodes <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,CPU:.status.capacity.cpu,MEM:.status.capacity.memory,ROLE:.metadata.labels.node-role\.kubernetes\.io/worker</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deployments <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,DESIRED:.spec.replicas,READY:.status.readyReplicas,IMAGE:.spec.template.spec.containers[0].image</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pvc <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,STATUS:.status.phase,CAPACITY:.spec.resources.requests.storage,STORAGECLASS:.spec.storageClassName</span>
+<span class="kw">oc</span> <span class="cmd">get</span> svc <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,TYPE:.spec.type,CLUSTER-IP:.spec.clusterIP,PORT:.spec.ports[0].port</span>
+<span class="kw">oc</span> <span class="cmd">get</span> events <span class="flag">--sort-by</span>=<span class="str">.lastTimestamp</span> <span class="flag">-o</span> custom-columns=<span class="str">TIME:.lastTimestamp,NS:.metadata.namespace,REASON:.reason,OBJ:.involvedObject.name,MSG:.message</span>
+
+<span class="cmt"># From file template</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> custom-columns-file=<span class="str">columns.txt</span></pre>
+      </div>
+    </div>
+
+    <!-- BASH PIPES -->
+    <div class="section" id="bash-pipes">
+      <div class="section-title">Bash Pipes & Filtering <span class="badge">grep · awk · sed · jq</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt">## ─── GREP ───────────────────────────────────────────────────────</span>
+<span class="cmt"># Find pods by partial name</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> grep <span class="str">"my-app"</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> grep <span class="flag">-v</span> <span class="str">Running</span>                   <span class="cmt"># NOT running</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> grep <span class="flag">-E</span> <span class="str">"(Error|CrashLoop|OOMKill)"</span>
+
+<span class="cmt"># Events for specific resource</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> pod <span class="val">my-pod</span> <span class="pipe">|</span> grep <span class="flag">-A5</span> <span class="str">"Events:"</span>
+
+<span class="cmt">## ─── AWK ─────────────────────────────────────────────────────────</span>
+<span class="cmt"># Print only pod names (column 1)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'{print $1}'</span>
+<span class="cmt"># Print name + status (col 1 and 3), skip header</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'NR>1 {print $1, $3}'</span>
+<span class="cmt"># Pods with &gt; 1 restart</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'NR>1 && $4 > 1 {print $1, $4}'</span>
+<span class="cmt"># Get just names of non-running pods</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'NR>1 && $3 != "Running" {print $1}'</span>
+<span class="cmt"># Delete all non-running pods</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'NR>1 && $3 != "Running" {print $1}'</span> <span class="pipe">|</span> xargs <span class="kw">oc</span> <span class="cmd">delete</span> pod
+
+<span class="cmt">## ─── SED ─────────────────────────────────────────────────────────</span>
+<span class="cmt"># Strip header line</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> sed <span class="str">'1d'</span>
+<span class="cmt"># Get only the image tag from yaml</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deploy <span class="val">my-app</span> <span class="flag">-o</span> yaml <span class="pipe">|</span> grep <span class="str">"image:"</span> <span class="pipe">|</span> sed <span class="str">'s/.*image: //'</span>
+
+<span class="cmt">## ─── JQ ──────────────────────────────────────────────────────────</span>
+<span class="cmt"># All pod names + IPs in table form</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="str">'.items[] | [.metadata.name, .status.podIP] | @tsv'</span>
+<span class="cmt"># Only running pods</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="str">'.items[] | select(.status.phase=="Running") | .metadata.name'</span>
+<span class="cmt"># Node name + memory allocatable</span>
+<span class="kw">oc</span> <span class="cmd">get</span> nodes <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="str">'.items[] | [.metadata.name, .status.allocatable.memory] | @tsv'</span>
+<span class="cmt"># All secrets names in namespace</span>
+<span class="kw">oc</span> <span class="cmd">get</span> secrets <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="str">'.items[].metadata.name'</span>
+<span class="cmt"># Get specific env var value from a deployment</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deploy <span class="val">my-app</span> <span class="flag">-o</span> json <span class="pipe">|</span> jq <span class="flag">-r</span> <span class="str">'.spec.template.spec.containers[0].env[] | select(.name=="DB_HOST") | .value'</span>
+
+<span class="cmt">## ─── XARGS ───────────────────────────────────────────────────────</span>
+<span class="cmt"># Restart all pods in a deployment (by deleting them)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-l</span> <span class="str">app=my-app</span> <span class="flag">-o</span> name <span class="pipe">|</span> xargs <span class="kw">oc</span> <span class="cmd">delete</span>
+<span class="cmt"># Exec command on all matching pods</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-l</span> <span class="str">app=my-app</span> <span class="flag">-o</span> name <span class="pipe">|</span> xargs <span class="flag">-I{}</span> <span class="kw">oc</span> <span class="cmd">exec</span> <span class="str">{}</span> <span class="flag">--</span> ls /app
+
+<span class="cmt">## ─── LOOP ────────────────────────────────────────────────────────</span>
+<span class="cmt"># Print logs for all crashlooping pods</span>
+<span class="kw">for</span> pod in $(<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> awk <span class="str">'/CrashLoop/{print $1}'</span>); do
+  echo <span class="str">"=== $pod ==="</span>
+  <span class="kw">oc</span> <span class="cmd">logs</span> <span class="str">$pod</span> <span class="flag">--previous</span> <span class="flag">--tail</span>=<span class="val">30</span>
+done</pre>
+      </div>
+    </div>
+
+    <!-- POWERSHELL PIPES -->
+    <div class="section" id="ps-pipes">
+      <div class="section-title">PowerShell Pipes & Filtering <span class="badge">PS</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-ps"></span>powershell</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Select-String (like grep)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> Select-String <span class="str">"my-app"</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> Select-String <span class="flag">-NotMatch</span> <span class="str">"Running"</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pods <span class="pipe">|</span> Select-String <span class="flag">-Pattern</span> <span class="str">"Error|CrashLoop"</span>
+
+<span class="cmt"># ConvertFrom-Json + Where-Object</span>
+<span class="var">$pods</span> = <span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+<span class="var">$pods</span>.items <span class="pipe">|</span> Where-Object { <span class="var">$_</span>.status.phase <span class="flag">-eq</span> <span class="str">"Running"</span> } <span class="pipe">|</span>
+  Select-Object <span class="flag">-ExpandProperty</span> <span class="str">metadata</span> <span class="pipe">|</span> Select-Object name
+
+<span class="cmt"># Get pod name + IP + node (table)</span>
+<span class="var">$pods</span> = <span class="kw">oc</span> <span class="cmd">get</span> pods <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+<span class="var">$pods</span>.items <span class="pipe">|</span> ForEach-Object {
+  [PSCustomObject]@{
+    Name   = <span class="var">$_</span>.metadata.name
+    Phase  = <span class="var">$_</span>.status.phase
+    PodIP  = <span class="var">$_</span>.status.podIP
+    Node   = <span class="var">$_</span>.spec.nodeName
+  }
+} <span class="pipe">|</span> Format-Table <span class="flag">-AutoSize</span>
+
+<span class="cmt"># Find pods with restarts > 0</span>
+<span class="var">$pods</span>.items <span class="pipe">|</span> Where-Object {
+  <span class="var">$_</span>.status.containerStatuses <span class="flag">-and</span> <span class="var">$_</span>.status.containerStatuses[0].restartCount <span class="flag">-gt</span> <span class="val">0</span>
+} <span class="pipe">|</span> ForEach-Object {
+  [PSCustomObject]@{ Name = <span class="var">$_</span>.metadata.name; Restarts = <span class="var">$_</span>.status.containerStatuses[0].restartCount }
+} <span class="pipe">|</span> Sort-Object Restarts <span class="flag">-Descending</span>
+
+<span class="cmt"># Get specific column from text output (by index)</span>
+<span class="var">$output</span> = (<span class="kw">oc</span> <span class="cmd">get</span> pods) <span class="flag">-split</span> <span class="str">"`n"</span> <span class="pipe">|</span> Select-Object <span class="flag">-Skip</span> <span class="val">1</span>
+<span class="var">$output</span> <span class="pipe">|</span> ForEach-Object {
+  <span class="var">$cols</span> = <span class="var">$_</span> <span class="flag">-split</span> <span class="str">'\s+'</span>
+  [PSCustomObject]@{ Name = <span class="var">$cols</span>[0]; Status = <span class="var">$cols</span>[2]; Restarts = <span class="var">$cols</span>[3] }
+} <span class="pipe">|</span> Format-Table
+
+<span class="cmt"># Decode secret value</span>
+<span class="var">$secret</span> = <span class="kw">oc</span> <span class="cmd">get</span> secret <span class="val">my-secret</span> <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+[System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(<span class="var">$secret</span>.data.password))
+
+<span class="cmt"># Get all deployments with image tags</span>
+<span class="var">$deps</span> = <span class="kw">oc</span> <span class="cmd">get</span> deployments <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+<span class="var">$deps</span>.items <span class="pipe">|</span> ForEach-Object {
+  [PSCustomObject]@{
+    Deployment = <span class="var">$_</span>.metadata.name
+    Image      = <span class="var">$_</span>.spec.template.spec.containers[0].image
+    Replicas   = <span class="var">$_</span>.spec.replicas
+    Ready      = <span class="var">$_</span>.status.readyReplicas
+  }
+} <span class="pipe">|</span> Format-Table <span class="flag">-AutoSize</span>
+
+<span class="cmt"># Delete all non-running pods</span>
+<span class="var">$pods</span>.items <span class="pipe">|</span> Where-Object { <span class="var">$_</span>.status.phase <span class="flag">-ne</span> <span class="str">"Running"</span> } <span class="pipe">|</span>
+  ForEach-Object { <span class="kw">oc</span> <span class="cmd">delete</span> pod <span class="var">$_</span>.metadata.name }</pre>
+      </div>
+    </div>
+
+    <!-- PODS -->
+    <div class="section" id="pods">
+      <div class="section-title">Pods <span class="badge">logs · exec · cp</span></div>
+      <div class="grid2">
+        <div class="code-block">
+          <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>Logs</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">-f</span>                       <span class="cmt"># follow</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">--tail</span>=<span class="val">100</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">-p</span>                       <span class="cmt"># previous instance</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">-c</span> <span class="str">sidecar</span>              <span class="cmt"># specific container</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">--all-containers</span>=<span class="val">true</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="flag">-l</span> <span class="str">app=web</span> <span class="flag">--all-containers</span>   <span class="cmt"># by selector</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">--since</span>=<span class="val">1h</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="val">my-pod</span> <span class="flag">--since-time</span>=<span class="str">"2024-01-01T10:00:00Z"</span>
+<span class="cmt"># Stream to file</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> <span class="flag">-f</span> <span class="val">my-pod</span> <span class="pipe">></span> pod.log &</pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>Exec & Shell</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="kw">oc</span> <span class="cmd">exec</span> <span class="val">my-pod</span> <span class="flag">--</span> ls /app
+<span class="kw">oc</span> <span class="cmd">exec</span> <span class="val">my-pod</span> <span class="flag">--</span> cat /etc/config
+<span class="kw">oc</span> <span class="cmd">exec</span> <span class="flag">-it</span> <span class="val">my-pod</span> <span class="flag">--</span> /bin/bash
+<span class="kw">oc</span> <span class="cmd">exec</span> <span class="flag">-it</span> <span class="val">my-pod</span> <span class="flag">--</span> /bin/sh      <span class="cmt"># if no bash</span>
+<span class="kw">oc</span> <span class="cmd">exec</span> <span class="flag">-it</span> <span class="val">my-pod</span> <span class="flag">-c</span> <span class="str">sidecar</span> <span class="flag">--</span> sh
+<span class="cmt"># OCP shortcut for shell</span>
+<span class="kw">oc</span> <span class="cmd">rsh</span> <span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">rsh</span> <span class="flag">-c</span> <span class="str">sidecar</span> <span class="val">my-pod</span>
+<span class="cmt"># Copy files</span>
+<span class="kw">oc</span> <span class="cmd">cp</span> <span class="val">my-pod</span>:<span class="str">/app/logs/app.log</span> ./app.log
+<span class="kw">oc</span> <span class="cmd">cp</span> ./config.yaml <span class="val">my-pod</span>:<span class="str">/app/config.yaml</span>
+<span class="kw">oc</span> <span class="cmd">cp</span> <span class="val">my-pod</span>:<span class="str">/app/</span> <span class="flag">-c</span> <span class="str">app</span> ./backup/</pre>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>Debug</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Debug pod (creates ephemeral container)</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> pod/<span class="val">my-pod</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> pod/<span class="val">my-pod</span> <span class="flag">--image</span>=<span class="str">busybox</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> pod/<span class="val">my-pod</span> <span class="flag">-c</span> <span class="str">app</span>                   <span class="cmt"># debug specific container</span>
+<span class="cmt"># Debug node</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> node/<span class="val">worker-1</span>                           <span class="cmt"># privileged shell on node</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> node/<span class="val">worker-1</span> <span class="flag">--image</span>=<span class="str">rhel8/support-tools</span>
+<span class="cmt"># Debug a deployment (copy of pod with modifications)</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> deploy/<span class="val">my-app</span> <span class="flag">--</span> sleep 3600</pre>
+      </div>
+    </div>
+
+    <!-- DEPLOYMENTS -->
+    <div class="section" id="deploy">
+      <div class="section-title">Deployments <span class="badge">deploy</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">create</span> deployment <span class="val">my-app</span> <span class="flag">--image</span>=<span class="str">nginx:alpine</span> <span class="flag">--replicas</span>=<span class="val">3</span>
+<span class="kw">oc</span> <span class="cmd">get</span> deployments
+<span class="kw">oc</span> <span class="cmd">get</span> deploy <span class="flag">-o</span> wide
+<span class="kw">oc</span> <span class="cmd">set</span> env deployment/<span class="val">my-app</span> <span class="str">DB_HOST=postgres.default.svc</span>
+<span class="kw">oc</span> <span class="cmd">set</span> env deployment/<span class="val">my-app</span> <span class="flag">--from</span>=configmap/<span class="val">app-config</span>
+<span class="kw">oc</span> <span class="cmd">set</span> env deployment/<span class="val">my-app</span> <span class="flag">--from</span>=secret/<span class="val">app-secret</span>
+<span class="kw">oc</span> <span class="cmd">set</span> env deployment/<span class="val">my-app</span> <span class="str">DB_HOST-</span>                     <span class="cmt"># remove env var</span>
+<span class="kw">oc</span> <span class="cmd">set</span> resources deployment/<span class="val">my-app</span> <span class="flag">--limits</span>=<span class="str">cpu=200m,memory=256Mi</span> <span class="flag">--requests</span>=<span class="str">cpu=100m,memory=128Mi</span>
+<span class="kw">oc</span> <span class="cmd">set</span> serviceaccount deployment/<span class="val">my-app</span> <span class="val">my-sa</span>
+<span class="kw">oc</span> <span class="cmd">get</span> replicaset <span class="flag">-l</span> <span class="str">app=my-app</span>                           <span class="cmt"># see RS created by deploy</span></pre>
+      </div>
+    </div>
+
+    <!-- ROLLOUT -->
+    <div class="section" id="rollout">
+      <div class="section-title">Rollout <span class="badge">deploy/dc</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">rollout</span> status deployment/<span class="val">my-app</span>             <span class="cmt"># watch rollout progress</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> history deployment/<span class="val">my-app</span>             <span class="cmt"># revision history</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> history deployment/<span class="val">my-app</span> <span class="flag">--revision</span>=<span class="val">3</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> undo deployment/<span class="val">my-app</span>               <span class="cmt"># rollback to previous</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> undo deployment/<span class="val">my-app</span> <span class="flag">--to-revision</span>=<span class="val">2</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> pause deployment/<span class="val">my-app</span>              <span class="cmt"># pause rollout</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> resume deployment/<span class="val">my-app</span>             <span class="cmt"># resume</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> restart deployment/<span class="val">my-app</span>            <span class="cmt"># rolling restart (no downtime)</span>
+<span class="cmt"># OCP DeploymentConfig rollout</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> latest dc/<span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> cancel dc/<span class="val">my-app</span></pre>
+      </div>
+    </div>
+
+    <!-- SCALE -->
+    <div class="section" id="scale">
+      <div class="section-title">Scale & HPA <span class="badge">replicas</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">scale</span> deployment/<span class="val">my-app</span> <span class="flag">--replicas</span>=<span class="val">5</span>
+<span class="kw">oc</span> <span class="cmd">scale</span> dc/<span class="val">my-app</span> <span class="flag">--replicas</span>=<span class="val">0</span>              <span class="cmt"># scale to 0 (stop)</span>
+<span class="kw">oc</span> <span class="cmd">scale</span> statefulset/<span class="val">my-sts</span> <span class="flag">--replicas</span>=<span class="val">3</span>
+<span class="kw">oc</span> <span class="cmd">scale</span> deploy <span class="flag">-l</span> <span class="str">tier=frontend</span> <span class="flag">--replicas</span>=<span class="val">2</span> <span class="cmt"># scale by label</span>
+
+<span class="cmt"># HPA</span>
+<span class="kw">oc</span> <span class="cmd">autoscale</span> deployment/<span class="val">my-app</span> <span class="flag">--min</span>=<span class="val">2</span> <span class="flag">--max</span>=<span class="val">10</span> <span class="flag">--cpu-percent</span>=<span class="val">70</span>
+<span class="kw">oc</span> <span class="cmd">get</span> hpa
+<span class="kw">oc</span> <span class="cmd">describe</span> hpa <span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">delete</span> hpa <span class="val">my-app</span></pre>
+      </div>
+    </div>
+
+    <!-- SERVICE & ROUTE -->
+    <div class="section" id="svc-route">
+      <div class="section-title">Service & Route <span class="badge">networking</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Service</span>
+<span class="kw">oc</span> <span class="cmd">expose</span> deployment <span class="val">my-app</span> <span class="flag">--port</span>=<span class="val">80</span> <span class="flag">--target-port</span>=<span class="val">8080</span>
+<span class="kw">oc</span> <span class="cmd">expose</span> deployment <span class="val">my-app</span> <span class="flag">--port</span>=<span class="val">80</span> <span class="flag">--type</span>=<span class="val">ClusterIP</span>
+<span class="kw">oc</span> <span class="cmd">get</span> svc
+<span class="kw">oc</span> <span class="cmd">get</span> svc <span class="flag">-o</span> wide
+<span class="kw">oc</span> <span class="cmd">get</span> endpoints <span class="val">my-svc</span>
+
+<span class="cmt"># Route (OCP specific - external access)</span>
+<span class="kw">oc</span> <span class="cmd">expose</span> svc/<span class="val">my-svc</span>                              <span class="cmt"># create HTTP route</span>
+<span class="kw">oc</span> <span class="cmd">expose</span> svc/<span class="val">my-svc</span> <span class="flag">--hostname</span>=<span class="str">app.example.com</span>
+<span class="kw">oc</span> <span class="cmd">expose</span> svc/<span class="val">my-svc</span> <span class="flag">--hostname</span>=<span class="str">app.example.com</span> <span class="flag">--path</span>=<span class="str">/api</span>
+<span class="kw">oc</span> <span class="cmd">get</span> routes
+<span class="kw">oc</span> <span class="cmd">get</span> route <span class="val">my-route</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.spec.host}'</span>
+<span class="cmt"># Create edge TLS route</span>
+<span class="kw">oc</span> <span class="cmd">create</span> route edge <span class="val">my-route</span> <span class="flag">--service</span>=<span class="val">my-svc</span> <span class="flag">--cert</span>=<span class="str">tls.crt</span> <span class="flag">--key</span>=<span class="str">tls.key</span>
+<span class="kw">oc</span> <span class="cmd">create</span> route passthrough <span class="val">my-route</span> <span class="flag">--service</span>=<span class="val">my-svc</span>
+<span class="kw">oc</span> <span class="cmd">create</span> route reencrypt <span class="val">my-route</span> <span class="flag">--service</span>=<span class="val">my-svc</span> <span class="flag">--dest-ca-cert</span>=<span class="str">dest-ca.crt</span></pre>
+      </div>
+    </div>
+
+    <!-- PORT FORWARD -->
+    <div class="section" id="port-forward">
+      <div class="section-title">Port Forward <span class="badge">local access</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">port-forward</span> pod/<span class="val">my-pod</span> <span class="str">8080:8080</span>
+<span class="kw">oc</span> <span class="cmd">port-forward</span> svc/<span class="val">my-svc</span> <span class="str">8080:80</span>
+<span class="kw">oc</span> <span class="cmd">port-forward</span> deploy/<span class="val">my-app</span> <span class="str">8080:8080</span>
+<span class="kw">oc</span> <span class="cmd">port-forward</span> pod/<span class="val">my-pod</span> <span class="str">5432:5432</span> &         <span class="cmt"># background</span>
+<span class="kw">oc</span> <span class="cmd">port-forward</span> pod/<span class="val">my-pod</span> <span class="str">0:8080</span>               <span class="cmt"># random local port</span>
+<span class="kw">oc</span> <span class="cmd">port-forward</span> pod/<span class="val">my-pod</span> <span class="str">127.0.0.1:8080:8080</span>  <span class="cmt"># bind specific interface</span></pre>
+      </div>
+    </div>
+
+    <!-- CONFIGMAP & SECRET -->
+    <div class="section" id="configsecret">
+      <div class="section-title">ConfigMap & Secret <span class="badge">config</span></div>
+      <div class="grid2">
+        <div class="code-block">
+          <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>ConfigMap</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="cmt"># Create</span>
+<span class="kw">oc</span> <span class="cmd">create</span> configmap <span class="val">app-config</span> \
+  <span class="flag">--from-literal</span>=<span class="str">DB_HOST=postgres</span> \
+  <span class="flag">--from-literal</span>=<span class="str">DB_PORT=5432</span>
+<span class="kw">oc</span> <span class="cmd">create</span> cm <span class="val">app-config</span> <span class="flag">--from-file</span>=<span class="str">app.properties</span>
+<span class="kw">oc</span> <span class="cmd">create</span> cm <span class="val">app-config</span> <span class="flag">--from-file</span>=<span class="str">config/</span>
+<span class="cmt"># Get</span>
+<span class="kw">oc</span> <span class="cmd">get</span> cm
+<span class="kw">oc</span> <span class="cmd">get</span> cm <span class="val">app-config</span> <span class="flag">-o</span> yaml
+<span class="kw">oc</span> <span class="cmd">describe</span> cm <span class="val">app-config</span>
+<span class="cmt"># Get specific key</span>
+<span class="kw">oc</span> <span class="cmd">get</span> cm <span class="val">app-config</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.data.DB_HOST}'</span></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>Secret</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="cmt"># Create</span>
+<span class="kw">oc</span> <span class="cmd">create</span> secret generic <span class="val">app-secret</span> \
+  <span class="flag">--from-literal</span>=<span class="str">password=supersecret</span>
+<span class="kw">oc</span> <span class="cmd">create</span> secret generic <span class="val">db-creds</span> \
+  <span class="flag">--from-file</span>=<span class="str">./creds.env</span>
+<span class="kw">oc</span> <span class="cmd">create</span> secret docker-registry <span class="val">regcred</span> \
+  <span class="flag">--docker-server</span>=<span class="str">registry.example.com</span> \
+  <span class="flag">--docker-username</span>=<span class="str">admin</span> \
+  <span class="flag">--docker-password</span>=<span class="str">password</span>
+<span class="kw">oc</span> <span class="cmd">create</span> secret tls <span class="val">my-tls</span> \
+  <span class="flag">--cert</span>=<span class="str">tls.crt</span> <span class="flag">--key</span>=<span class="str">tls.key</span>
+<span class="cmt"># Decode value</span>
+<span class="kw">oc</span> <span class="cmd">get</span> secret <span class="val">app-secret</span> <span class="flag">-o</span> jsonpath=<span class="str">'{.data.password}'</span> <span class="pipe">|</span> base64 <span class="flag">-d</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORAGE -->
+    <div class="section" id="storage">
+      <div class="section-title">Storage / PVC <span class="badge">pvc · pv</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">get</span> pvc
+<span class="kw">oc</span> <span class="cmd">get</span> pv
+<span class="kw">oc</span> <span class="cmd">get</span> storageclass
+<span class="kw">oc</span> <span class="cmd">describe</span> pvc <span class="val">my-pvc</span>
+<span class="kw">oc</span> <span class="cmd">get</span> pvc <span class="flag">-o</span> custom-columns=<span class="str">NAME:.metadata.name,STATUS:.status.phase,CAPACITY:.spec.resources.requests.storage,SC:.spec.storageClassName,ACCESS:.spec.accessModes[0]</span>
+<span class="cmt"># Create PVC</span>
+<span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> - <span class="pipe"><<</span><span class="str">EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: thin
+  resources:
+    requests:
+      storage: 5Gi
+EOF</span></pre>
+      </div>
+    </div>
+
+    <!-- DC -->
+    <div class="section" id="dc">
+      <div class="section-title">DeploymentConfig (OCP Legacy) <span class="badge">dc</span></div>
+      <div class="tip"><strong>Note:</strong> DC is OCP-specific and deprecated in OCP 4.14+. Prefer Deployments for new workloads.</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">get</span> dc
+<span class="kw">oc</span> <span class="cmd">describe</span> dc <span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> latest dc/<span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> status dc/<span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> history dc/<span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">rollout</span> cancel dc/<span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">scale</span> dc/<span class="val">my-app</span> <span class="flag">--replicas</span>=<span class="val">3</span>
+<span class="kw">oc</span> <span class="cmd">get</span> rc <span class="flag">-l</span> <span class="str">openshift.io/deployment-config.name=my-app</span>  <span class="cmt"># ReplicationControllers</span>
+<span class="cmt"># Trigger manual deploy</span>
+<span class="kw">oc</span> <span class="cmd">deploy</span> dc/<span class="val">my-app</span> <span class="flag">--latest</span>
+<span class="cmt"># Migrate DC to Deployment</span>
+<span class="kw">oc</span> <span class="cmd">convert</span> <span class="flag">-f</span> <span class="str">dc.yaml</span> <span class="flag">--output-version</span>=<span class="str">apps/v1</span></pre>
+      </div>
+    </div>
+
+    <!-- BUILDS -->
+    <div class="section" id="builds">
+      <div class="section-title">Builds & ImageStreams <span class="badge">ocp</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># BuildConfig</span>
+<span class="kw">oc</span> <span class="cmd">get</span> bc
+<span class="kw">oc</span> <span class="cmd">get</span> builds
+<span class="kw">oc</span> <span class="cmd">start-build</span> <span class="val">my-bc</span>
+<span class="kw">oc</span> <span class="cmd">start-build</span> <span class="val">my-bc</span> <span class="flag">--follow</span>                   <span class="cmt"># follow build logs</span>
+<span class="kw">oc</span> <span class="cmd">start-build</span> <span class="val">my-bc</span> <span class="flag">--from-dir</span>=<span class="str">.</span>               <span class="cmt"># binary build from local</span>
+<span class="kw">oc</span> <span class="cmd">start-build</span> <span class="val">my-bc</span> <span class="flag">--from-file</span>=<span class="str">app.jar</span>
+<span class="kw">oc</span> <span class="cmd">cancel-build</span> <span class="val">my-bc-1</span>
+<span class="kw">oc</span> <span class="cmd">logs</span> build/<span class="val">my-bc-1</span>
+<span class="cmt"># ImageStreams</span>
+<span class="kw">oc</span> <span class="cmd">get</span> imagestream
+<span class="kw">oc</span> <span class="cmd">get</span> is
+<span class="kw">oc</span> <span class="cmd">describe</span> is <span class="val">my-app</span>
+<span class="kw">oc</span> <span class="cmd">get</span> imagestreamtag
+<span class="kw">oc</span> <span class="cmd">tag</span> <span class="str">my-app:latest</span> <span class="str">my-app:prod</span>
+<span class="kw">oc</span> <span class="cmd">import-image</span> <span class="str">nginx:latest</span> <span class="flag">--from</span>=<span class="str">docker.io/nginx:latest</span> <span class="flag">--confirm</span>
+<span class="kw">oc</span> <span class="cmd">new-build</span> <span class="flag">--binary</span> <span class="flag">--name</span>=<span class="str">my-app</span> <span class="flag">-l</span> <span class="str">app=my-app</span></pre>
+      </div>
+    </div>
+
+    <!-- RBAC -->
+    <div class="section" id="rbac">
+      <div class="section-title">RBAC & Policy <span class="badge">roles</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># View roles</span>
+<span class="kw">oc</span> <span class="cmd">get</span> roles
+<span class="kw">oc</span> <span class="cmd">get</span> clusterroles
+<span class="kw">oc</span> <span class="cmd">get</span> rolebindings
+<span class="kw">oc</span> <span class="cmd">get</span> clusterrolebindings
+<span class="kw">oc</span> <span class="cmd">describe</span> clusterrolebinding cluster-admin
+
+<span class="cmt"># Add roles to user/sa</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-role-to-user <span class="val">view</span> <span class="val">user@example.com</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-role-to-user <span class="val">edit</span> <span class="val">user@example.com</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-role-to-user <span class="val">admin</span> <span class="val">user@example.com</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-role-to-user <span class="val">view</span> <span class="flag">-z</span> <span class="val">my-sa</span>        <span class="cmt"># to service account</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-cluster-role-to-user <span class="val">cluster-admin</span> <span class="val">admin</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy remove-role-from-user <span class="val">edit</span> <span class="val">user@example.com</span>
+
+<span class="cmt"># SCC (OCP Security Context Constraints)</span>
+<span class="kw">oc</span> <span class="cmd">get</span> scc
+<span class="kw">oc</span> <span class="cmd">describe</span> scc <span class="val">anyuid</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-scc-to-user <span class="val">anyuid</span> <span class="flag">-z</span> <span class="val">default</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-scc-to-user <span class="val">privileged</span> <span class="flag">-z</span> <span class="val">my-sa</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> policy add-scc-to-group <span class="val">anyuid</span> system:serviceaccounts:<span class="val">my-ns</span>
+
+<span class="cmt"># Check permissions</span>
+<span class="kw">oc</span> <span class="cmd">auth</span> can-i create pods
+<span class="kw">oc</span> <span class="cmd">auth</span> can-i <span class="str">'*'</span> <span class="str">'*'</span>                              <span class="cmt"># cluster admin?</span>
+<span class="kw">oc</span> <span class="cmd">auth</span> can-i get pods <span class="flag">--as</span>=<span class="str">system:serviceaccount:my-ns:my-sa</span>
+<span class="kw">oc</span> <span class="cmd">auth</span> whoami</pre>
+      </div>
+    </div>
+
+    <!-- ADM -->
+    <div class="section" id="adm">
+      <div class="section-title">oc adm <span class="badge">cluster admin</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Node management</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> cordon <span class="val">worker-1</span>                            <span class="cmt"># prevent scheduling</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> uncordon <span class="val">worker-1</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> drain <span class="val">worker-1</span> <span class="flag">--ignore-daemonsets</span> <span class="flag">--delete-emptydir-data</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> top node
+<span class="kw">oc</span> <span class="cmd">adm</span> top pod <span class="flag">--containers</span>
+
+<span class="cmt"># Cluster info</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> inspect node/<span class="val">worker-1</span>                      <span class="cmt"># collect diagnostics</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> inspect namespace/<span class="val">my-ns</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> must-gather                                <span class="cmt"># collect cluster state</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> must-gather <span class="flag">--image</span>=<span class="str">registry.redhat.io/openshift4/ose-must-gather</span>
+<span class="kw">oc</span> <span class="cmd">cluster-info</span>
+<span class="kw">oc</span> <span class="cmd">version</span>
+
+<span class="cmt"># Certificate management</span>
+<span class="kw">oc</span> <span class="cmd">adm</span> certificate approve <span class="val">csr-xxxx</span>
+<span class="kw">oc</span> <span class="cmd">get</span> csr
+<span class="kw">oc</span> <span class="cmd">get</span> csr <span class="flag">-o</span> name <span class="pipe">|</span> xargs <span class="kw">oc</span> <span class="cmd">adm</span> certificate approve   <span class="cmt"># approve all pending</span>
+
+<span class="cmt"># Machine Config</span>
+<span class="kw">oc</span> <span class="cmd">get</span> machineconfig
+<span class="kw">oc</span> <span class="cmd">get</span> machineconfigpool
+<span class="kw">oc</span> <span class="cmd">describe</span> mcp worker
+<span class="kw">oc</span> <span class="cmd">get</span> mcp worker <span class="flag">-o</span> jsonpath=<span class="str">'{.status.conditions[*].type}'</span>
+
+<span class="cmt"># Operators</span>
+<span class="kw">oc</span> <span class="cmd">get</span> clusteroperator
+<span class="kw">oc</span> <span class="cmd">get</span> co                                         <span class="cmt"># short form</span>
+<span class="kw">oc</span> <span class="cmd">describe</span> co <span class="val">image-registry</span>
+<span class="kw">oc</span> <span class="cmd">get</span> csv <span class="flag">-n</span> <span class="val">openshift-operators</span>                 <span class="cmt"># installed operators</span>
+<span class="kw">oc</span> <span class="cmd">get</span> subscription <span class="flag">-n</span> <span class="val">openshift-operators</span>
+
+<span class="cmt"># Etcd backup (OCP 4)</span>
+<span class="kw">oc</span> <span class="cmd">debug</span> node/<span class="val">master-0</span> <span class="flag">--</span> chroot /host /usr/local/bin/cluster-backup.sh /home/core/assets/backup</pre>
+      </div>
+    </div>
+
+    <!-- TOP & EVENTS -->
+    <div class="section" id="top">
+      <div class="section-title">Top & Events <span class="badge">monitoring</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">oc</span> <span class="cmd">top</span> pods
+<span class="kw">oc</span> <span class="cmd">top</span> pods <span class="flag">--sort-by</span>=<span class="val">cpu</span>
+<span class="kw">oc</span> <span class="cmd">top</span> pods <span class="flag">--sort-by</span>=<span class="val">memory</span>
+<span class="kw">oc</span> <span class="cmd">top</span> pods <span class="flag">--containers</span>                          <span class="cmt"># per container</span>
+<span class="kw">oc</span> <span class="cmd">top</span> nodes
+<span class="kw">oc</span> <span class="cmd">top</span> nodes <span class="flag">--sort-by</span>=<span class="val">cpu</span>
+<span class="cmt"># Events</span>
+<span class="kw">oc</span> <span class="cmd">get</span> events
+<span class="kw">oc</span> <span class="cmd">get</span> events <span class="flag">--sort-by</span>=<span class="str">.lastTimestamp</span>
+<span class="kw">oc</span> <span class="cmd">get</span> events <span class="flag">--field-selector</span>=<span class="str">type=Warning</span>
+<span class="kw">oc</span> <span class="cmd">get</span> events <span class="flag">-A</span> <span class="flag">--sort-by</span>=<span class="str">.lastTimestamp</span> <span class="pipe">|</span> tail <span class="flag">-30</span>
+<span class="kw">oc</span> <span class="cmd">get</span> events <span class="flag">--field-selector</span>=<span class="str">involvedObject.name=my-pod</span></pre>
+      </div>
+    </div>
+
+    <!-- HELM -->
+    <div class="section" id="helm">
+      <div class="section-title">Helm Commands <span class="badge">helm 3</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt">## ─── REPO ────────────────────────────────────────────────────────</span>
+helm repo add <span class="val">bitnami</span> <span class="str">https://charts.bitnami.com/bitnami</span>
+helm repo add <span class="val">stable</span> <span class="str">https://charts.helm.sh/stable</span>
+helm repo list
+helm repo update
+helm repo remove <span class="val">bitnami</span>
+helm search repo <span class="str">nginx</span>
+helm search hub <span class="str">redis</span>                               <span class="cmt"># search Artifact Hub</span>
+
+<span class="cmt">## ─── INSTALL ─────────────────────────────────────────────────────</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span>
+helm install <span class="val">my-release</span> <span class="str">./my-chart</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">-f</span> <span class="str">values.yaml</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--set</span> <span class="str">image.tag=1.25</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--set</span> <span class="str">replicaCount=3,service.type=ClusterIP</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">-n</span> <span class="val">my-ns</span> <span class="flag">--create-namespace</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--dry-run</span> <span class="flag">--debug</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--wait</span> <span class="flag">--timeout</span> <span class="str">5m</span>
+helm install <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--atomic</span>     <span class="cmt"># rollback on fail</span>
+
+<span class="cmt">## ─── UPGRADE ─────────────────────────────────────────────────────</span>
+helm upgrade <span class="val">my-release</span> <span class="str">bitnami/nginx</span>
+helm upgrade <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">-f</span> <span class="str">values.yaml</span>
+helm upgrade <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--set</span> <span class="str">image.tag=1.26</span>
+helm upgrade <span class="val">my-release</span> <span class="str">./my-chart</span> <span class="flag">--reuse-values</span>  <span class="cmt"># keep existing values</span>
+helm upgrade <span class="flag">--install</span> <span class="val">my-release</span> <span class="str">bitnami/nginx</span>    <span class="cmt"># install if not exists</span>
+helm upgrade <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="flag">--force</span>      <span class="cmt"># force pod recreation</span>
+
+<span class="cmt">## ─── ROLLBACK ────────────────────────────────────────────────────</span>
+helm rollback <span class="val">my-release</span>                            <span class="cmt"># previous version</span>
+helm rollback <span class="val">my-release</span> <span class="val">2</span>                          <span class="cmt"># specific revision</span>
+helm history <span class="val">my-release</span>                             <span class="cmt"># see all revisions</span>
+
+<span class="cmt">## ─── STATUS / LIST ───────────────────────────────────────────────</span>
+helm list
+helm list <span class="flag">-A</span>                                        <span class="cmt"># all namespaces</span>
+helm list <span class="flag">-n</span> <span class="val">my-ns</span>
+helm list <span class="flag">--failed</span>
+helm status <span class="val">my-release</span>
+helm get values <span class="val">my-release</span>
+helm get values <span class="val">my-release</span> <span class="flag">--all</span>
+helm get manifest <span class="val">my-release</span>                       <span class="cmt"># rendered k8s manifests</span>
+helm get notes <span class="val">my-release</span>
+
+<span class="cmt">## ─── UNINSTALL ───────────────────────────────────────────────────</span>
+helm uninstall <span class="val">my-release</span>
+helm uninstall <span class="val">my-release</span> <span class="flag">--keep-history</span></pre>
+      </div>
+    </div>
+
+    <!-- HELM ADVANCED -->
+    <div class="section" id="helm-adv">
+      <div class="section-title">Helm Advanced <span class="badge">template · lint · package</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-bash"></span>bash</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt">## ─── TEMPLATE / RENDER ───────────────────────────────────────────</span>
+helm template <span class="val">my-release</span> <span class="str">./my-chart</span>               <span class="cmt"># render to stdout</span>
+helm template <span class="val">my-release</span> <span class="str">./my-chart</span> <span class="flag">-f</span> <span class="str">values.yaml</span>
+helm template <span class="val">my-release</span> <span class="str">./my-chart</span> <span class="flag">--set</span> <span class="str">env=prod</span> <span class="pipe">|</span> <span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> -
+helm template <span class="val">my-release</span> <span class="str">bitnami/nginx</span> <span class="pipe">|</span> grep <span class="str">image:</span>
+<span class="cmt"># Render and apply in one shot (GitOps friendly)</span>
+helm template <span class="val">my-release</span> <span class="str">./my-chart</span> <span class="flag">--namespace</span> <span class="val">prod</span> <span class="pipe">|</span> <span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> -
+
+<span class="cmt">## ─── LINT & TEST ─────────────────────────────────────────────────</span>
+helm lint <span class="str">./my-chart</span>
+helm lint <span class="str">./my-chart</span> <span class="flag">--strict</span>
+helm lint <span class="str">./my-chart</span> <span class="flag">-f</span> <span class="str">values-prod.yaml</span>
+helm test <span class="val">my-release</span>
+
+<span class="cmt">## ─── CHART CREATE / PACKAGE ──────────────────────────────────────</span>
+helm create <span class="str">my-chart</span>                               <span class="cmt"># scaffold new chart</span>
+helm package <span class="str">./my-chart</span>
+helm package <span class="str">./my-chart</span> <span class="flag">--destination</span> <span class="str">./dist</span>
+helm package <span class="str">./my-chart</span> <span class="flag">--version</span> <span class="str">1.2.3</span> <span class="flag">--app-version</span> <span class="str">2.0.0</span>
+
+<span class="cmt">## ─── OCI REGISTRY (Quay/Harbor) ──────────────────────────────────</span>
+helm registry login <span class="str">quay.io</span> <span class="flag">-u</span> <span class="val">admin</span> <span class="flag">-p</span> <span class="val">password</span>
+helm push <span class="str">my-chart-1.0.0.tgz</span> oci://<span class="str">quay.io/myorg/charts</span>
+helm pull oci://<span class="str">quay.io/myorg/charts/my-chart</span> <span class="flag">--version</span> <span class="str">1.0.0</span>
+helm install <span class="val">my-release</span> oci://<span class="str">quay.io/myorg/charts/my-chart</span>
+
+<span class="cmt">## ─── SHOW CHART INFO ─────────────────────────────────────────────</span>
+helm show chart <span class="str">bitnami/nginx</span>
+helm show values <span class="str">bitnami/nginx</span>
+helm show values <span class="str">bitnami/nginx</span> <span class="pipe">></span> default-values.yaml   <span class="cmt"># save defaults</span>
+helm show readme <span class="str">bitnami/nginx</span>
+helm show all <span class="str">bitnami/nginx</span>
+
+<span class="cmt">## ─── VALUES MERGE ORDER ──────────────────────────────────────────</span>
+<span class="cmt"># Last -f or --set wins. Priority: --set > --set-file > --set-string > -f</span>
+helm install <span class="val">r</span> <span class="str">./chart</span> <span class="flag">-f</span> <span class="str">base.yaml</span> <span class="flag">-f</span> <span class="str">prod.yaml</span> <span class="flag">--set</span> <span class="str">image.tag=v2</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-ps"></span>Helm + PowerShell</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># List all releases as object</span>
+<span class="var">$releases</span> = helm list <span class="flag">-A</span> <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+<span class="var">$releases</span> <span class="pipe">|</span> Format-Table name, namespace, chart, app_version, status <span class="flag">-AutoSize</span>
+
+<span class="cmt"># Find failed releases</span>
+<span class="var">$releases</span> <span class="pipe">|</span> Where-Object { <span class="var">$_</span>.status <span class="flag">-ne</span> <span class="str">"deployed"</span> }
+
+<span class="cmt"># Get all values as object</span>
+<span class="var">$vals</span> = helm get values <span class="val">my-release</span> <span class="flag">-o</span> json <span class="pipe">|</span> ConvertFrom-Json
+
+<span class="cmt"># Render + apply</span>
+helm template <span class="val">my-release</span> <span class="str">.\my-chart</span> <span class="flag">-f</span> <span class="str">values.yaml</span> <span class="pipe">|</span> <span class="kw">oc</span> <span class="cmd">apply</span> <span class="flag">-f</span> -</pre>
+      </div>
+    </div>
+
+  </div>
+  <!-- END PANEL COMMANDS -->
+
+  <!-- CONTENT YAML -->
+  <div class="content panel" id="panel-yaml">
+
+    <!-- POD SPEC -->
+    <div class="section" id="y-pod">
+      <div class="section-title">Pod Spec Skeleton <span class="badge">baseline</span></div>
+      <div class="tip"><strong>Tip:</strong> Every container feature (env, volumes, probes, securityContext) lives under <code>spec.containers[]</code>. Pod-level (volumes, serviceAccountName, affinity) is under <code>spec</code>.</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">Pod</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-pod</span>
+  <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+  <span class="key">labels</span>:
+    <span class="key">app</span>: <span class="yamlstr">my-app</span>
+    <span class="key">tier</span>: <span class="yamlstr">backend</span>
+    <span class="key">version</span>: <span class="yamlstr">v1</span>
+  <span class="key">annotations</span>:
+    <span class="key">description</span>: <span class="yamlstr">"My application pod"</span>
+<span class="key">spec</span>:
+  <span class="key">serviceAccountName</span>: <span class="yamlstr">my-sa</span>
+  <span class="key">automountServiceAccountToken</span>: <span class="yamlbool">false</span>
+  <span class="key">terminationGracePeriodSeconds</span>: <span class="yamlval">30</span>
+  <span class="key">restartPolicy</span>: <span class="yamlval">Always</span>           <span class="cmt"># Always | OnFailure | Never</span>
+  <span class="key">imagePullSecrets</span>:
+    - <span class="key">name</span>: <span class="yamlstr">regcred</span>
+  <span class="key">containers</span>:
+    - <span class="key">name</span>: <span class="yamlstr">app</span>
+      <span class="key">image</span>: <span class="yamlstr">my-registry/my-app:v1</span>
+      <span class="key">imagePullPolicy</span>: <span class="yamlval">IfNotPresent</span>  <span class="cmt"># Always | IfNotPresent | Never</span>
+      <span class="key">command</span>: [<span class="yamlstr">"/bin/sh"</span>]
+      <span class="key">args</span>: [<span class="yamlstr">"-c"</span>, <span class="yamlstr">"java -jar /app/app.jar"</span>]
+      <span class="key">workingDir</span>: <span class="yamlstr">/app</span>
+      <span class="key">ports</span>:
+        - <span class="key">name</span>: <span class="yamlstr">http</span>
+          <span class="key">containerPort</span>: <span class="yamlval">8080</span>
+          <span class="key">protocol</span>: <span class="yamlval">TCP</span>
+        - <span class="key">name</span>: <span class="yamlstr">metrics</span>
+          <span class="key">containerPort</span>: <span class="yamlval">9090</span>
+      <span class="key">env</span>: <span class="cmt"># see Environment section</span>
+      <span class="key">envFrom</span>: <span class="cmt"># see envFrom section</span>
+      <span class="key">volumeMounts</span>: <span class="cmt"># see VolumeMounts section</span>
+      <span class="key">resources</span>: <span class="cmt"># see Resources section</span>
+      <span class="key">livenessProbe</span>: <span class="cmt"># see Probes section</span>
+      <span class="key">readinessProbe</span>: <span class="cmt"># see Probes section</span>
+      <span class="key">startupProbe</span>: <span class="cmt"># see Probes section</span>
+      <span class="key">securityContext</span>: <span class="cmt"># see SecurityContext section</span>
+      <span class="key">lifecycle</span>:
+        <span class="key">postStart</span>:
+          <span class="key">exec</span>:
+            <span class="key">command</span>: [<span class="yamlstr">"/bin/sh"</span>, <span class="yamlstr">"-c"</span>, <span class="yamlstr">"echo started"</span>]
+        <span class="key">preStop</span>:
+          <span class="key">exec</span>:
+            <span class="key">command</span>: [<span class="yamlstr">"/bin/sh"</span>, <span class="yamlstr">"-c"</span>, <span class="yamlstr">"sleep 5"</span>]
+  <span class="key">volumes</span>: <span class="cmt"># see Volumes section</span>
+  <span class="key">nodeSelector</span>:
+    <span class="key">kubernetes.io/os</span>: <span class="yamlstr">linux</span>
+  <span class="key">tolerations</span>: <span class="cmt"># see Affinity section</span>
+  <span class="key">affinity</span>: <span class="cmt"># see Affinity section</span>
+  <span class="key">dnsPolicy</span>: <span class="yamlval">ClusterFirst</span>
+  <span class="key">hostNetwork</span>: <span class="yamlbool">false</span>
+  <span class="key">hostPID</span>: <span class="yamlbool">false</span></pre>
+      </div>
+    </div>
+
+    <!-- DEPLOYMENT -->
+    <div class="section" id="y-deploy">
+      <div class="section-title">Deployment <span class="badge">apps/v1</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">apps/v1</span>
+<span class="key">kind</span>: <span class="yamlval">Deployment</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-app</span>
+  <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+  <span class="key">labels</span>:
+    <span class="key">app</span>: <span class="yamlstr">my-app</span>
+<span class="key">spec</span>:
+  <span class="key">replicas</span>: <span class="yamlval">3</span>
+  <span class="key">revisionHistoryLimit</span>: <span class="yamlval">5</span>
+  <span class="key">progressDeadlineSeconds</span>: <span class="yamlval">600</span>
+  <span class="key">selector</span>:
+    <span class="key">matchLabels</span>:
+      <span class="key">app</span>: <span class="yamlstr">my-app</span>
+  <span class="key">strategy</span>:
+    <span class="key">type</span>: <span class="yamlval">RollingUpdate</span>           <span class="cmt"># RollingUpdate | Recreate</span>
+    <span class="key">rollingUpdate</span>:
+      <span class="key">maxSurge</span>: <span class="yamlval">1</span>                  <span class="cmt"># or "25%"</span>
+      <span class="key">maxUnavailable</span>: <span class="yamlval">0</span>            <span class="cmt"># or "25%"</span>
+  <span class="key">template</span>:
+    <span class="key">metadata</span>:
+      <span class="key">labels</span>:
+        <span class="key">app</span>: <span class="yamlstr">my-app</span>
+      <span class="key">annotations</span>:
+        <span class="key">checksum/config</span>: <span class="yamlstr">"{{ sha256sum .Values.config }}"</span>   <span class="cmt"># helm trick to force restart on CM change</span>
+    <span class="key">spec</span>:
+      <span class="key">containers</span>:
+        - <span class="key">name</span>: <span class="yamlstr">app</span>
+          <span class="key">image</span>: <span class="yamlstr">my-registry/my-app:v1</span>
+          <span class="cmt"># ... all container config here</span></pre>
+      </div>
+    </div>
+
+    <!-- DC -->
+    <div class="section" id="y-dc">
+      <div class="section-title">DeploymentConfig (OCP) <span class="badge">legacy</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">apps.openshift.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">DeploymentConfig</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-app</span>
+<span class="key">spec</span>:
+  <span class="key">replicas</span>: <span class="yamlval">2</span>
+  <span class="key">selector</span>:
+    <span class="key">app</span>: <span class="yamlstr">my-app</span>
+  <span class="key">strategy</span>:
+    <span class="key">type</span>: <span class="yamlval">Rolling</span>                  <span class="cmt"># Rolling | Recreate | Custom</span>
+    <span class="key">rollingParams</span>:
+      <span class="key">maxSurge</span>: <span class="yamlstr">"25%"</span>
+      <span class="key">maxUnavailable</span>: <span class="yamlstr">"25%"</span>
+      <span class="key">intervalSeconds</span>: <span class="yamlval">1</span>
+      <span class="key">timeoutSeconds</span>: <span class="yamlval">600</span>
+  <span class="key">triggers</span>:
+    - <span class="key">type</span>: <span class="yamlval">ConfigChange</span>            <span class="cmt"># auto deploy on config change</span>
+    - <span class="key">type</span>: <span class="yamlval">ImageChange</span>
+      <span class="key">imageChangeParams</span>:
+        <span class="key">automatic</span>: <span class="yamlbool">true</span>
+        <span class="key">containerNames</span>: [<span class="yamlstr">app</span>]
+        <span class="key">from</span>:
+          <span class="key">kind</span>: <span class="yamlval">ImageStreamTag</span>
+          <span class="key">name</span>: <span class="yamlstr">my-app:latest</span>
+  <span class="key">template</span>:
+    <span class="key">metadata</span>:
+      <span class="key">labels</span>:
+        <span class="key">app</span>: <span class="yamlstr">my-app</span>
+    <span class="key">spec</span>:
+      <span class="key">containers</span>:
+        - <span class="key">name</span>: <span class="yamlstr">app</span>
+          <span class="key">image</span>: <span class="yamlstr">my-app:latest</span></pre>
+      </div>
+    </div>
+
+    <!-- ENV VARS -->
+    <div class="section" id="y-env">
+      <div class="section-title">Environment Variables <span class="badge">env</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All env types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">containers</span>:
+  - <span class="key">name</span>: <span class="yamlstr">app</span>
+    <span class="key">env</span>:
+      <span class="cmt"># ── 1. Plain literal value ────────────────────────────────────────</span>
+      - <span class="key">name</span>: <span class="yamlstr">APP_ENV</span>
+        <span class="key">value</span>: <span class="yamlstr">"production"</span>
+      - <span class="key">name</span>: <span class="yamlstr">LOG_LEVEL</span>
+        <span class="key">value</span>: <span class="yamlstr">"INFO"</span>
+
+      <span class="cmt"># ── 2. From ConfigMap (single key) ───────────────────────────────</span>
+      - <span class="key">name</span>: <span class="yamlstr">DB_HOST</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">configMapKeyRef</span>:
+            <span class="key">name</span>: <span class="yamlstr">app-config</span>
+            <span class="key">key</span>: <span class="yamlstr">database.host</span>
+            <span class="key">optional</span>: <span class="yamlbool">false</span>      <span class="cmt"># fail if CM/key missing</span>
+
+      <span class="cmt"># ── 3. From Secret (single key) ──────────────────────────────────</span>
+      - <span class="key">name</span>: <span class="yamlstr">DB_PASSWORD</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">secretKeyRef</span>:
+            <span class="key">name</span>: <span class="yamlstr">db-secret</span>
+            <span class="key">key</span>: <span class="yamlstr">password</span>
+            <span class="key">optional</span>: <span class="yamlbool">true</span>
+
+      <span class="cmt"># ── 4. From Pod/Node Downward API (fieldRef) ─────────────────────</span>
+      - <span class="key">name</span>: <span class="yamlstr">POD_NAME</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">fieldRef</span>:
+            <span class="key">fieldPath</span>: <span class="yamlstr">metadata.name</span>
+      - <span class="key">name</span>: <span class="yamlstr">POD_NAMESPACE</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">fieldRef</span>:
+            <span class="key">fieldPath</span>: <span class="yamlstr">metadata.namespace</span>
+      - <span class="key">name</span>: <span class="yamlstr">POD_IP</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">fieldRef</span>:
+            <span class="key">fieldPath</span>: <span class="yamlstr">status.podIP</span>
+      - <span class="key">name</span>: <span class="yamlstr">NODE_NAME</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">fieldRef</span>:
+            <span class="key">fieldPath</span>: <span class="yamlstr">spec.nodeName</span>
+      - <span class="key">name</span>: <span class="yamlstr">SERVICE_ACCOUNT</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">fieldRef</span>:
+            <span class="key">fieldPath</span>: <span class="yamlstr">spec.serviceAccountName</span>
+
+      <span class="cmt"># ── 5. From Resource limits (resourceFieldRef) ───────────────────</span>
+      - <span class="key">name</span>: <span class="yamlstr">CPU_LIMIT</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">resourceFieldRef</span>:
+            <span class="key">containerName</span>: <span class="yamlstr">app</span>
+            <span class="key">resource</span>: <span class="yamlstr">limits.cpu</span>
+      - <span class="key">name</span>: <span class="yamlstr">MEM_REQUEST</span>
+        <span class="key">valueFrom</span>:
+          <span class="key">resourceFieldRef</span>:
+            <span class="key">containerName</span>: <span class="yamlstr">app</span>
+            <span class="key">resource</span>: <span class="yamlstr">requests.memory</span></pre>
+      </div>
+    </div>
+
+    <!-- ENVFROM -->
+    <div class="section" id="y-envfrom">
+      <div class="section-title">envFrom — Bulk Inject <span class="badge">configmap · secret</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">containers</span>:
+  - <span class="key">name</span>: <span class="yamlstr">app</span>
+    <span class="key">envFrom</span>:
+      <span class="cmt"># Inject ALL keys from ConfigMap as env vars</span>
+      - <span class="key">configMapRef</span>:
+          <span class="key">name</span>: <span class="yamlstr">app-config</span>
+          <span class="key">optional</span>: <span class="yamlbool">false</span>
+
+      <span class="cmt"># Inject ALL keys from ConfigMap with prefix</span>
+      - <span class="key">prefix</span>: <span class="yamlstr">FEATURE_</span>
+        <span class="key">configMapRef</span>:
+          <span class="key">name</span>: <span class="yamlstr">feature-flags</span>
+
+      <span class="cmt"># Inject ALL keys from Secret as env vars</span>
+      - <span class="key">secretRef</span>:
+          <span class="key">name</span>: <span class="yamlstr">app-secret</span>
+          <span class="key">optional</span>: <span class="yamlbool">false</span>
+
+      <span class="cmt"># Inject ALL secret keys with prefix</span>
+      - <span class="key">prefix</span>: <span class="yamlstr">DB_</span>
+        <span class="key">secretRef</span>:
+          <span class="key">name</span>: <span class="yamlstr">db-credentials</span></pre>
+      </div>
+    </div>
+
+    <!-- VOLUMES -->
+    <div class="section" id="y-volumes">
+      <div class="section-title">Volumes — All Types <span class="badge">spec.volumes</span></div>
+      <div class="tip"><strong>Remember:</strong> Volumes are declared at <code>spec.volumes</code> (pod level). They are <em>mounted</em> into containers via <code>spec.containers[].volumeMounts</code>.</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All volume types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">spec</span>:
+  <span class="key">volumes</span>:
+
+    <span class="cmt"># ── 1. emptyDir — ephemeral scratch space ────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">scratch</span>
+      <span class="key">emptyDir</span>: {}
+
+    <span class="cmt"># emptyDir in memory (RAM-backed, disappears with pod)</span>
+    - <span class="key">name</span>: <span class="yamlstr">cache</span>
+      <span class="key">emptyDir</span>:
+        <span class="key">medium</span>: <span class="yamlval">Memory</span>
+        <span class="key">sizeLimit</span>: <span class="yamlstr">256Mi</span>
+
+    <span class="cmt"># ── 2. ConfigMap ─────────────────────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">app-config-vol</span>
+      <span class="key">configMap</span>:
+        <span class="key">name</span>: <span class="yamlstr">app-config</span>
+        <span class="key">defaultMode</span>: <span class="yamlval">0644</span>
+
+    <span class="cmt"># ConfigMap — mount only specific keys as files</span>
+    - <span class="key">name</span>: <span class="yamlstr">nginx-config-vol</span>
+      <span class="key">configMap</span>:
+        <span class="key">name</span>: <span class="yamlstr">nginx-config</span>
+        <span class="key">items</span>:
+          - <span class="key">key</span>: <span class="yamlstr">nginx.conf</span>       <span class="cmt"># CM key</span>
+            <span class="key">path</span>: <span class="yamlstr">nginx.conf</span>     <span class="cmt"># filename in mount dir</span>
+          - <span class="key">key</span>: <span class="yamlstr">default.conf</span>
+            <span class="key">path</span>: <span class="yamlstr">conf.d/default.conf</span>
+
+    <span class="cmt"># ── 3. Secret ────────────────────────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">app-secret-vol</span>
+      <span class="key">secret</span>:
+        <span class="key">secretName</span>: <span class="yamlstr">app-secret</span>
+        <span class="key">defaultMode</span>: <span class="yamlval">0400</span>
+
+    <span class="cmt"># Secret — mount specific key as file</span>
+    - <span class="key">name</span>: <span class="yamlstr">tls-vol</span>
+      <span class="key">secret</span>:
+        <span class="key">secretName</span>: <span class="yamlstr">tls-secret</span>
+        <span class="key">items</span>:
+          - <span class="key">key</span>: <span class="yamlstr">tls.crt</span>
+            <span class="key">path</span>: <span class="yamlstr">tls.crt</span>
+          - <span class="key">key</span>: <span class="yamlstr">tls.key</span>
+            <span class="key">path</span>: <span class="yamlstr">tls.key</span>
+
+    <span class="cmt"># ── 4. PersistentVolumeClaim ─────────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">data-vol</span>
+      <span class="key">persistentVolumeClaim</span>:
+        <span class="key">claimName</span>: <span class="yamlstr">my-pvc</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">false</span>
+
+    <span class="cmt"># ── 5. hostPath — node filesystem ────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">host-logs</span>
+      <span class="key">hostPath</span>:
+        <span class="key">path</span>: <span class="yamlstr">/var/log</span>
+        <span class="key">type</span>: <span class="yamlval">Directory</span>   <span class="cmt"># DirectoryOrCreate | FileOrCreate | File | Socket | CharDevice | BlockDevice</span>
+
+    <span class="cmt"># ── 6. Projected — combine multiple sources ───────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">projected-vol</span>
+      <span class="key">projected</span>:
+        <span class="key">sources</span>:
+          - <span class="key">configMap</span>:
+              <span class="key">name</span>: <span class="yamlstr">app-config</span>
+          - <span class="key">secret</span>:
+              <span class="key">name</span>: <span class="yamlstr">app-secret</span>
+          - <span class="key">serviceAccountToken</span>:
+              <span class="key">path</span>: <span class="yamlstr">token</span>
+              <span class="key">expirationSeconds</span>: <span class="yamlval">3600</span>
+              <span class="key">audience</span>: <span class="yamlstr">api</span>
+          - <span class="key">downwardAPI</span>:
+              <span class="key">items</span>:
+                - <span class="key">path</span>: <span class="yamlstr">labels</span>
+                  <span class="key">fieldRef</span>:
+                    <span class="key">fieldPath</span>: <span class="yamlstr">metadata.labels</span>
+
+    <span class="cmt"># ── 7. NFS ───────────────────────────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">nfs-vol</span>
+      <span class="key">nfs</span>:
+        <span class="key">server</span>: <span class="yamlstr">nfs-server.example.com</span>
+        <span class="key">path</span>: <span class="yamlstr">/exports/data</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">false</span>
+
+    <span class="cmt"># ── 8. downwardAPI — expose pod metadata as files ────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">podinfo</span>
+      <span class="key">downwardAPI</span>:
+        <span class="key">items</span>:
+          - <span class="key">path</span>: <span class="yamlstr">name</span>
+            <span class="key">fieldRef</span>:
+              <span class="key">fieldPath</span>: <span class="yamlstr">metadata.name</span>
+          - <span class="key">path</span>: <span class="yamlstr">namespace</span>
+            <span class="key">fieldRef</span>:
+              <span class="key">fieldPath</span>: <span class="yamlstr">metadata.namespace</span>
+          - <span class="key">path</span>: <span class="yamlstr">labels</span>
+            <span class="key">fieldRef</span>:
+              <span class="key">fieldPath</span>: <span class="yamlstr">metadata.labels</span>
+          - <span class="key">path</span>: <span class="yamlstr">cpu_limit</span>
+            <span class="key">resourceFieldRef</span>:
+              <span class="key">containerName</span>: <span class="yamlstr">app</span>
+              <span class="key">resource</span>: <span class="yamlstr">limits.cpu</span>
+
+    <span class="cmt"># ── 9. CSI (generic CSI driver - e.g. Secrets Store) ─────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">secrets-store</span>
+      <span class="key">csi</span>:
+        <span class="key">driver</span>: <span class="yamlstr">secrets-store.csi.k8s.io</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">true</span>
+        <span class="key">volumeAttributes</span>:
+          <span class="key">secretProviderClass</span>: <span class="yamlstr">my-provider</span>
+
+    <span class="cmt"># ── 10. configMap as env file ─────────────────────────────────────</span>
+    - <span class="key">name</span>: <span class="yamlstr">config-file</span>
+      <span class="key">configMap</span>:
+        <span class="key">name</span>: <span class="yamlstr">app-properties</span>
+        <span class="key">defaultMode</span>: <span class="yamlval">0755</span>        <span class="cmt"># executable</span></pre>
+      </div>
+    </div>
+
+    <!-- VOLUME MOUNTS -->
+    <div class="section" id="y-vmounts">
+      <div class="section-title">VolumeMounts <span class="badge">containers[].volumeMounts</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">containers</span>:
+  - <span class="key">name</span>: <span class="yamlstr">app</span>
+    <span class="key">volumeMounts</span>:
+
+      <span class="cmt"># Mount entire volume to path</span>
+      - <span class="key">name</span>: <span class="yamlstr">data-vol</span>              <span class="cmt"># must match spec.volumes[].name</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/data</span>
+
+      <span class="cmt"># ReadOnly mount (secrets, certs)</span>
+      - <span class="key">name</span>: <span class="yamlstr">tls-vol</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/etc/tls</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">true</span>
+
+      <span class="cmt"># Mount specific subPath (single file, not whole dir)</span>
+      - <span class="key">name</span>: <span class="yamlstr">nginx-config-vol</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/etc/nginx/nginx.conf</span>
+        <span class="key">subPath</span>: <span class="yamlstr">nginx.conf</span>        <span class="cmt"># file inside volume</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">true</span>
+
+      <span class="cmt"># Mount config file using subPath (no overwrite of whole dir)</span>
+      - <span class="key">name</span>: <span class="yamlstr">app-config-vol</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/app/config/application.properties</span>
+        <span class="key">subPath</span>: <span class="yamlstr">application.properties</span>
+
+      <span class="cmt"># subPathExpr (use env var in subPath)</span>
+      - <span class="key">name</span>: <span class="yamlstr">data-vol</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/data/$(POD_NAME)</span>
+        <span class="key">subPathExpr</span>: <span class="yamlstr">$(POD_NAME)</span>   <span class="cmt"># uses env var POD_NAME</span>
+
+      <span class="cmt"># Scratch space</span>
+      - <span class="key">name</span>: <span class="yamlstr">scratch</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/tmp</span>
+
+      <span class="cmt"># Downward API files</span>
+      - <span class="key">name</span>: <span class="yamlstr">podinfo</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/etc/podinfo</span>
+        <span class="key">readOnly</span>: <span class="yamlbool">true</span>
+
+      <span class="cmt"># mountPropagation - shared volume (advanced)</span>
+      - <span class="key">name</span>: <span class="yamlstr">shared</span>
+        <span class="key">mountPath</span>: <span class="yamlstr">/shared</span>
+        <span class="key">mountPropagation</span>: <span class="yamlval">HostToContainer</span>  <span class="cmt"># None | HostToContainer | Bidirectional</span></pre>
+      </div>
+    </div>
+
+    <!-- INIT CONTAINERS -->
+    <div class="section" id="y-init">
+      <div class="section-title">Init Containers <span class="badge">spec.initContainers</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">spec</span>:
+  <span class="key">initContainers</span>:
+    <span class="cmt"># Wait for DB to be ready</span>
+    - <span class="key">name</span>: <span class="yamlstr">wait-for-db</span>
+      <span class="key">image</span>: <span class="yamlstr">busybox</span>
+      <span class="key">command</span>: [<span class="yamlstr">'sh'</span>, <span class="yamlstr">'-c'</span>, <span class="yamlstr">'until nc -z postgres-svc 5432; do echo waiting; sleep 2; done'</span>]
+
+    <span class="cmt"># Database migration</span>
+    - <span class="key">name</span>: <span class="yamlstr">db-migrate</span>
+      <span class="key">image</span>: <span class="yamlstr">my-app:latest</span>
+      <span class="key">command</span>: [<span class="yamlstr">"/app/migrate.sh"</span>]
+      <span class="key">env</span>:
+        - <span class="key">name</span>: <span class="yamlstr">DB_URL</span>
+          <span class="key">valueFrom</span>:
+            <span class="key">secretKeyRef</span>:
+              <span class="key">name</span>: <span class="yamlstr">db-secret</span>
+              <span class="key">key</span>: <span class="yamlstr">url</span>
+
+    <span class="cmt"># Copy files to shared volume</span>
+    - <span class="key">name</span>: <span class="yamlstr">copy-configs</span>
+      <span class="key">image</span>: <span class="yamlstr">busybox</span>
+      <span class="key">command</span>: [<span class="yamlstr">'sh'</span>, <span class="yamlstr">'-c'</span>, <span class="yamlstr">'cp /src/* /dest/'</span>]
+      <span class="key">volumeMounts</span>:
+        - <span class="key">name</span>: <span class="yamlstr">config-src</span>
+          <span class="key">mountPath</span>: <span class="yamlstr">/src</span>
+          <span class="key">readOnly</span>: <span class="yamlbool">true</span>
+        - <span class="key">name</span>: <span class="yamlstr">work-dir</span>
+          <span class="key">mountPath</span>: <span class="yamlstr">/dest</span>
+
+  <span class="key">containers</span>:
+    - <span class="key">name</span>: <span class="yamlstr">app</span>
+      <span class="key">image</span>: <span class="yamlstr">my-app:latest</span>
+      <span class="key">volumeMounts</span>:
+        - <span class="key">name</span>: <span class="yamlstr">work-dir</span>
+          <span class="key">mountPath</span>: <span class="yamlstr">/app/config</span>
+
+  <span class="key">volumes</span>:
+    - <span class="key">name</span>: <span class="yamlstr">work-dir</span>
+      <span class="key">emptyDir</span>: {}
+    - <span class="key">name</span>: <span class="yamlstr">config-src</span>
+      <span class="key">configMap</span>:
+        <span class="key">name</span>: <span class="yamlstr">app-config</span></pre>
+      </div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="section" id="y-resources">
+      <div class="section-title">Resources & Limits <span class="badge">cpu · memory</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">containers</span>:
+  - <span class="key">name</span>: <span class="yamlstr">app</span>
+    <span class="key">resources</span>:
+      <span class="key">requests</span>:                     <span class="cmt"># scheduler uses this to place pod on node</span>
+        <span class="key">cpu</span>: <span class="yamlstr">"250m"</span>                  <span class="cmt"># 250 millicores = 0.25 CPU</span>
+        <span class="key">memory</span>: <span class="yamlstr">"256Mi"</span>
+        <span class="key">ephemeral-storage</span>: <span class="yamlstr">"1Gi"</span>
+      <span class="key">limits</span>:                       <span class="cmt"># hard cap: OOMKill on memory, throttle on CPU</span>
+        <span class="key">cpu</span>: <span class="yamlstr">"500m"</span>
+        <span class="key">memory</span>: <span class="yamlstr">"512Mi"</span>
+        <span class="key">ephemeral-storage</span>: <span class="yamlstr">"2Gi"</span>
+        <span class="cmt"># GPU (NVIDIA operator)</span>
+        <span class="key">nvidia.com/gpu</span>: <span class="yamlval">1</span>
+
+<span class="cmt"># CPU units: 1 = 1000m. 1m = 0.001 CPU core</span>
+<span class="cmt"># Memory units: Ki, Mi, Gi, Ti (power of 2) or K, M, G (power of 10)</span>
+<span class="cmt"># QoS Classes:</span>
+<span class="cmt">#   Guaranteed  = requests == limits (best for latency-sensitive)</span>
+<span class="cmt">#   Burstable   = requests < limits</span>
+<span class="cmt">#   BestEffort  = no requests or limits (evicted first)</span></pre>
+      </div>
+    </div>
+
+    <!-- PROBES -->
+    <div class="section" id="y-probes">
+      <div class="section-title">Probes <span class="badge">liveness · readiness · startup</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All probe types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">containers</span>:
+  - <span class="key">name</span>: <span class="yamlstr">app</span>
+
+    <span class="cmt"># ── Startup Probe (checked first, disables liveness until passes) ─</span>
+    <span class="key">startupProbe</span>:
+      <span class="key">httpGet</span>:
+        <span class="key">path</span>: <span class="yamlstr">/health/startup</span>
+        <span class="key">port</span>: <span class="yamlval">8080</span>
+      <span class="key">failureThreshold</span>: <span class="yamlval">30</span>          <span class="cmt"># 30 * 10s = 5 min max startup time</span>
+      <span class="key">periodSeconds</span>: <span class="yamlval">10</span>
+
+    <span class="cmt"># ── Liveness Probe (restart if fails) ────────────────────────────</span>
+    <span class="key">livenessProbe</span>:
+      <span class="cmt"># HTTP check</span>
+      <span class="key">httpGet</span>:
+        <span class="key">path</span>: <span class="yamlstr">/actuator/health</span>
+        <span class="key">port</span>: <span class="yamlval">8080</span>
+        <span class="key">scheme</span>: <span class="yamlval">HTTP</span>                <span class="cmt"># or HTTPS</span>
+        <span class="key">httpHeaders</span>:
+          - <span class="key">name</span>: <span class="yamlstr">X-Health-Check</span>
+            <span class="key">value</span>: <span class="yamlstr">"true"</span>
+      <span class="key">initialDelaySeconds</span>: <span class="yamlval">30</span>
+      <span class="key">periodSeconds</span>: <span class="yamlval">10</span>
+      <span class="key">timeoutSeconds</span>: <span class="yamlval">5</span>
+      <span class="key">failureThreshold</span>: <span class="yamlval">3</span>
+      <span class="key">successThreshold</span>: <span class="yamlval">1</span>
+
+    <span class="cmt"># ── Readiness Probe (remove from Service endpoints if fails) ─────</span>
+    <span class="key">readinessProbe</span>:
+      <span class="cmt"># TCP socket check</span>
+      <span class="key">tcpSocket</span>:
+        <span class="key">port</span>: <span class="yamlval">8080</span>
+      <span class="key">initialDelaySeconds</span>: <span class="yamlval">5</span>
+      <span class="key">periodSeconds</span>: <span class="yamlval">5</span>
+
+    <span class="cmt"># ── Exec probe (run command inside container) ────────────────────</span>
+    <span class="key">livenessProbe</span>:
+      <span class="key">exec</span>:
+        <span class="key">command</span>:
+          - <span class="yamlstr">cat</span>
+          - <span class="yamlstr">/tmp/healthy</span>
+      <span class="key">initialDelaySeconds</span>: <span class="yamlval">5</span>
+      <span class="key">periodSeconds</span>: <span class="yamlval">5</span>
+
+    <span class="cmt"># ── gRPC probe (k8s 1.23+) ───────────────────────────────────────</span>
+    <span class="key">livenessProbe</span>:
+      <span class="key">grpc</span>:
+        <span class="key">port</span>: <span class="yamlval">9090</span>
+        <span class="key">service</span>: <span class="yamlstr">my.service.Health</span>
+      <span class="key">periodSeconds</span>: <span class="yamlval">10</span></pre>
+      </div>
+    </div>
+
+    <!-- SECURITY CONTEXT -->
+    <div class="section" id="y-secctx">
+      <div class="section-title">Security Context <span class="badge">pod + container</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">spec</span>:
+  <span class="cmt"># ── Pod-level securityContext ──────────────────────────────────────</span>
+  <span class="key">securityContext</span>:
+    <span class="key">runAsUser</span>: <span class="yamlval">1000</span>                 <span class="cmt"># UID</span>
+    <span class="key">runAsGroup</span>: <span class="yamlval">3000</span>                <span class="cmt"># GID</span>
+    <span class="key">fsGroup</span>: <span class="yamlval">2000</span>                   <span class="cmt"># volume ownership GID</span>
+    <span class="key">fsGroupChangePolicy</span>: <span class="yamlval">OnRootMismatch</span>  <span class="cmt"># Always | OnRootMismatch</span>
+    <span class="key">runAsNonRoot</span>: <span class="yamlbool">true</span>
+    <span class="key">seccompProfile</span>:
+      <span class="key">type</span>: <span class="yamlval">RuntimeDefault</span>           <span class="cmt"># RuntimeDefault | Localhost | Unconfined</span>
+    <span class="key">sysctls</span>:
+      - <span class="key">name</span>: <span class="yamlstr">net.ipv4.tcp_keepalive_time</span>
+        <span class="key">value</span>: <span class="yamlstr">"300"</span>
+
+  <span class="key">containers</span>:
+    - <span class="key">name</span>: <span class="yamlstr">app</span>
+      <span class="cmt"># ── Container-level securityContext ───────────────────────────────</span>
+      <span class="key">securityContext</span>:
+        <span class="key">allowPrivilegeEscalation</span>: <span class="yamlbool">false</span>
+        <span class="key">readOnlyRootFilesystem</span>: <span class="yamlbool">true</span>  <span class="cmt"># good practice</span>
+        <span class="key">runAsNonRoot</span>: <span class="yamlbool">true</span>
+        <span class="key">runAsUser</span>: <span class="yamlval">1000</span>
+        <span class="key">capabilities</span>:
+          <span class="key">drop</span>:
+            - <span class="yamlstr">ALL</span>                      <span class="cmt"># drop all capabilities</span>
+          <span class="key">add</span>:
+            - <span class="yamlstr">NET_BIND_SERVICE</span>         <span class="cmt"># bind ports < 1024 without root</span>
+        <span class="key">privileged</span>: <span class="yamlbool">false</span>
+        <span class="key">seccompProfile</span>:
+          <span class="key">type</span>: <span class="yamlval">RuntimeDefault</span></pre>
+      </div>
+    </div>
+
+    <!-- SERVICE -->
+    <div class="section" id="y-svc">
+      <div class="section-title">Service <span class="badge">ClusterIP · NodePort · LoadBalancer</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All Service types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># ── ClusterIP (internal only) ─────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">Service</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-svc</span>
+<span class="key">spec</span>:
+  <span class="key">type</span>: <span class="yamlval">ClusterIP</span>
+  <span class="key">selector</span>:
+    <span class="key">app</span>: <span class="yamlstr">my-app</span>
+  <span class="key">ports</span>:
+    - <span class="key">name</span>: <span class="yamlstr">http</span>
+      <span class="key">protocol</span>: <span class="yamlval">TCP</span>
+      <span class="key">port</span>: <span class="yamlval">80</span>                     <span class="cmt"># service port</span>
+      <span class="key">targetPort</span>: <span class="yamlval">8080</span>             <span class="cmt"># container port (or named port)</span>
+    - <span class="key">name</span>: <span class="yamlstr">metrics</span>
+      <span class="key">port</span>: <span class="yamlval">9090</span>
+      <span class="key">targetPort</span>: <span class="yamlstr">metrics</span>          <span class="cmt"># use named port</span>
+---
+<span class="cmt"># ── Headless (StatefulSet, direct pod DNS) ────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">clusterIP</span>: <span class="yamlval">None</span>                   <span class="cmt"># headless</span>
+  <span class="key">selector</span>:
+    <span class="key">app</span>: <span class="yamlstr">my-statefulset</span>
+---
+<span class="cmt"># ── NodePort ─────────────────────────────────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">type</span>: <span class="yamlval">NodePort</span>
+  <span class="key">ports</span>:
+    - <span class="key">port</span>: <span class="yamlval">80</span>
+      <span class="key">targetPort</span>: <span class="yamlval">8080</span>
+      <span class="key">nodePort</span>: <span class="yamlval">30080</span>              <span class="cmt"># 30000-32767, omit to auto-assign</span>
+---
+<span class="cmt"># ── ExternalName (DNS alias) ──────────────────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">type</span>: <span class="yamlval">ExternalName</span>
+  <span class="key">externalName</span>: <span class="yamlstr">my-db.external.com</span></pre>
+      </div>
+    </div>
+
+    <!-- ROUTE -->
+    <div class="section" id="y-route">
+      <div class="section-title">Route (OCP) <span class="badge">edge · passthrough · reencrypt</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All Route types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># ── HTTP (no TLS) ────────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">route.openshift.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">Route</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-route</span>
+<span class="key">spec</span>:
+  <span class="key">host</span>: <span class="yamlstr">app.apps.cluster.example.com</span>
+  <span class="key">path</span>: <span class="yamlstr">/api</span>
+  <span class="key">to</span>:
+    <span class="key">kind</span>: <span class="yamlval">Service</span>
+    <span class="key">name</span>: <span class="yamlstr">my-svc</span>
+    <span class="key">weight</span>: <span class="yamlval">100</span>
+  <span class="key">port</span>:
+    <span class="key">targetPort</span>: <span class="yamlstr">http</span>
+  <span class="key">wildcardPolicy</span>: <span class="yamlval">None</span>
+---
+<span class="cmt"># ── Edge TLS (TLS terminated at router) ──────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">host</span>: <span class="yamlstr">secure.apps.example.com</span>
+  <span class="key">to</span>:
+    <span class="key">kind</span>: <span class="yamlval">Service</span>
+    <span class="key">name</span>: <span class="yamlstr">my-svc</span>
+  <span class="key">tls</span>:
+    <span class="key">termination</span>: <span class="yamlval">edge</span>
+    <span class="key">insecureEdgeTerminationPolicy</span>: <span class="yamlval">Redirect</span>   <span class="cmt"># Allow | Redirect | None</span>
+    <span class="key">certificate</span>: |
+      -----BEGIN CERTIFICATE-----
+      ...
+    <span class="key">key</span>: |
+      -----BEGIN PRIVATE KEY-----
+      ...
+    <span class="key">caCertificate</span>: |
+      -----BEGIN CERTIFICATE-----
+      ...
+---
+<span class="cmt"># ── Passthrough (TLS handled by app) ─────────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">host</span>: <span class="yamlstr">mtls.apps.example.com</span>
+  <span class="key">to</span>:
+    <span class="key">kind</span>: <span class="yamlval">Service</span>
+    <span class="key">name</span>: <span class="yamlstr">my-svc</span>
+  <span class="key">tls</span>:
+    <span class="key">termination</span>: <span class="yamlval">passthrough</span>
+---
+<span class="cmt"># ── Re-encrypt (TLS at router + re-TLS to pod) ───────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">tls</span>:
+    <span class="key">termination</span>: <span class="yamlval">reencrypt</span>
+    <span class="key">destinationCACertificate</span>: |
+      -----BEGIN CERTIFICATE-----
+      ...
+---
+<span class="cmt"># ── A/B Traffic Split (two backends) ─────────────────────────────</span>
+<span class="key">spec</span>:
+  <span class="key">to</span>:
+    <span class="key">kind</span>: <span class="yamlval">Service</span>
+    <span class="key">name</span>: <span class="yamlstr">my-app-v1</span>
+    <span class="key">weight</span>: <span class="yamlval">80</span>
+  <span class="key">alternateBackends</span>:
+    - <span class="key">kind</span>: <span class="yamlval">Service</span>
+      <span class="key">name</span>: <span class="yamlstr">my-app-v2</span>
+      <span class="key">weight</span>: <span class="yamlval">20</span></pre>
+      </div>
+    </div>
+
+    <!-- CONFIGMAP YAML -->
+    <div class="section" id="y-cm">
+      <div class="section-title">ConfigMap <span class="badge">v1</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">ConfigMap</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">app-config</span>
+<span class="key">data</span>:
+  <span class="cmt"># Simple key-value</span>
+  <span class="key">DB_HOST</span>: <span class="yamlstr">"postgres.default.svc.cluster.local"</span>
+  <span class="key">DB_PORT</span>: <span class="yamlstr">"5432"</span>
+  <span class="key">LOG_LEVEL</span>: <span class="yamlstr">"INFO"</span>
+
+  <span class="cmt"># Multi-line file content</span>
+  <span class="key">application.properties</span>: |
+    server.port=8080
+    spring.datasource.url=jdbc:postgresql://postgres:5432/mydb
+    logging.level.root=INFO
+
+  <span class="key">nginx.conf</span>: |
+    server {
+      listen 80;
+      location / {
+        proxy_pass http://backend;
+      }
+    }
+
+  <span class="cmt"># JSON config</span>
+  <span class="key">config.json</span>: |
+    {
+      "feature_flags": { "dark_mode": true },
+      "max_connections": 100
+    }</pre>
+      </div>
+    </div>
+
+    <!-- SECRET YAML -->
+    <div class="section" id="y-secret">
+      <div class="section-title">Secret <span class="badge">v1 · base64</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>All Secret types</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># ── Generic / Opaque ─────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">Secret</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">app-secret</span>
+<span class="key">type</span>: <span class="yamlval">Opaque</span>
+<span class="key">data</span>:
+  <span class="cmt"># Values must be base64 encoded: echo -n "password" | base64</span>
+  <span class="key">password</span>: <span class="yamlstr">cGFzc3dvcmQ=</span>
+  <span class="key">api-key</span>: <span class="yamlstr">c3VwZXJzZWNyZXQ=</span>
+<span class="key">stringData</span>:
+  <span class="cmt"># stringData: plaintext (auto-encoded to base64)</span>
+  <span class="key">db-url</span>: <span class="yamlstr">"jdbc:postgresql://localhost:5432/mydb?user=app&password=secret"</span>
+---
+<span class="cmt"># ── Docker Registry ──────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">Secret</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">regcred</span>
+<span class="key">type</span>: <span class="yamlval">kubernetes.io/dockerconfigjson</span>
+<span class="key">data</span>:
+  <span class="key">.dockerconfigjson</span>: <span class="yamlstr">&lt;base64 of docker auth json&gt;</span>
+---
+<span class="cmt"># ── TLS Certificate ───────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">Secret</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">tls-secret</span>
+<span class="key">type</span>: <span class="yamlval">kubernetes.io/tls</span>
+<span class="key">data</span>:
+  <span class="key">tls.crt</span>: <span class="yamlstr">&lt;base64-cert&gt;</span>
+  <span class="key">tls.key</span>: <span class="yamlstr">&lt;base64-key&gt;</span>
+---
+<span class="cmt"># ── Service Account Token ─────────────────────────────────────────</span>
+<span class="key">type</span>: <span class="yamlval">kubernetes.io/service-account-token</span>
+<span class="key">metadata</span>:
+  <span class="key">annotations</span>:
+    <span class="key">kubernetes.io/service-account.name</span>: <span class="yamlstr">my-sa</span></pre>
+      </div>
+    </div>
+
+    <!-- PVC -->
+    <div class="section" id="y-pvc">
+      <div class="section-title">PVC & PV <span class="badge">storage</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>PVC + PV</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># ── PersistentVolumeClaim ─────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">PersistentVolumeClaim</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-pvc</span>
+<span class="key">spec</span>:
+  <span class="key">accessModes</span>:
+    - <span class="yamlval">ReadWriteOnce</span>                <span class="cmt"># RWO: one node | RWX: many nodes | ROX: many nodes read only</span>
+  <span class="key">storageClassName</span>: <span class="yamlstr">thin-csi</span>
+  <span class="key">resources</span>:
+    <span class="key">requests</span>:
+      <span class="key">storage</span>: <span class="yamlstr">10Gi</span>
+  <span class="key">volumeMode</span>: <span class="yamlval">Filesystem</span>         <span class="cmt"># Filesystem | Block</span>
+---
+<span class="cmt"># ── PersistentVolume (static provisioning) ────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">PersistentVolume</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-pv</span>
+<span class="key">spec</span>:
+  <span class="key">capacity</span>:
+    <span class="key">storage</span>: <span class="yamlstr">10Gi</span>
+  <span class="key">accessModes</span>:
+    - <span class="yamlval">ReadWriteOnce</span>
+  <span class="key">persistentVolumeReclaimPolicy</span>: <span class="yamlval">Retain</span>  <span class="cmt"># Retain | Delete | Recycle</span>
+  <span class="key">storageClassName</span>: <span class="yamlstr">thin-csi</span>
+  <span class="key">nfs</span>:
+    <span class="key">server</span>: <span class="yamlstr">nfs.example.com</span>
+    <span class="key">path</span>: <span class="yamlstr">/exports/pv1</span>
+---
+<span class="cmt"># ── StorageClass ─────────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">storage.k8s.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">StorageClass</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">thin-csi</span>
+  <span class="key">annotations</span>:
+    <span class="key">storageclass.kubernetes.io/is-default-class</span>: <span class="yamlstr">"true"</span>
+<span class="key">provisioner</span>: <span class="yamlstr">kubernetes.io/vsphere-volume</span>
+<span class="key">reclaimPolicy</span>: <span class="yamlval">Delete</span>
+<span class="key">volumeBindingMode</span>: <span class="yamlval">WaitForFirstConsumer</span>  <span class="cmt"># Immediate | WaitForFirstConsumer</span>
+<span class="key">allowVolumeExpansion</span>: <span class="yamlbool">true</span>
+<span class="key">parameters</span>:
+  <span class="key">type</span>: <span class="yamlstr">thin</span></pre>
+      </div>
+    </div>
+
+    <!-- AFFINITY -->
+    <div class="section" id="y-affinity">
+      <div class="section-title">Affinity, Taints & Tolerations <span class="badge">scheduling</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">spec</span>:
+  <span class="cmt"># ── nodeSelector (simple) ─────────────────────────────────────────</span>
+  <span class="key">nodeSelector</span>:
+    <span class="key">kubernetes.io/arch</span>: <span class="yamlstr">amd64</span>
+    <span class="key">gpu</span>: <span class="yamlstr">"true"</span>
+
+  <span class="cmt"># ── Affinity ──────────────────────────────────────────────────────</span>
+  <span class="key">affinity</span>:
+    <span class="cmt"># Node affinity</span>
+    <span class="key">nodeAffinity</span>:
+      <span class="key">requiredDuringSchedulingIgnoredDuringExecution</span>:
+        <span class="key">nodeSelectorTerms</span>:
+          - <span class="key">matchExpressions</span>:
+              - <span class="key">key</span>: <span class="yamlstr">node-role.kubernetes.io/worker</span>
+                <span class="key">operator</span>: <span class="yamlval">Exists</span>   <span class="cmt"># In | NotIn | Exists | DoesNotExist | Gt | Lt</span>
+              - <span class="key">key</span>: <span class="yamlstr">zone</span>
+                <span class="key">operator</span>: <span class="yamlval">In</span>
+                <span class="key">values</span>: [<span class="yamlstr">zone-a</span>, <span class="yamlstr">zone-b</span>]
+      <span class="key">preferredDuringSchedulingIgnoredDuringExecution</span>:
+        - <span class="key">weight</span>: <span class="yamlval">100</span>
+          <span class="key">preference</span>:
+            <span class="key">matchExpressions</span>:
+              - <span class="key">key</span>: <span class="yamlstr">ssd</span>
+                <span class="key">operator</span>: <span class="yamlval">Exists</span>
+
+    <span class="cmt"># Pod anti-affinity (spread pods across nodes)</span>
+    <span class="key">podAntiAffinity</span>:
+      <span class="key">requiredDuringSchedulingIgnoredDuringExecution</span>:
+        - <span class="key">labelSelector</span>:
+            <span class="key">matchExpressions</span>:
+              - <span class="key">key</span>: <span class="yamlstr">app</span>
+                <span class="key">operator</span>: <span class="yamlval">In</span>
+                <span class="key">values</span>: [<span class="yamlstr">my-app</span>]
+          <span class="key">topologyKey</span>: <span class="yamlstr">kubernetes.io/hostname</span>  <span class="cmt"># one pod per node</span>
+
+    <span class="cmt"># Pod affinity (co-locate with another app)</span>
+    <span class="key">podAffinity</span>:
+      <span class="key">preferredDuringSchedulingIgnoredDuringExecution</span>:
+        - <span class="key">weight</span>: <span class="yamlval">50</span>
+          <span class="key">podAffinityTerm</span>:
+            <span class="key">labelSelector</span>:
+              <span class="key">matchLabels</span>:
+                <span class="key">app</span>: <span class="yamlstr">cache</span>
+            <span class="key">topologyKey</span>: <span class="yamlstr">kubernetes.io/hostname</span>
+
+  <span class="cmt"># ── Tolerations (allow scheduling on tainted nodes) ──────────────</span>
+  <span class="key">tolerations</span>:
+    - <span class="key">key</span>: <span class="yamlstr">gpu</span>
+      <span class="key">operator</span>: <span class="yamlval">Exists</span>
+      <span class="key">effect</span>: <span class="yamlval">NoSchedule</span>
+    - <span class="key">key</span>: <span class="yamlstr">dedicated</span>
+      <span class="key">value</span>: <span class="yamlstr">ml-workloads</span>
+      <span class="key">operator</span>: <span class="yamlval">Equal</span>
+      <span class="key">effect</span>: <span class="yamlval">NoSchedule</span>             <span class="cmt"># NoSchedule | PreferNoSchedule | NoExecute</span>
+    - <span class="key">key</span>: <span class="yamlstr">node.kubernetes.io/not-ready</span>
+      <span class="key">operator</span>: <span class="yamlval">Exists</span>
+      <span class="key">effect</span>: <span class="yamlval">NoExecute</span>
+      <span class="key">tolerationSeconds</span>: <span class="yamlval">300</span>         <span class="cmt"># evict after 300s if still not ready</span>
+
+  <span class="cmt"># ── TopologySpreadConstraints (spread evenly) ────────────────────</span>
+  <span class="key">topologySpreadConstraints</span>:
+    - <span class="key">maxSkew</span>: <span class="yamlval">1</span>
+      <span class="key">topologyKey</span>: <span class="yamlstr">topology.kubernetes.io/zone</span>
+      <span class="key">whenUnsatisfiable</span>: <span class="yamlval">DoNotSchedule</span>  <span class="cmt"># DoNotSchedule | ScheduleAnyway</span>
+      <span class="key">labelSelector</span>:
+        <span class="key">matchLabels</span>:
+          <span class="key">app</span>: <span class="yamlstr">my-app</span></pre>
+      </div>
+    </div>
+
+    <!-- HPA -->
+    <div class="section" id="y-hpa">
+      <div class="section-title">HPA <span class="badge">autoscaling</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">autoscaling/v2</span>
+<span class="key">kind</span>: <span class="yamlval">HorizontalPodAutoscaler</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-app-hpa</span>
+<span class="key">spec</span>:
+  <span class="key">scaleTargetRef</span>:
+    <span class="key">apiVersion</span>: <span class="yamlval">apps/v1</span>
+    <span class="key">kind</span>: <span class="yamlval">Deployment</span>
+    <span class="key">name</span>: <span class="yamlstr">my-app</span>
+  <span class="key">minReplicas</span>: <span class="yamlval">2</span>
+  <span class="key">maxReplicas</span>: <span class="yamlval">20</span>
+  <span class="key">metrics</span>:
+    - <span class="key">type</span>: <span class="yamlval">Resource</span>
+      <span class="key">resource</span>:
+        <span class="key">name</span>: <span class="yamlval">cpu</span>
+        <span class="key">target</span>:
+          <span class="key">type</span>: <span class="yamlval">Utilization</span>
+          <span class="key">averageUtilization</span>: <span class="yamlval">70</span>
+    - <span class="key">type</span>: <span class="yamlval">Resource</span>
+      <span class="key">resource</span>:
+        <span class="key">name</span>: <span class="yamlval">memory</span>
+        <span class="key">target</span>:
+          <span class="key">type</span>: <span class="yamlval">AverageValue</span>
+          <span class="key">averageValue</span>: <span class="yamlstr">400Mi</span>
+  <span class="key">behavior</span>:
+    <span class="key">scaleDown</span>:
+      <span class="key">stabilizationWindowSeconds</span>: <span class="yamlval">300</span>    <span class="cmt"># don't scale down too fast</span>
+    <span class="key">scaleUp</span>:
+      <span class="key">stabilizationWindowSeconds</span>: <span class="yamlval">30</span></pre>
+      </div>
+    </div>
+
+    <!-- RBAC YAML -->
+    <div class="section" id="y-rbac">
+      <div class="section-title">Role & ClusterRole <span class="badge">rbac</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>Full RBAC chain</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># ── ServiceAccount ───────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">v1</span>
+<span class="key">kind</span>: <span class="yamlval">ServiceAccount</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-sa</span>
+  <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+  <span class="key">annotations</span>:
+    <span class="key">serviceaccounts.openshift.io/oauth-redirectreference.primary</span>: <span class="yamlstr">'{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"my-app"}}'</span>
+---
+<span class="cmt"># ── Role (namespace-scoped) ───────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">rbac.authorization.k8s.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">Role</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">pod-reader</span>
+  <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+<span class="key">rules</span>:
+  - <span class="key">apiGroups</span>: [<span class="yamlstr">""</span>]               <span class="cmt"># "" = core API group</span>
+    <span class="key">resources</span>: [<span class="yamlstr">pods</span>, <span class="yamlstr">pods/log</span>]
+    <span class="key">verbs</span>: [<span class="yamlstr">get</span>, <span class="yamlstr">list</span>, <span class="yamlstr">watch</span>]
+  - <span class="key">apiGroups</span>: [<span class="yamlstr">apps</span>]
+    <span class="key">resources</span>: [<span class="yamlstr">deployments</span>]
+    <span class="key">verbs</span>: [<span class="yamlstr">get</span>, <span class="yamlstr">list</span>, <span class="yamlstr">watch</span>, <span class="yamlstr">update</span>, <span class="yamlstr">patch</span>]
+  - <span class="key">apiGroups</span>: [<span class="yamlstr">""</span>]
+    <span class="key">resources</span>: [<span class="yamlstr">configmaps</span>]
+    <span class="key">resourceNames</span>: [<span class="yamlstr">app-config</span>]   <span class="cmt"># restrict to specific resource</span>
+    <span class="key">verbs</span>: [<span class="yamlstr">get</span>]
+---
+<span class="cmt"># ── RoleBinding ───────────────────────────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">rbac.authorization.k8s.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">RoleBinding</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">pod-reader-binding</span>
+  <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+<span class="key">subjects</span>:
+  - <span class="key">kind</span>: <span class="yamlval">ServiceAccount</span>
+    <span class="key">name</span>: <span class="yamlstr">my-sa</span>
+    <span class="key">namespace</span>: <span class="yamlstr">my-ns</span>
+  - <span class="key">kind</span>: <span class="yamlval">User</span>
+    <span class="key">name</span>: <span class="yamlstr">user@example.com</span>
+  - <span class="key">kind</span>: <span class="yamlval">Group</span>
+    <span class="key">name</span>: <span class="yamlstr">dev-team</span>
+<span class="key">roleRef</span>:
+  <span class="key">kind</span>: <span class="yamlval">Role</span>
+  <span class="key">name</span>: <span class="yamlstr">pod-reader</span>
+  <span class="key">apiGroup</span>: <span class="yamlval">rbac.authorization.k8s.io</span>
+---
+<span class="cmt"># ── ClusterRole + ClusterRoleBinding ─────────────────────────────</span>
+<span class="key">apiVersion</span>: <span class="yamlval">rbac.authorization.k8s.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">ClusterRole</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">node-reader</span>
+<span class="key">rules</span>:
+  - <span class="key">apiGroups</span>: [<span class="yamlstr">""</span>]
+    <span class="key">resources</span>: [<span class="yamlstr">nodes</span>]
+    <span class="key">verbs</span>: [<span class="yamlstr">get</span>, <span class="yamlstr">list</span>, <span class="yamlstr">watch</span>]</pre>
+      </div>
+    </div>
+
+    <!-- SCC -->
+    <div class="section" id="y-scc">
+      <div class="section-title">SCC (OCP) <span class="badge">SecurityContextConstraints</span></div>
+      <div class="tip"><strong>OCP-specific:</strong> SCC is what controls what a pod is <em>allowed</em> to do. Assign via <code>oc adm policy add-scc-to-user</code> or reference in a ClusterRoleBinding.</div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>Custom SCC</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">security.openshift.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">SecurityContextConstraints</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-custom-scc</span>
+<span class="key">allowPrivilegedContainer</span>: <span class="yamlbool">false</span>
+<span class="key">allowPrivilegeEscalation</span>: <span class="yamlbool">false</span>
+<span class="key">readOnlyRootFilesystem</span>: <span class="yamlbool">false</span>
+<span class="key">runAsUser</span>:
+  <span class="key">type</span>: <span class="yamlval">MustRunAsRange</span>           <span class="cmt"># RunAsAny | MustRunAs | MustRunAsRange | MustRunAsNonRoot</span>
+  <span class="key">uidRangeMin</span>: <span class="yamlval">1000</span>
+  <span class="key">uidRangeMax</span>: <span class="yamlval">65535</span>
+<span class="key">seLinuxContext</span>:
+  <span class="key">type</span>: <span class="yamlval">MustRunAs</span>
+<span class="key">fsGroup</span>:
+  <span class="key">type</span>: <span class="yamlval">RunAsAny</span>
+<span class="key">supplementalGroups</span>:
+  <span class="key">type</span>: <span class="yamlval">RunAsAny</span>
+<span class="key">volumes</span>:
+  - <span class="yamlstr">configMap</span>
+  - <span class="yamlstr">secret</span>
+  - <span class="yamlstr">emptyDir</span>
+  - <span class="yamlstr">persistentVolumeClaim</span>
+<span class="key">allowedCapabilities</span>: []
+<span class="key">requiredDropCapabilities</span>:
+  - <span class="yamlstr">ALL</span>
+<span class="key">users</span>:
+  - <span class="yamlstr">system:serviceaccount:my-ns:my-sa</span>
+<span class="key">groups</span>: []</pre>
+      </div>
+    </div>
+
+    <!-- IMAGESTREAM -->
+    <div class="section" id="y-is">
+      <div class="section-title">ImageStream (OCP) <span class="badge">image tracking</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">image.openshift.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">ImageStream</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-app</span>
+<span class="key">spec</span>:
+  <span class="key">lookupPolicy</span>:
+    <span class="key">local</span>: <span class="yamlbool">false</span>
+  <span class="key">tags</span>:
+    - <span class="key">name</span>: <span class="yamlstr">latest</span>
+      <span class="key">from</span>:
+        <span class="key">kind</span>: <span class="yamlval">DockerImage</span>
+        <span class="key">name</span>: <span class="yamlstr">quay.io/myorg/my-app:latest</span>
+      <span class="key">importPolicy</span>:
+        <span class="key">scheduled</span>: <span class="yamlbool">true</span>             <span class="cmt"># auto re-import</span>
+      <span class="key">referencePolicy</span>:
+        <span class="key">type</span>: <span class="yamlval">Source</span></pre>
+      </div>
+    </div>
+
+    <!-- BUILD CONFIG -->
+    <div class="section" id="y-bc">
+      <div class="section-title">BuildConfig (OCP) <span class="badge">build</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">build.openshift.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">BuildConfig</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-app</span>
+<span class="key">spec</span>:
+  <span class="key">source</span>:
+    <span class="key">type</span>: <span class="yamlval">Git</span>
+    <span class="key">git</span>:
+      <span class="key">uri</span>: <span class="yamlstr">https://github.com/myorg/my-app.git</span>
+      <span class="key">ref</span>: <span class="yamlstr">main</span>
+    <span class="key">contextDir</span>: <span class="yamlstr">/</span>
+    <span class="key">sourceSecret</span>:
+      <span class="key">name</span>: <span class="yamlstr">git-secret</span>
+  <span class="key">strategy</span>:
+    <span class="key">type</span>: <span class="yamlval">Docker</span>                   <span class="cmt"># Docker | Source | Custom | JenkinsPipeline</span>
+    <span class="key">dockerStrategy</span>:
+      <span class="key">dockerfilePath</span>: <span class="yamlstr">Dockerfile</span>
+      <span class="key">buildArgs</span>:
+        - <span class="key">name</span>: <span class="yamlstr">VERSION</span>
+          <span class="key">value</span>: <span class="yamlstr">"1.0.0"</span>
+  <span class="key">output</span>:
+    <span class="key">to</span>:
+      <span class="key">kind</span>: <span class="yamlval">ImageStreamTag</span>
+      <span class="key">name</span>: <span class="yamlstr">my-app:latest</span>
+  <span class="key">triggers</span>:
+    - <span class="key">type</span>: <span class="yamlval">GitHub</span>
+      <span class="key">github</span>:
+        <span class="key">secret</span>: <span class="yamlstr">webhook-secret</span>
+    - <span class="key">type</span>: <span class="yamlval">ConfigChange</span>
+    - <span class="key">type</span>: <span class="yamlval">ImageChange</span>
+  <span class="key">resources</span>:
+    <span class="key">limits</span>:
+      <span class="key">cpu</span>: <span class="yamlstr">"1"</span>
+      <span class="key">memory</span>: <span class="yamlstr">2Gi</span></pre>
+      </div>
+    </div>
+
+    <!-- NETWORKPOLICY -->
+    <div class="section" id="y-netpol">
+      <div class="section-title">NetworkPolicy <span class="badge">ingress · egress</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cmt"># Deny all ingress, allow only from specific namespace+label</span>
+<span class="key">apiVersion</span>: <span class="yamlval">networking.k8s.io/v1</span>
+<span class="key">kind</span>: <span class="yamlval">NetworkPolicy</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">allow-frontend-only</span>
+<span class="key">spec</span>:
+  <span class="key">podSelector</span>:
+    <span class="key">matchLabels</span>:
+      <span class="key">app</span>: <span class="yamlstr">backend</span>
+  <span class="key">policyTypes</span>: [<span class="yamlval">Ingress</span>, <span class="yamlval">Egress</span>]
+  <span class="key">ingress</span>:
+    - <span class="key">from</span>:
+        - <span class="key">podSelector</span>:
+            <span class="key">matchLabels</span>:
+              <span class="key">app</span>: <span class="yamlstr">frontend</span>
+          <span class="key">namespaceSelector</span>:
+            <span class="key">matchLabels</span>:
+              <span class="key">kubernetes.io/metadata.name</span>: <span class="yamlstr">my-ns</span>
+      <span class="key">ports</span>:
+        - <span class="key">protocol</span>: <span class="yamlval">TCP</span>
+          <span class="key">port</span>: <span class="yamlval">8080</span>
+  <span class="key">egress</span>:
+    - <span class="key">to</span>:
+        - <span class="key">podSelector</span>:
+            <span class="key">matchLabels</span>:
+              <span class="key">app</span>: <span class="yamlstr">postgres</span>
+      <span class="key">ports</span>:
+        - <span class="key">protocol</span>: <span class="yamlval">TCP</span>
+          <span class="key">port</span>: <span class="yamlval">5432</span>
+    - <span class="key">ports</span>:
+        - <span class="key">protocol</span>: <span class="yamlval">UDP</span>
+          <span class="key">port</span>: <span class="yamlval">53</span>                  <span class="cmt"># allow DNS</span></pre>
+      </div>
+    </div>
+
+    <!-- STATEFULSET + DAEMONSET + CRONJOB -->
+    <div class="section" id="y-sts">
+      <div class="section-title">StatefulSet <span class="badge">apps/v1</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>yaml</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">apps/v1</span>
+<span class="key">kind</span>: <span class="yamlval">StatefulSet</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">my-db</span>
+<span class="key">spec</span>:
+  <span class="key">serviceName</span>: <span class="yamlstr">my-db-headless</span>   <span class="cmt"># headless service name</span>
+  <span class="key">replicas</span>: <span class="yamlval">3</span>
+  <span class="key">updateStrategy</span>:
+    <span class="key">type</span>: <span class="yamlval">RollingUpdate</span>           <span class="cmt"># RollingUpdate | OnDelete</span>
+    <span class="key">rollingUpdate</span>:
+      <span class="key">partition</span>: <span class="yamlval">0</span>               <span class="cmt"># update pods with ordinal >= partition</span>
+  <span class="key">podManagementPolicy</span>: <span class="yamlval">OrderedReady</span>  <span class="cmt"># Parallel | OrderedReady</span>
+  <span class="key">selector</span>:
+    <span class="key">matchLabels</span>:
+      <span class="key">app</span>: <span class="yamlstr">my-db</span>
+  <span class="key">template</span>:
+    <span class="key">metadata</span>:
+      <span class="key">labels</span>:
+        <span class="key">app</span>: <span class="yamlstr">my-db</span>
+    <span class="key">spec</span>:
+      <span class="key">containers</span>:
+        - <span class="key">name</span>: <span class="yamlstr">db</span>
+          <span class="key">image</span>: <span class="yamlstr">postgres:15</span>
+          <span class="key">volumeMounts</span>:
+            - <span class="key">name</span>: <span class="yamlstr">data</span>
+              <span class="key">mountPath</span>: <span class="yamlstr">/var/lib/postgresql/data</span>
+  <span class="key">volumeClaimTemplates</span>:         <span class="cmt"># auto PVC per pod</span>
+    - <span class="key">metadata</span>:
+        <span class="key">name</span>: <span class="yamlstr">data</span>
+      <span class="key">spec</span>:
+        <span class="key">accessModes</span>: [<span class="yamlval">ReadWriteOnce</span>]
+        <span class="key">storageClassName</span>: <span class="yamlstr">thin-csi</span>
+        <span class="key">resources</span>:
+          <span class="key">requests</span>:
+            <span class="key">storage</span>: <span class="yamlstr">20Gi</span></pre>
+      </div>
+    </div>
+
+    <div class="section" id="y-job">
+      <div class="section-title">Job & CronJob <span class="badge">batch</span></div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-label"><span class="dot dot-yaml"></span>CronJob</div><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="key">apiVersion</span>: <span class="yamlval">batch/v1</span>
+<span class="key">kind</span>: <span class="yamlval">CronJob</span>
+<span class="key">metadata</span>:
+  <span class="key">name</span>: <span class="yamlstr">daily-report</span>
+<span class="key">spec</span>:
+  <span class="key">schedule</span>: <span class="yamlstr">"0 2 * * *"</span>           <span class="cmt"># 2am daily</span>
+  <span class="key">concurrencyPolicy</span>: <span class="yamlval">Forbid</span>       <span class="cmt"># Allow | Forbid | Replace</span>
+  <span class="key">successfulJobsHistoryLimit</span>: <span class="yamlval">3</span>
+  <span class="key">failedJobsHistoryLimit</span>: <span class="yamlval">1</span>
+  <span class="key">startingDeadlineSeconds</span>: <span class="yamlval">60</span>
+  <span class="key">jobTemplate</span>:
+    <span class="key">spec</span>:
+      <span class="key">backoffLimit</span>: <span class="yamlval">3</span>
+      <span class="key">activeDeadlineSeconds</span>: <span class="yamlval">3600</span>
+      <span class="key">template</span>:
+        <span class="key">spec</span>:
+          <span class="key">restartPolicy</span>: <span class="yamlval">OnFailure</span>  <span class="cmt"># Never | OnFailure</span>
+          <span class="key">containers</span>:
+            - <span class="key">name</span>: <span class="yamlstr">job</span>
+              <span class="key">image</span>: <span class="yamlstr">my-app:latest</span>
+              <span class="key">command</span>: [<span class="yamlstr">"/bin/sh"</span>, <span class="yamlstr">"-c"</span>, <span class="yamlstr">"python generate_report.py"</span>]</pre>
+      </div>
+    </div>
+
+  </div>
+  <!-- END PANEL YAML -->
+
+</div>
+
+<script>
+  // Tab switching
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar').forEach(s => s.classList.add('hidden'));
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    document.getElementById(`panel-${tab}`).classList.add('active');
+    document.getElementById(`sidebar-${tab}`).classList.remove('hidden');
+    // Reset nav item active
+    document.querySelectorAll(`#sidebar-${tab} .nav-item`).forEach((n, i) => {
+      n.classList.toggle('active', i === 0);
+    });
+  }
+
+  // Scroll to section
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // update nav
+      const panel = el.closest('.panel');
+      const tabId = panel.id.replace('panel-', '');
+      document.querySelectorAll(`#sidebar-${tabId} .nav-item`).forEach(n => n.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+  }
+
+  // Copy button
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  }
+
+  // Search
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    if (!q) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('hidden'));
+      document.querySelectorAll('.code-block').forEach(b => b.classList.remove('hidden'));
+      return;
+    }
+    // Search in active panel
+    const activePanel = document.querySelector('.panel.active');
+    activePanel.querySelectorAll('.section').forEach(section => {
+      const text = section.textContent.toLowerCase();
+      if (text.includes(q)) {
+        section.classList.remove('hidden');
+      } else {
+        section.classList.add('hidden');
+      }
+    });
+  });
+</script>
+</body>
+</html>

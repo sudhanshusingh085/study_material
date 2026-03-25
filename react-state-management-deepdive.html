@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>React State Management — Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --bg2: #16161d;
+    --bg3: #1e1e28;
+    --bg4: #252532;
+    --border: #2e2e3e;
+    --border2: #3a3a50;
+    --text: #e8e8f0;
+    --muted: #8888a8;
+    --hint: #55556a;
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --green-bg: #0d2b22;
+    --amber: #fbbf24;
+    --amber-bg: #2a1f08;
+    --coral: #f87171;
+    --coral-bg: #2a0f0f;
+    --blue: #60a5fa;
+    --blue-bg: #0d1a2e;
+    --teal: #2dd4bf;
+    --pink: #f472b6;
+    --code-bg: #0a0a10;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+  nav .logo {
+    padding: 0 20px 20px;
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent2);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  nav .logo span { color: var(--muted); font-size: 11px; display: block; font-family: 'DM Sans', sans-serif; font-weight: 400; margin-top: 3px; }
+  nav a {
+    display: block; padding: 7px 20px;
+    color: var(--muted); text-decoration: none;
+    font-size: 13px; transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  nav a:hover { color: var(--text); background: var(--bg3); }
+  nav a.active { color: var(--accent2); border-left-color: var(--accent); background: var(--bg3); }
+  nav .section-label {
+    padding: 16px 20px 6px;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--hint);
+  }
+
+  /* MAIN */
+  main { margin-left: 240px; padding: 60px 64px 120px; max-width: 960px; }
+
+  /* HERO */
+  .hero {
+    padding: 64px 0 80px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent2); margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 52px; font-weight: 600;
+    letter-spacing: -0.03em; line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent2); }
+  .hero p { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.65; }
+
+  /* SECTION */
+  section { margin-bottom: 96px; scroll-margin-top: 40px; }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 30px; font-weight: 600;
+    letter-spacing: -0.02em; color: var(--text);
+    margin-bottom: 8px;
+  }
+  h2 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--accent);
+    display: block; margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 17px; font-weight: 600;
+    color: var(--text); margin: 28px 0 10px;
+  }
+  p { color: var(--muted); margin-bottom: 14px; }
+  strong { color: var(--text); font-weight: 500; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* CALLOUT */
+  .callout {
+    border-radius: 10px; padding: 16px 20px;
+    margin: 20px 0; border-left: 3px solid;
+    font-size: 14px;
+  }
+  .callout.green { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .callout.amber { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+  .callout.blue { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+  .callout.coral { background: var(--coral-bg); border-color: var(--coral); color: var(--coral); }
+  .callout strong { color: inherit; }
+  .callout p { color: inherit; margin: 4px 0 0; font-size: 13.5px; }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    margin: 16px 0;
+    position: relative;
+  }
+  pre .label {
+    position: absolute; top: 10px; right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.7; color: #c8c8e8;
+  }
+  .kw { color: #a78bfa; }       /* keywords: const, function, return */
+  .fn { color: #60a5fa; }       /* functions */
+  .str { color: #34d399; }      /* strings */
+  .cmt { color: #4a4a6a; font-style: italic; } /* comments */
+  .num2 { color: #fbbf24; }     /* numbers */
+  .type { color: #f472b6; }     /* types, hooks */
+  .tag { color: #f87171; }      /* jsx tags */
+  .prop { color: #7dd3fc; }     /* props, object keys */
+
+  /* INLINE CODE */
+  .ic {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px;
+    color: var(--accent2);
+  }
+
+  /* COMPARISON TABLE */
+  .compare-table {
+    width: 100%; border-collapse: collapse;
+    margin: 20px 0; font-size: 13.5px;
+  }
+  .compare-table th {
+    background: var(--bg3); padding: 12px 16px;
+    text-align: left; font-weight: 500;
+    color: var(--text); border-bottom: 1px solid var(--border2);
+    font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .compare-table td {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    color: var(--muted); vertical-align: top;
+  }
+  .compare-table tr:hover td { background: var(--bg3); }
+  .compare-table .aspect { color: var(--text); font-weight: 500; }
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 12px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.03em;
+  }
+  .badge.ctx { background: #1a2e1a; color: #34d399; border: 1px solid #1e4a1e; }
+  .badge.rdx { background: #1a1a30; color: #a78bfa; border: 1px solid #2e2e50; }
+  .badge.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid #3a2a10; }
+  .badge.ok { background: var(--green-bg); color: var(--green); border: 1px solid #1a3a28; }
+
+  /* FLOW DIAGRAM */
+  .flow {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px;
+    margin: 20px 0; overflow-x: auto;
+  }
+  .flow-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .flow-box {
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 8px 16px;
+    font-size: 12.5px; font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+  .flow-box.accent { border-color: var(--accent); color: var(--accent2); }
+  .flow-box.green { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+  .flow-box.coral { border-color: var(--coral); color: var(--coral); background: var(--coral-bg); }
+  .flow-box.amber { border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+  .flow-arrow { color: var(--hint); font-size: 18px; user-select: none; }
+  .flow-label { font-size: 11px; color: var(--hint); text-align: center; margin-top: 6px; }
+
+  /* CARD GRID */
+  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .card h4 {
+    font-size: 13px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .card h4.ctx-c { color: var(--green); }
+  .card h4.rdx-c { color: var(--accent2); }
+  .card ul { list-style: none; }
+  .card ul li {
+    font-size: 13.5px; color: var(--muted);
+    padding: 4px 0; border-bottom: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .card ul li:last-child { border-bottom: none; }
+  .card ul li::before { content: '→'; color: var(--hint); flex-shrink: 0; margin-top: 1px; }
+
+  /* HOOK TABLE */
+  .hook-row {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px;
+    margin: 12px 0; display: flex; gap: 20px; align-items: flex-start;
+  }
+  .hook-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--accent2);
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 4px 10px;
+    white-space: nowrap; min-width: 160px;
+    text-align: center; margin-top: 2px;
+  }
+  .hook-desc { flex: 1; }
+  .hook-desc strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  .hook-desc p { font-size: 13px; margin: 0; }
+
+  /* STEP */
+  .step {
+    counter-increment: steps;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px 18px 20px;
+    margin: 12px 0; display: flex; gap: 16px;
+  }
+  .step-num {
+    background: var(--bg3); border: 1px solid var(--accent);
+    color: var(--accent2); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; border-radius: 6px;
+    width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; margin-top: 2px;
+  }
+  .step-body strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  .step-body p { font-size: 13.5px; margin: 0; }
+
+  /* PERF VISUAL */
+  .perf-bar { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+  .perf-item { display: flex; flex-direction: column; gap: 4px; }
+  .perf-label { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+  .perf-track { background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; }
+  .perf-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+  /* DECISION TREE */
+  .decision { margin: 20px 0; }
+  .decision-q {
+    background: var(--bg3); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 14px 18px;
+    font-size: 14px; color: var(--text); margin-bottom: 12px;
+  }
+  .decision-q::before { content: '?'; color: var(--accent); margin-right: 10px; font-weight: 600; }
+  .decision-branch { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .decision-yes, .decision-no {
+    border-radius: 8px; padding: 12px 16px; font-size: 13px;
+  }
+  .decision-yes { background: var(--green-bg); border: 1px solid #1e4a1e; color: var(--green); }
+  .decision-no { background: var(--blue-bg); border: 1px solid #1a3a5e; color: var(--blue); }
+  .decision-yes::before { content: '✓ YES → '; font-weight: 600; }
+  .decision-no::before { content: '✗ NO → '; font-weight: 600; }
+
+  /* THREAD VISUAL */
+  .thread-vis {
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin: 20px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  .thread-vis .timeline {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .t-row { display: flex; align-items: center; gap: 8px; }
+  .t-label { width: 100px; color: var(--muted); font-size: 11px; flex-shrink: 0; }
+  .t-bar {
+    height: 22px; border-radius: 4px;
+    display: flex; align-items: center;
+    padding: 0 8px; font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* QUOTE */
+  blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 12px 20px; margin: 20px 0;
+    color: var(--muted); font-style: italic;
+    background: var(--bg2); border-radius: 0 8px 8px 0;
+  }
+  blockquote strong { color: var(--text); font-style: normal; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 32px 24px 80px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .decision-branch { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+   <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">React State<span>Context · Redux · Performance</span></div>
+  <div class="section-label">Foundations</div>
+  <a href="#js-thread">JS Single Thread</a>
+  <a href="#what-is-state">What is State?</a>
+  <a href="#prop-drilling">Prop Drilling Problem</a>
+  <div class="section-label">Context API</div>
+  <a href="#context-intro">Context — Intro</a>
+  <a href="#context-how">How Context Works</a>
+  <a href="#context-code">Context — Code</a>
+  <a href="#context-perf">Context Performance</a>
+  <div class="section-label">Redux Toolkit</div>
+  <a href="#redux-intro">Redux — Intro</a>
+  <a href="#redux-concepts">Slices & Store</a>
+  <a href="#redux-code">Redux — Code</a>
+  <a href="#use-selector">useSelector</a>
+  <div class="section-label">Memoization</div>
+  <a href="#usememo">useMemo</a>
+  <a href="#usecallback">useCallback</a>
+  <a href="#react-memo">React.memo</a>
+  <a href="#use-selector-perf">useSelector + shallowEqual</a>
+  <div class="section-label">Decision</div>
+  <a href="#when-to-use">When to Use What</a>
+  <a href="#full-example">Full Example</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">React Internals · Performance · State</div>
+  <h1>Context vs <em>Redux</em><br/>Deep Dive</h1>
+  <p>A ground-up explanation of React state management — from JavaScript's single thread to useMemo, useSelector, and when to reach for Redux Toolkit over Context. Written so you never need to ask again.</p>
+</div>
+
+<!-- ====== SECTION 1: JS THREAD ====== -->
+<section id="js-thread">
+  <h2><span class="num">01 —</span>JavaScript is Single-Threaded</h2>
+  <p>Before we touch React at all, you must understand this: <strong>JavaScript has one thread</strong>. One worker. It can only do one thing at a time.</p>
+  <p>This is the foundation everything else sits on. React renders are synchronous operations on that single thread. If your render is slow, your UI freezes.</p>
+
+  <div class="thread-vis">
+    <div class="timeline">
+      <div class="t-row">
+        <span class="t-label">JS Thread</span>
+        <div class="t-bar" style="background:#1a1a30;border:1px solid #2e2e50;color:#a78bfa;width:100px">User clicks</div>
+        <div class="t-bar" style="background:#0d2b22;border:1px solid #1e4a1e;color:#34d399;width:140px">→ React renders</div>
+        <div class="t-bar" style="background:#2a1f08;border:1px solid #3a2a10;color:#fbbf24;width:100px">→ DOM update</div>
+        <div class="t-bar" style="background:#1a1a30;border:1px solid #2e2e50;color:#8888a8;width:80px">→ idle</div>
+      </div>
+      <div class="t-row">
+        <span class="t-label" style="color:#3a3a5a;">Other work</span>
+        <div class="t-bar" style="background:#16161d;border:1px solid #2e2e3e;color:#3a3a5a;width:420px">BLOCKED — must wait for JS thread</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>Why this matters for Context &amp; Redux:</strong>
+    <p>Every time a component re-renders, React must run its function, diff the virtual DOM, and commit changes — all on that single thread. <strong>Unnecessary re-renders are the #1 React performance killer</strong>. Both Context and Redux can cause components to re-render. The difference is in how much control you have over WHEN that happens.</p>
+  </div>
+
+  <h3>The Event Loop</h3>
+  <p>JavaScript runs tasks one at a time from a queue. React hooks into this loop. When state changes, React schedules a re-render task. With React 18's Concurrent Mode, React can pause and resume renders — but it still runs on one thread. There is no parallelism.</p>
+
+  <div class="flow">
+    <div class="flow-row">
+      <div class="flow-box accent">setState called</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">React schedules task</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box green">Event loop picks it up</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box amber">Component re-renders</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">DOM updated</div>
+    </div>
+    <div class="flow-label">This entire chain happens synchronously on the one JS thread</div>
+  </div>
+</section>
+
+<!-- ====== SECTION 2: WHAT IS STATE ====== -->
+<section id="what-is-state">
+  <h2><span class="num">02 —</span>What is State & Why Share It?</h2>
+  <p><strong>State</strong> is data that can change over time and causes your UI to re-render when it does. React components have local state via <span class="ic">useState</span>.</p>
+  <p>Local state is fine when only one component needs it. Problems start when <strong>multiple components need the same data</strong>.</p>
+
+  <pre><code><span class="cmt">// LOCAL state — fine, only this component cares</span>
+<span class="kw">function</span> <span class="fn">Counter</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num2">0</span>);
+  <span class="kw">return</span> <span class="tag">&lt;button</span> <span class="prop">onClick</span>={() => setCount(count + <span class="num2">1</span>)}<span class="tag">&gt;</span>{count}<span class="tag">&lt;/button&gt;</span>;
+}
+
+<span class="cmt">// SHARED state — now you have a problem</span>
+<span class="cmt">// Header needs: user name</span>
+<span class="cmt">// Sidebar needs: user avatar</span>
+<span class="cmt">// CartIcon needs: cart count</span>
+<span class="cmt">// OrderPage needs: user id to fetch orders</span>
+<span class="cmt">// Where does this state LIVE?</span>
+<div class="label">problem.jsx</div></code></pre>
+</section>
+
+<!-- ====== SECTION 3: PROP DRILLING ====== -->
+<section id="prop-drilling">
+  <h2><span class="num">03 —</span>The Prop Drilling Problem</h2>
+  <p>The naive solution is to "lift state up" — move shared state to the nearest common ancestor, then pass it down via props. This is called <strong>prop drilling</strong> and it becomes a nightmare at scale.</p>
+
+  <pre><code><span class="cmt">// App.jsx — holds the user state</span>
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">return</span> <span class="tag">&lt;Layout</span> <span class="prop">user</span>={user} <span class="prop">setUser</span>={setUser} <span class="tag">/&gt;</span>;
+}
+
+<span class="cmt">// Layout doesn't even USE user — just passes it down!</span>
+<span class="kw">function</span> <span class="fn">Layout</span>({ user, setUser }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div&gt;</span>
+      <span class="tag">&lt;Header</span> <span class="prop">user</span>={user} <span class="tag">/&gt;</span>        <span class="cmt">// passed down again</span>
+      <span class="tag">&lt;Sidebar</span> <span class="prop">user</span>={user} <span class="tag">/&gt;</span>       <span class="cmt">// passed down again</span>
+      <span class="tag">&lt;Main</span> <span class="prop">user</span>={user} <span class="prop">setUser</span>={setUser} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}
+
+<span class="cmt">// Every middle component must accept and forward props it doesn't need</span>
+<span class="cmt">// This is PROP DRILLING — painful, fragile, hard to refactor</span>
+<div class="label">prop-drilling.jsx</div></code></pre>
+
+  <div class="callout coral">
+    <strong>The Problem:</strong>
+    <p>Middle components become "pass-throughs". They have no interest in <span class="ic">user</span> but must accept and forward it. If you rename the prop, you have to update every file in the chain. Add a new component anywhere in the tree and you must thread the prop through.</p>
+  </div>
+
+  <p><strong>Solution:</strong> A global store that any component can read from directly — without props. This is what Context and Redux both solve.</p>
+</section>
+
+<!-- ====== SECTION 4: CONTEXT INTRO ====== -->
+<section id="context-intro">
+  <h2><span class="num">04 —</span>React Context — What It Is</h2>
+  <p>Context is React's built-in solution. It lets you create a "broadcast" — a value that any component in the tree can subscribe to, without passing it through props.</p>
+
+  <div class="callout blue">
+    <strong>Mental model:</strong>
+    <p>Think of Context like a radio station. You broadcast on a frequency (the Provider). Any component anywhere in the tree can tune in (useContext) and get the current value. When the broadcast changes, every tuned-in component re-renders.</p>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4 class="ctx-c">Context — Use When</h4>
+      <ul>
+        <li>Theme (dark/light mode)</li>
+        <li>User authentication state</li>
+        <li>Language / locale</li>
+        <li>Rarely-changing global config</li>
+        <li>Small-to-medium apps</li>
+        <li>Simple updates (replace whole object)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 class="rdx-c">Redux — Use When</h4>
+      <ul>
+        <li>Complex state with many sub-values</li>
+        <li>Many unrelated components need same state</li>
+        <li>Frequent updates (cart, notifications)</li>
+        <li>Debugging matters (time-travel)</li>
+        <li>Large teams with shared state logic</li>
+        <li>Async actions (API calls → state)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 5: CONTEXT HOW ====== -->
+<section id="context-how">
+  <h2><span class="num">05 —</span>How Context Works (Internals)</h2>
+
+  <p>Context is built into React. You create a context object, wrap components in a <strong>Provider</strong>, and consume it with <strong>useContext</strong>.</p>
+
+  <div class="flow">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="flow-row">
+        <div class="flow-box" style="background:#0d2b22;border-color:var(--green);color:var(--green)">createContext()</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">creates a Context object</div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-box" style="background:#1a1a30;border-color:var(--accent);color:var(--accent2)">&lt;Context.Provider value={...}&gt;</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">broadcasts the value to all children</div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-box" style="background:#2a1f08;border-color:var(--amber);color:var(--amber)">useContext(Context)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">subscribes, gets the current value, re-renders on change</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>⚠️ The Critical Performance Trap:</strong>
+    <p>When the Provider's value changes, <strong>EVERY component that called useContext(MyContext) re-renders</strong> — even if the specific piece of data it cares about didn't change. This is the biggest pain point with Context.</p>
+  </div>
+</section>
+
+<!-- ====== SECTION 6: CONTEXT CODE ====== -->
+<section id="context-code">
+  <h2><span class="num">06 —</span>Context — Full Working Code</h2>
+  <p>Here's the complete pattern for using Context correctly. We'll build a user auth context as an example.</p>
+
+  <h3>Step 1: Create the Context</h3>
+  <pre><code><span class="cmt">// context/UserContext.js</span>
+<span class="kw">import</span> { createContext, useContext, useState } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cmt">// 1. Create the context (default value is used when no Provider wraps it)</span>
+<span class="kw">const</span> UserContext = <span class="fn">createContext</span>(null);
+
+<span class="cmt">// 2. Create a custom hook — this is the CORRECT pattern, not calling useContext directly</span>
+<span class="kw">export function</span> <span class="fn">useUser</span>() {
+  <span class="kw">const</span> context = <span class="fn">useContext</span>(UserContext);
+  <span class="kw">if</span> (!context) {
+    <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">'useUser must be used inside &lt;UserProvider&gt;'</span>);
+  }
+  <span class="kw">return</span> context;
+}
+
+<span class="cmt">// 3. Create the Provider component — this holds the actual state</span>
+<span class="kw">export function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [isLoading, setIsLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="kw">const</span> <span class="fn">login</span> = <span class="kw">async</span> (email, password) => {
+    setIsLoading(<span class="kw">true</span>);
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="fn">loginAPI</span>(email, password);
+    setUser(data.user);
+    setIsLoading(<span class="kw">false</span>);
+  };
+
+  <span class="kw">const</span> <span class="fn">logout</span> = () => setUser(null);
+
+  <span class="cmt">// This VALUE object is what consumers receive</span>
+  <span class="kw">const</span> value = { user, isLoading, login, logout };
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;UserContext.Provider</span> <span class="prop">value</span>={value}<span class="tag">&gt;</span>
+      {children}
+    <span class="tag">&lt;/UserContext.Provider&gt;</span>
+  );
+}
+<div class="label">UserContext.js</div></code></pre>
+
+  <h3>Step 2: Wrap Your App</h3>
+  <pre><code><span class="cmt">// main.jsx — wrap the app in the Provider</span>
+<span class="kw">import</span> { UserProvider } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+
+<span class="fn">ReactDOM</span>.<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag">&lt;UserProvider&gt;</span>
+    <span class="tag">&lt;App /&gt;</span>
+  <span class="tag">&lt;/UserProvider&gt;</span>
+);
+<div class="label">main.jsx</div></code></pre>
+
+  <h3>Step 3: Consume in Any Component (No Props Needed!)</h3>
+  <pre><code><span class="cmt">// Header.jsx — no props needed, directly reads from context</span>
+<span class="kw">import</span> { useUser } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user, logout } = <span class="fn">useUser</span>();
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;header&gt;</span>
+      <span class="tag">&lt;span&gt;</span>Hello, {user?.name}<span class="tag">&lt;/span&gt;</span>
+      <span class="tag">&lt;button</span> <span class="prop">onClick</span>={logout}<span class="tag">&gt;</span>Logout<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/header&gt;</span>
+  );
+}
+
+<span class="cmt">// OrdersPage.jsx — same, no props needed</span>
+<span class="kw">function</span> <span class="fn">OrdersPage</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useUser</span>();
+  <span class="cmt">// use user.id to fetch orders...</span>
+}
+<div class="label">components.jsx</div></code></pre>
+
+  <div class="callout green">
+    <strong>✓ No prop drilling anywhere!</strong>
+    <p>Header and OrdersPage both get user directly from context. Layout, Main, and any middle components don't need to know about it at all.</p>
+  </div>
+</section>
+
+<!-- ====== SECTION 7: CONTEXT PERFORMANCE ====== -->
+<section id="context-perf">
+  <h2><span class="num">07 —</span>Context Performance Problem</h2>
+  <p>Here's the catch. Imagine your context holds three things: <span class="ic">user</span>, <span class="ic">cartIcon</span>, and <span class="ic">ordersIcon</span>.</p>
+
+  <pre><code><span class="cmt">// One big context with multiple values</span>
+<span class="kw">const</span> AppContext = <span class="fn">createContext</span>();
+
+<span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cartIcon, setCartIcon] = <span class="fn">useState</span>({ count: <span class="num2">0</span> });
+  <span class="kw">const</span> [ordersIcon, setOrdersIcon] = <span class="fn">useState</span>({ badge: <span class="num2">0</span> });
+
+  <span class="cmt">// ⚠️ Every time ANY of these changes, ALL consumers re-render</span>
+  <span class="kw">const</span> value = { user, cartIcon, ordersIcon, setCartIcon, setOrdersIcon };
+
+  <span class="kw">return</span> <span class="tag">&lt;AppContext.Provider</span> <span class="prop">value</span>={value}<span class="tag">&gt;</span>{children}<span class="tag">&lt;/AppContext.Provider&gt;</span>;
+}
+
+<span class="cmt">// Header only cares about user</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useContext</span>(AppContext); <span class="cmt">// subscribes to WHOLE context</span>
+  <span class="cmt">// ⚠️ Re-renders even when only cartIcon changes!</span>
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>{user?.name}<span class="tag">&lt;/h1&gt;</span>;
+}
+<div class="label">performance-problem.jsx</div></code></pre>
+
+  <div class="callout coral">
+    <strong>The Problem in Your Words:</strong>
+    <p>Yes — your instinct is right. If <span class="ic">user</span>, <span class="ic">cartIcon</span>, and <span class="ic">ordersIcon</span> are in the same context, and cartIcon changes (someone adds to cart), then Header will re-render even though it only shows the user name. That's wasted work on the single JS thread.</p>
+  </div>
+
+  <h3>Solution 1: Split Contexts (Best for Context)</h3>
+  <pre><code><span class="cmt">// Split into separate contexts — now each component only subscribes to what it needs</span>
+<span class="kw">const</span> UserContext = <span class="fn">createContext</span>();
+<span class="kw">const</span> CartContext = <span class="fn">createContext</span>();
+<span class="kw">const</span> OrdersContext = <span class="fn">createContext</span>();
+
+<span class="kw">function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">return</span> (
+    <span class="tag">&lt;UserContext.Provider</span> <span class="prop">value</span>={userValue}<span class="tag">&gt;</span>
+      <span class="tag">&lt;CartContext.Provider</span> <span class="prop">value</span>={cartValue}<span class="tag">&gt;</span>
+        <span class="tag">&lt;OrdersContext.Provider</span> <span class="prop">value</span>={ordersValue}<span class="tag">&gt;</span>
+          {children}
+        <span class="tag">&lt;/OrdersContext.Provider&gt;</span>
+      <span class="tag">&lt;/CartContext.Provider&gt;</span>
+    <span class="tag">&lt;/UserContext.Provider&gt;</span>
+  );
+}
+
+<span class="cmt">// Header now ONLY subscribes to UserContext</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useContext</span>(UserContext); <span class="cmt">// ✓ won't re-render on cart changes</span>
+  <span class="kw">return</span> <span class="tag">&lt;h1&gt;</span>{user?.name}<span class="tag">&lt;/h1&gt;</span>;
+}
+
+<span class="cmt">// CartIcon only subscribes to CartContext</span>
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="kw">const</span> { cartIcon } = <span class="fn">useContext</span>(CartContext); <span class="cmt">// ✓ isolated</span>
+  <span class="kw">return</span> <span class="tag">&lt;span&gt;</span>{cartIcon.count}<span class="tag">&lt;/span&gt;</span>;
+}
+<div class="label">split-contexts.jsx</div></code></pre>
+</section>
+
+<!-- ====== SECTION 8: REDUX INTRO ====== -->
+<section id="redux-intro">
+  <h2><span class="num">08 —</span>Redux Toolkit — What It Is</h2>
+  <p>Redux is a separate library (not built into React) that provides a <strong>single global store</strong> for your app's state. It has a strict pattern for how state can change, which makes it predictable and debuggable.</p>
+  <p>Redux Toolkit (RTK) is the modern, official way to use Redux. It removes all the old boilerplate.</p>
+
+  <div class="callout blue">
+    <strong>Mental model:</strong>
+    <p>Redux is like a bank. Your state is the balance. The only way to change the balance is by submitting a "transaction" (action). There's a record of every transaction (Redux DevTools). Multiple people (components) can check the balance — but only through the teller window (useSelector). And each person can request only the data they need, not the whole database.</p>
+  </div>
+
+  <h3>Core Redux Concepts</h3>
+
+  <div class="hook-row">
+    <div class="hook-name">Store</div>
+    <div class="hook-desc">
+      <strong>The single source of truth</strong>
+      <p>One JavaScript object containing all your app's state. Entire app gets it through a Provider.</p>
+    </div>
+  </div>
+
+  <div class="hook-row">
+    <div class="hook-name">Action</div>
+    <div class="hook-desc">
+      <strong>A description of what happened</strong>
+      <p>A plain object like <span class="ic">{ type: 'user/setUser', payload: {...} }</span>. You "dispatch" actions to trigger state changes.</p>
+    </div>
+  </div>
+
+  <div class="hook-row">
+    <div class="hook-name">Reducer</div>
+    <div class="hook-desc">
+      <strong>A function that handles state changes</strong>
+      <p>Takes current state + action, returns new state. Must be pure (no side effects). RTK handles immutability for you.</p>
+    </div>
+  </div>
+
+  <div class="hook-row">
+    <div class="hook-name">Slice</div>
+    <div class="hook-desc">
+      <strong>RTK's way to group related state</strong>
+      <p>One slice = one "section" of your store (userSlice, cartSlice, ordersSlice). Auto-generates actions + reducer.</p>
+    </div>
+  </div>
+
+  <div class="hook-row">
+    <div class="hook-name">useSelector</div>
+    <div class="hook-desc">
+      <strong>Read specific data from the store</strong>
+      <p>The key to performance. Component subscribes ONLY to the specific piece it selects. Re-renders only when THAT piece changes.</p>
+    </div>
+  </div>
+
+  <div class="hook-row">
+    <div class="hook-name">useDispatch</div>
+    <div class="hook-desc">
+      <strong>Trigger a state change</strong>
+      <p>Returns the dispatch function. You call it with an action to update the store.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 9: REDUX CONCEPTS ====== -->
+<section id="redux-concepts">
+  <h2><span class="num">09 —</span>Slices & Store — The RTK Pattern</h2>
+  <p>In RTK, you create "slices" — one per domain. Each slice has initial state, reducers, and auto-generates action creators.</p>
+
+  <div class="flow">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">How a Redux update flows:</div>
+      <div class="flow-row">
+        <div class="flow-box coral">Component calls dispatch(action)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">Redux sends action to all reducers</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box green">Matching reducer updates state</div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-box">Store holds new state</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box amber">useSelector components re-render ONLY if their selected value changed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SECTION 10: REDUX CODE ====== -->
+<section id="redux-code">
+  <h2><span class="num">10 —</span>Redux Toolkit — Full Working Code</h2>
+
+  <h3>Step 1: Install</h3>
+  <pre><code>npm install @reduxjs/toolkit react-redux
+<div class="label">terminal</div></code></pre>
+
+  <h3>Step 2: Create a Slice</h3>
+  <pre><code><span class="cmt">// store/userSlice.js</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> userSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'user'</span>,                    <span class="cmt">// slice name (prefix for action types)</span>
+  initialState: {
+    data: null,
+    isLoading: <span class="kw">false</span>,
+    error: null,
+  },
+  reducers: {
+    <span class="cmt">// RTK uses Immer under the hood — you CAN mutate state here safely</span>
+    <span class="fn">setUser</span>: (state, action) => {
+      state.data = action.payload;  <span class="cmt">// looks like mutation, but it's safe!</span>
+    },
+    <span class="fn">clearUser</span>: (state) => {
+      state.data = null;
+    },
+    <span class="fn">setLoading</span>: (state, action) => {
+      state.isLoading = action.payload;
+    },
+  },
+});
+
+<span class="cmt">// createSlice auto-generates action creators with the same names as reducers</span>
+<span class="kw">export const</span> { setUser, clearUser, setLoading } = userSlice.actions;
+<span class="kw">export default</span> userSlice.reducer;
+<div class="label">userSlice.js</div></code></pre>
+
+  <h3>Step 3: Create More Slices</h3>
+  <pre><code><span class="cmt">// store/cartSlice.js</span>
+<span class="kw">const</span> cartSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'cart'</span>,
+  initialState: { items: [], count: <span class="num2">0</span> },
+  reducers: {
+    <span class="fn">addItem</span>: (state, action) => {
+      state.items.<span class="fn">push</span>(action.payload);
+      state.count += <span class="num2">1</span>;
+    },
+    <span class="fn">removeItem</span>: (state, action) => {
+      state.items = state.items.<span class="fn">filter</span>(item => item.id !== action.payload);
+      state.count -= <span class="num2">1</span>;
+    },
+  },
+});
+
+<span class="kw">export const</span> { addItem, removeItem } = cartSlice.actions;
+<span class="kw">export default</span> cartSlice.reducer;
+<div class="label">cartSlice.js</div></code></pre>
+
+  <h3>Step 4: Combine into a Store</h3>
+  <pre><code><span class="cmt">// store/index.js</span>
+<span class="kw">import</span> { configureStore } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+<span class="kw">import</span> userReducer <span class="kw">from</span> <span class="str">'./userSlice'</span>;
+<span class="kw">import</span> cartReducer <span class="kw">from</span> <span class="str">'./cartSlice'</span>;
+<span class="kw">import</span> ordersReducer <span class="kw">from</span> <span class="str">'./ordersSlice'</span>;
+
+<span class="kw">export const</span> store = <span class="fn">configureStore</span>({
+  reducer: {
+    user: userReducer,     <span class="cmt">// state.user</span>
+    cart: cartReducer,     <span class="cmt">// state.cart</span>
+    orders: ordersReducer, <span class="cmt">// state.orders</span>
+  },
+});
+<div class="label">store/index.js</div></code></pre>
+
+  <h3>Step 5: Provide the Store</h3>
+  <pre><code><span class="cmt">// main.jsx</span>
+<span class="kw">import</span> { Provider } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { store } <span class="kw">from</span> <span class="str">'./store'</span>;
+
+<span class="fn">ReactDOM</span>.<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag">&lt;Provider</span> <span class="prop">store</span>={store}<span class="tag">&gt;</span>
+    <span class="tag">&lt;App /&gt;</span>
+  <span class="tag">&lt;/Provider&gt;</span>
+);
+<div class="label">main.jsx</div></code></pre>
+</section>
+
+<!-- ====== SECTION 11: USE SELECTOR ====== -->
+<section id="use-selector">
+  <h2><span class="num">11 —</span>useSelector — Surgical Re-renders</h2>
+  <p>This is where Redux beats Context on performance. <span class="ic">useSelector</span> lets each component subscribe to <strong>only the exact piece of state it needs</strong>.</p>
+
+  <pre><code><span class="cmt">// Header — only re-renders when state.user.data changes</span>
+<span class="kw">import</span> { useSelector, useDispatch } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { clearUser } <span class="kw">from</span> <span class="str">'./store/userSlice'</span>;
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="cmt">// Selector function: takes entire state, returns the piece you want</span>
+  <span class="kw">const</span> user = <span class="fn">useSelector</span>(state => state.user.data);
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+
+  <span class="cmt">// ✓ Won't re-render when cart changes, only when state.user.data changes</span>
+  <span class="kw">return</span> (
+    <span class="tag">&lt;header&gt;</span>
+      <span class="tag">&lt;span&gt;</span>{user?.name}<span class="tag">&lt;/span&gt;</span>
+      <span class="tag">&lt;button</span> <span class="prop">onClick</span>={() => dispatch(<span class="fn">clearUser</span>())}<span class="tag">&gt;</span>Logout<span class="tag">&lt;/button&gt;</span>
+    <span class="tag">&lt;/header&gt;</span>
+  );
+}
+
+<span class="cmt">// CartIcon — only re-renders when state.cart.count changes</span>
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="kw">const</span> count = <span class="fn">useSelector</span>(state => state.cart.count);
+  <span class="cmt">// ✓ Won't re-render when user changes, only cart.count</span>
+  <span class="kw">return</span> <span class="tag">&lt;span</span> <span class="prop">className</span>=<span class="str">"badge"</span><span class="tag">&gt;</span>{count}<span class="tag">&lt;/span&gt;</span>;
+}
+
+<span class="cmt">// OrdersIcon — only re-renders when orders.badge changes</span>
+<span class="kw">function</span> <span class="fn">OrdersIcon</span>() {
+  <span class="kw">const</span> badge = <span class="fn">useSelector</span>(state => state.orders.badge);
+  <span class="kw">return</span> <span class="tag">&lt;span&gt;</span>{badge}<span class="tag">&lt;/span&gt;</span>;
+}
+<div class="label">components-with-redux.jsx</div></code></pre>
+
+  <div class="callout green">
+    <strong>✓ Answer to your question:</strong>
+    <p>Yes! This is exactly what <span class="ic">useSelector</span> does. Even though user, cartIcon, and ordersIcon are all in the same Redux store, Header won't re-render when cart changes because its selector <span class="ic">state => state.user.data</span> returned the same value. Redux does a strict equality check (<span class="ic">===</span>) on the selected value after each dispatch.</p>
+  </div>
+
+  <h3>⚠️ useSelector Performance Trap — Returning Objects</h3>
+  <pre><code><span class="cmt">// ❌ BAD — creates a NEW object on every call → always "changed" → always re-renders</span>
+<span class="kw">const</span> { name, email } = <span class="fn">useSelector</span>(state => ({
+  name: state.user.data?.name,
+  email: state.user.data?.email,
+}));
+<span class="cmt">// Even if name and email are the same, {} !== {} in JavaScript</span>
+<span class="cmt">// So this component re-renders on EVERY dispatch, everywhere</span>
+
+<span class="cmt">// ✅ GOOD option 1 — select primitives (strings, numbers, booleans)</span>
+<span class="kw">const</span> name = <span class="fn">useSelector</span>(state => state.user.data?.name);
+<span class="kw">const</span> email = <span class="fn">useSelector</span>(state => state.user.data?.email);
+
+<span class="cmt">// ✅ GOOD option 2 — use shallowEqual for object comparison (see next section)</span>
+<span class="kw">import</span> { shallowEqual } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">const</span> { name, email } = <span class="fn">useSelector</span>(
+  state => ({ name: state.user.data?.name, email: state.user.data?.email }),
+  shallowEqual   <span class="cmt">// second argument: custom comparison function</span>
+);
+<div class="label">selector-performance.jsx</div></code></pre>
+</section>
+
+<!-- ====== SECTION 12: USEMEMO ====== -->
+<section id="usememo">
+  <h2><span class="num">12 —</span>useMemo — Cache Expensive Calculations</h2>
+  <p><span class="ic">useMemo</span> is about <strong>computation</strong>. It caches the result of a function. If the dependencies haven't changed, it returns the cached result instead of recomputing.</p>
+
+  <div class="callout blue">
+    <strong>Mental model:</strong>
+    <p>useMemo is like a sticky note. "Last time I ran this calculation with these inputs, I got this answer. If the inputs haven't changed, use the sticky note instead of recalculating."</p>
+  </div>
+
+  <pre><code><span class="kw">import</span> { useMemo } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">function</span> <span class="fn">OrderStats</span>({ orders }) {
+  <span class="cmt">// ❌ Without useMemo — recalculates on EVERY render</span>
+  <span class="kw">const</span> totalBad = orders.<span class="fn">reduce</span>((sum, o) => sum + o.amount, <span class="num2">0</span>);
+
+  <span class="cmt">// ✅ With useMemo — only recalculates when `orders` actually changes</span>
+  <span class="kw">const</span> total = <span class="fn">useMemo</span>(() => {
+    console.<span class="fn">log</span>(<span class="str">'Recalculating total...'</span>); <span class="cmt">// only runs when orders changes</span>
+    <span class="kw">return</span> orders.<span class="fn">reduce</span>((sum, o) => sum + o.amount, <span class="num2">0</span>);
+  }, [orders]); <span class="cmt">// dependency array — recalculate when these change</span>
+
+  <span class="cmt">// Also useful for stable object references</span>
+  <span class="kw">const</span> sortedOrders = <span class="fn">useMemo</span>(() => {
+    <span class="kw">return</span> [...orders].<span class="fn">sort</span>((a, b) => b.date - a.date);
+  }, [orders]);
+
+  <span class="kw">return</span> <span class="tag">&lt;div&gt;</span>Total: ${total} | Orders: {sortedOrders.<span class="fn">length</span>}<span class="tag">&lt;/div&gt;</span>;
+}
+<div class="label">useMemo.jsx</div></code></pre>
+
+  <div class="callout amber">
+    <strong>When NOT to use useMemo:</strong>
+    <p>Don't wrap everything in useMemo. It has its own overhead (memory + the check itself). Only use it for: (1) expensive calculations like sorting/filtering large arrays, (2) creating objects/arrays that are passed to child components as props (to prevent unnecessary child re-renders).</p>
+  </div>
+
+  <h3>useMemo with Context to prevent re-renders</h3>
+  <pre><code><span class="kw">function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [isLoading, setIsLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="cmt">// ❌ Without useMemo — new object on every render → all consumers re-render</span>
+  <span class="kw">const</span> valueBad = { user, isLoading, setUser, setIsLoading };
+
+  <span class="cmt">// ✅ With useMemo — same object reference if user and isLoading didn't change</span>
+  <span class="kw">const</span> value = <span class="fn">useMemo</span>(() => ({
+    user, isLoading, setUser, setIsLoading
+  }), [user, isLoading]); <span class="cmt">// only recompute when these change</span>
+
+  <span class="kw">return</span> <span class="tag">&lt;UserContext.Provider</span> <span class="prop">value</span>={value}<span class="tag">&gt;</span>{children}<span class="tag">&lt;/UserContext.Provider&gt;</span>;
+}
+<div class="label">context-with-usememo.jsx</div></code></pre>
+</section>
+
+<!-- ====== SECTION 13: USECALLBACK ====== -->
+<section id="usecallback">
+  <h2><span class="num">13 —</span>useCallback — Stable Function References</h2>
+  <p><span class="ic">useCallback</span> is like <span class="ic">useMemo</span> but for <strong>functions</strong>. It gives you a stable function reference across renders. Why does that matter?</p>
+
+  <pre><code><span class="cmt">// In JavaScript, functions are objects. Every render creates a NEW function.</span>
+<span class="kw">function</span> <span class="fn">Parent</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num2">0</span>);
+
+  <span class="cmt">// ❌ New function created on every render</span>
+  <span class="kw">const</span> handleClick = () => console.<span class="fn">log</span>(<span class="str">'clicked'</span>);
+  
+  <span class="cmt">// This means Child sees a "new" prop every render → Child re-renders unnecessarily</span>
+  <span class="kw">return</span> <span class="tag">&lt;Child</span> <span class="prop">onClick</span>={handleClick} <span class="tag">/&gt;</span>;
+}
+
+<span class="cmt">// ✅ useCallback memoizes the function — same reference if deps unchanged</span>
+<span class="kw">function</span> <span class="fn">Parent</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num2">0</span>);
+
+  <span class="kw">const</span> handleClick = <span class="fn">useCallback</span>(() => {
+    console.<span class="fn">log</span>(<span class="str">'clicked'</span>);
+  }, []); <span class="cmt">// empty array = never recreate (safe if no dependencies)</span>
+
+  <span class="cmt">// Example with dependency</span>
+  <span class="kw">const</span> handleAdd = <span class="fn">useCallback</span>(() => {
+    setCount(c => c + <span class="num2">1</span>); <span class="cmt">// using updater fn avoids needing count in deps</span>
+  }, []); <span class="cmt">// still safe — setCount is stable from React</span>
+
+  <span class="kw">return</span> <span class="tag">&lt;Child</span> <span class="prop">onClick</span>={handleClick} <span class="prop">onAdd</span>={handleAdd} <span class="tag">/&gt;</span>;
+}
+<div class="label">useCallback.jsx</div></code></pre>
+
+  <div class="callout blue">
+    <strong>useCallback vs useMemo:</strong>
+    <p><span class="ic">useCallback(fn, deps)</span> is exactly the same as <span class="ic">useMemo(() => fn, deps)</span>. useCallback just reads more naturally when you're memoizing a function. Use useCallback for functions, useMemo for values.</p>
+  </div>
+</section>
+
+<!-- ====== SECTION 14: REACT MEMO ====== -->
+<section id="react-memo">
+  <h2><span class="num">14 —</span>React.memo — Skip Re-rendering Child Components</h2>
+  <p><span class="ic">React.memo</span> is a higher-order component (a wrapper). If a component's props haven't changed, React.memo skips re-rendering it entirely.</p>
+
+  <pre><code><span class="kw">import</span> { memo, useCallback } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cmt">// Wrap the component you want to protect from unnecessary re-renders</span>
+<span class="kw">const</span> CartIcon = <span class="fn">memo</span>(<span class="kw">function</span> <span class="fn">CartIcon</span>({ count, onClick }) {
+  console.<span class="fn">log</span>(<span class="str">'CartIcon rendered'</span>); <span class="cmt">// only if count or onClick changed</span>
+  <span class="kw">return</span> <span class="tag">&lt;button</span> <span class="prop">onClick</span>={onClick}<span class="tag">&gt;</span>🛒 {count}<span class="tag">&lt;/button&gt;</span>;
+});
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>({ name: <span class="str">'Alice'</span> });
+  <span class="kw">const</span> [cartCount, setCartCount] = <span class="fn">useState</span>(<span class="num2">0</span>);
+
+  <span class="cmt">// ✅ useCallback ensures CartIcon doesn't re-render when user changes</span>
+  <span class="kw">const</span> handleCartClick = <span class="fn">useCallback</span>(() => {
+    console.<span class="fn">log</span>(<span class="str">'cart opened'</span>);
+  }, []);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;header&gt;</span>
+      <span class="tag">&lt;span&gt;</span>{user.name}<span class="tag">&lt;/span&gt;</span>
+      {<span class="cmt">/* CartIcon won't re-render when user.name changes — count and onClick are same */</span>}
+      <span class="tag">&lt;CartIcon</span> <span class="prop">count</span>={cartCount} <span class="prop">onClick</span>={handleCartClick} <span class="tag">/&gt;</span>
+    <span class="tag">&lt;/header&gt;</span>
+  );
+}
+<div class="label">react-memo.jsx</div></code></pre>
+
+  <div class="callout amber">
+    <strong>React.memo requires stable props to work:</strong>
+    <p>React.memo does a shallow equality check on props. If you pass an object or function as a prop without useMemo/useCallback, it gets a new reference every render, and React.memo has no effect. Always pair React.memo with useCallback/useMemo on the parent side.</p>
+  </div>
+</section>
+
+<!-- ====== SECTION 15: USESELECTOR PERF ====== -->
+<section id="use-selector-perf">
+  <h2><span class="num">15 —</span>useSelector + shallowEqual Deep Dive</h2>
+  <p>Back to your original question about Redux selectors. <span class="ic">shallowEqual</span> from react-redux compares two objects property-by-property rather than by reference.</p>
+
+  <pre><code><span class="kw">import</span> { useSelector, shallowEqual } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { createSelector } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="cmt">// APPROACH 1: Select primitives separately (simplest, most performant)</span>
+<span class="kw">function</span> <span class="fn">UserProfile</span>() {
+  <span class="kw">const</span> name = <span class="fn">useSelector</span>(state => state.user.data?.name);
+  <span class="kw">const</span> email = <span class="fn">useSelector</span>(state => state.user.data?.email);
+  <span class="cmt">// Each is a primitive — strict equality works perfectly</span>
+}
+
+<span class="cmt">// APPROACH 2: shallowEqual — compare object properties, not reference</span>
+<span class="kw">function</span> <span class="fn">UserProfile</span>() {
+  <span class="kw">const</span> { name, email } = <span class="fn">useSelector</span>(
+    state => ({ name: state.user.data?.name, email: state.user.data?.email }),
+    shallowEqual  <span class="cmt">// checks: did any of name/email actually change?</span>
+  );
+  <span class="cmt">// Won't re-render if name and email are the same, even though object reference is new</span>
+}
+
+<span class="cmt">// APPROACH 3: createSelector — memoized selectors (best for complex derivations)</span>
+<span class="cmt">// Creates a selector that only recomputes when inputs change</span>
+<span class="kw">const</span> selectExpensiveOrders = <span class="fn">createSelector</span>(
+  state => state.orders.list,        <span class="cmt">// input selector</span>
+  orders => orders.<span class="fn">filter</span>(o => o.amount > <span class="num2">1000</span>)  <span class="cmt">// result is memoized</span>
+);
+
+<span class="kw">function</span> <span class="fn">ExpensiveOrdersList</span>() {
+  <span class="cmt">// Won't recompute filter unless orders.list changes</span>
+  <span class="kw">const</span> expensiveOrders = <span class="fn">useSelector</span>(selectExpensiveOrders);
+  <span class="kw">return</span> expensiveOrders.<span class="fn">map</span>(o => <span class="tag">&lt;div</span> <span class="prop">key</span>={o.id}<span class="tag">&gt;</span>{o.amount}<span class="tag">&lt;/div&gt;</span>);
+}
+<div class="label">selectors-advanced.jsx</div></code></pre>
+</section>
+
+<!-- ====== COMPARISON TABLE ====== -->
+<section id="when-to-use">
+  <h2><span class="num">16 —</span>When to Use What — Decision Guide</h2>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Aspect</th>
+        <th><span class="badge ctx">Context</span></th>
+        <th><span class="badge rdx">Redux Toolkit</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="aspect">Bundle size</td>
+        <td>0kb — built into React</td>
+        <td>~10kb (RTK + react-redux)</td>
+      </tr>
+      <tr>
+        <td class="aspect">Setup complexity</td>
+        <td><span class="badge ok">Simple</span> — 2 files</td>
+        <td><span class="badge warn">More setup</span> — slices, store, provider</td>
+      </tr>
+      <tr>
+        <td class="aspect">Performance control</td>
+        <td>Limited — split contexts or useMemo</td>
+        <td><span class="badge ok">Precise</span> — useSelector selects exactly what you need</td>
+      </tr>
+      <tr>
+        <td class="aspect">DevTools</td>
+        <td>React DevTools (basic)</td>
+        <td><span class="badge ok">Redux DevTools</span> — time travel, action log</td>
+      </tr>
+      <tr>
+        <td class="aspect">Async (API calls)</td>
+        <td>Manual with useEffect</td>
+        <td><span class="badge ok">createAsyncThunk</span> — built-in</td>
+      </tr>
+      <tr>
+        <td class="aspect">Re-render control</td>
+        <td>Whole context re-renders all subscribers</td>
+        <td>Per-component via useSelector + shallowEqual</td>
+      </tr>
+      <tr>
+        <td class="aspect">Learning curve</td>
+        <td><span class="badge ok">Low</span> — just React</td>
+        <td>Medium — new concepts (slice, dispatch, selector)</td>
+      </tr>
+      <tr>
+        <td class="aspect">Best for</td>
+        <td>Theme, auth, locale, simple global state</td>
+        <td>Complex apps, high-frequency updates, teams</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>The Decision Tree</h3>
+
+  <div class="decision">
+    <div class="decision-q">Is this state used by more than one component?</div>
+    <div class="decision-branch">
+      <div class="decision-no">Local useState — keep it simple</div>
+      <div class="decision-yes">Keep going ↓</div>
+    </div>
+  </div>
+
+  <div class="decision" style="margin-top:16px;">
+    <div class="decision-q">Does it change frequently? (cart, notifications, live data)</div>
+    <div class="decision-branch">
+      <div class="decision-no">Context is fine (theme, auth)</div>
+      <div class="decision-yes">Consider Redux for performance control</div>
+    </div>
+  </div>
+
+  <div class="decision" style="margin-top:16px;">
+    <div class="decision-q">Do you have complex async flows or a large team?</div>
+    <div class="decision-branch">
+      <div class="decision-no">Context with split providers works</div>
+      <div class="decision-yes">Redux Toolkit — structured, debuggable</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== FULL EXAMPLE ====== -->
+<section id="full-example">
+  <h2><span class="num">17 —</span>Full Example — Context + Redux Together</h2>
+  <p>In real apps you often use both. Context for rarely-changing global settings. Redux for frequently-updating feature state.</p>
+
+  <pre><code><span class="cmt">// Real-world pattern: Theme in Context (never changes fast), everything else in Redux</span>
+
+<span class="cmt">// ThemeContext — changes rarely (user preference)</span>
+<span class="kw">const</span> ThemeContext = <span class="fn">createContext</span>(<span class="str">'dark'</span>);
+<span class="kw">export const</span> <span class="fn">useTheme</span> = () => <span class="fn">useContext</span>(ThemeContext);
+
+<span class="cmt">// Redux store — everything that changes frequently</span>
+<span class="cmt">// state.user — login/logout</span>
+<span class="cmt">// state.cart — add/remove items frequently</span>
+<span class="cmt">// state.notifications — real-time badges</span>
+
+<span class="cmt">// main.jsx</span>
+<span class="fn">ReactDOM</span>.<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tag">&lt;Provider</span> <span class="prop">store</span>={store}<span class="tag">&gt;</span>          {<span class="cmt">/* Redux for feature state */</span>}
+    <span class="tag">&lt;ThemeContext.Provider</span> <span class="prop">value</span>=<span class="str">"dark"</span><span class="tag">&gt;</span> {<span class="cmt">/* Context for config */</span>}
+      <span class="tag">&lt;App /&gt;</span>
+    <span class="tag">&lt;/ThemeContext.Provider&gt;</span>
+  <span class="tag">&lt;/Provider&gt;</span>
+);
+
+<span class="cmt">// Component using both</span>
+<span class="kw">function</span> <span class="fn">ProductCard</span>({ product }) {
+  <span class="kw">const</span> theme = <span class="fn">useTheme</span>();                    <span class="cmt">// from Context</span>
+  <span class="kw">const</span> user = <span class="fn">useSelector</span>(s => s.user.data); <span class="cmt">// from Redux</span>
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+
+  <span class="kw">const</span> handleAddToCart = <span class="fn">useCallback</span>(() => {
+    dispatch(<span class="fn">addItem</span>({ id: product.id, name: product.name, price: product.price }));
+  }, [dispatch, product]);
+
+  <span class="kw">return</span> (
+    <span class="tag">&lt;div</span> <span class="prop">className</span>={`card card--${theme}`}<span class="tag">&gt;</span>
+      <span class="tag">&lt;h3&gt;</span>{product.name}<span class="tag">&lt;/h3&gt;</span>
+      {user ? (
+        <span class="tag">&lt;button</span> <span class="prop">onClick</span>={handleAddToCart}<span class="tag">&gt;</span>Add to Cart<span class="tag">&lt;/button&gt;</span>
+      ) : (
+        <span class="tag">&lt;button&gt;</span>Login to buy<span class="tag">&lt;/button&gt;</span>
+      )}
+    <span class="tag">&lt;/div&gt;</span>
+  );
+}
+<div class="label">full-example.jsx</div></code></pre>
+
+  <h3>Summary of All Performance Tools</h3>
+
+  <div class="hook-row">
+    <div class="hook-name">useMemo</div>
+    <div class="hook-desc">
+      <strong>Cache expensive computed values</strong>
+      <p>Use when: filtering/sorting large arrays, deriving data, creating stable object references for child props</p>
+    </div>
+  </div>
+  <div class="hook-row">
+    <div class="hook-name">useCallback</div>
+    <div class="hook-desc">
+      <strong>Cache function references</strong>
+      <p>Use when: passing functions as props to memoized children, functions in dependency arrays of other hooks</p>
+    </div>
+  </div>
+  <div class="hook-row">
+    <div class="hook-name">React.memo</div>
+    <div class="hook-desc">
+      <strong>Skip re-rendering a component</strong>
+      <p>Use when: a child component renders often with the same props, and its render is expensive</p>
+    </div>
+  </div>
+  <div class="hook-row">
+    <div class="hook-name">useSelector</div>
+    <div class="hook-desc">
+      <strong>Subscribe to only part of Redux store</strong>
+      <p>Use when: multiple components need the same state but different subsets of it</p>
+    </div>
+  </div>
+  <div class="hook-row">
+    <div class="hook-name">shallowEqual</div>
+    <div class="hook-desc">
+      <strong>Compare objects by properties, not reference</strong>
+      <p>Use as second arg to useSelector when you must return an object and want stable comparison</p>
+    </div>
+  </div>
+  <div class="hook-row">
+    <div class="hook-name">createSelector</div>
+    <div class="hook-desc">
+      <strong>Memoized derived state from Redux</strong>
+      <p>Use when: computing derived data from Redux state (filters, sorts, aggregations) that's shared across components</p>
+    </div>
+  </div>
+
+  <div class="callout green" style="margin-top:32px;">
+    <strong>✓ The mental checklist before you code:</strong>
+    <p>1. Does only one component need this? → local useState. 2. Do many components need it but it rarely changes? → Context. 3. Does it change often or need precise re-render control? → Redux Toolkit. 4. Is a computation expensive or passed as a prop? → useMemo. 5. Is a function passed as a prop to a memoized child? → useCallback. 6. Is a child component rendering too often with same props? → React.memo.</p>
+  </div>
+</section>
+
+</main>
+
+<script>
+// Highlight active nav item on scroll
+const sections = document.querySelectorAll('section');
+const navLinks = document.querySelectorAll('nav a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

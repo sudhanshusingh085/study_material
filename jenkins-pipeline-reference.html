@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jenkins Pipeline — Groovy + PowerShell Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --green: #10b981;
+    --yellow: #fbbf24;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --text-mid: #94a3b8;
+    --groovy: #a78bfa;
+    --powershell: #34d399;
+    --jenkins: #f97316;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  /* ── HEADER ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 14, 26, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+
+  .logo {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+
+  .logo span { color: var(--accent2); }
+
+  nav {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 5rem 2rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse at center, rgba(0,212,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  h1 .g { color: var(--groovy); }
+  h1 .p { color: var(--powershell); }
+
+  .hero-sub {
+    color: var(--text-mid);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .toc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--text-mid);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toc-item:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .toc-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .toc-item.ps .dot { background: var(--powershell); }
+  .toc-item.ps:hover { border-color: var(--powershell); color: var(--powershell); }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+    margin-left: auto;
+  }
+
+  .badge.groovy { background: rgba(167,139,250,0.15); color: var(--groovy); border: 1px solid rgba(167,139,250,0.3); }
+  .badge.ps { background: rgba(52,211,153,0.15); color: var(--powershell); border: 1px solid rgba(52,211,153,0.3); }
+  .badge.both { background: rgba(249,115,22,0.15); color: var(--jenkins); border: 1px solid rgba(249,115,22,0.3); }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,212,255,0.3); }
+
+  .card-head {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .card-lang {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+  }
+
+  .lang-groovy { background: rgba(167,139,250,0.2); color: var(--groovy); }
+  .lang-ps { background: rgba(52,211,153,0.2); color: var(--powershell); }
+  .lang-both { background: rgba(249,115,22,0.2); color: var(--jenkins); }
+
+  .card-body { padding: 1rem 1.25rem 1.25rem; }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--text-mid);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 0.75rem 0;
+  }
+
+  .code-label {
+    background: var(--surface2);
+    padding: 0.4rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .code-label .dot-g { color: var(--groovy); }
+  .code-label .dot-p { color: var(--powershell); }
+
+  pre {
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  /* ── SYNTAX COLORS ── */
+  .kw { color: #ff79c6; }          /* keywords */
+  .fn { color: #50fa7b; }          /* functions */
+  .str { color: #f1fa8c; }         /* strings */
+  .var { color: #8be9fd; }         /* variables */
+  .cmt { color: #6272a4; font-style: italic; } /* comments */
+  .num { color: #bd93f9; }         /* numbers */
+  .op { color: #ff79c6; }          /* operators */
+  .cls { color: #ffb86c; }         /* class/type */
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .compare-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .compare-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    vertical-align: top;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: var(--surface2); }
+
+  .compare-table .col-concept { color: var(--text-mid); font-family: 'Syne', sans-serif; font-weight: 600; }
+  .compare-table .col-groovy { color: var(--groovy); }
+  .compare-table .col-ps { color: var(--powershell); }
+
+  /* ── RULE BOXES ── */
+  .rules {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .rule {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 1rem 1.25rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: start;
+  }
+
+  .rule.warn { border-left-color: var(--yellow); }
+  .rule.danger { border-left-color: var(--red); }
+  .rule.success { border-left-color: var(--green); }
+  .rule.groovy { border-left-color: var(--groovy); }
+  .rule.ps { border-left-color: var(--powershell); }
+
+  .rule-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .rule-text { font-size: 0.85rem; color: var(--text-mid); line-height: 1.5; }
+  .rule-text strong { color: var(--text); display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .flow::before {
+    content: '';
+    position: absolute;
+    left: 0.6rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent3));
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    position: relative;
+  }
+
+  .flow-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-left: -2.45rem;
+    margin-top: 0.25rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .flow-dot.ps { border-color: var(--powershell); }
+  .flow-dot.groovy { border-color: var(--groovy); }
+  .flow-dot.both { border-color: var(--jenkins); }
+
+  .flow-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    flex: 1;
+  }
+
+  .flow-content .step-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .flow-content .step-desc {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── WIDE CARD ── */
+  .card-wide {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-wide:hover { border-color: rgba(0,212,255,0.3); }
+
+  .card-wide .card-head { cursor: pointer; user-select: none; }
+  .card-wide .card-head:hover .card-title { color: var(--accent); }
+
+  .card-wide .card-body { padding: 0 1.25rem 1.25rem; }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.15);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* ── GRID 2 ── */
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 768px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    nav { display: none; }
+  }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    margin-right: 0.25rem;
+  }
+
+  .tag.g { background: rgba(167,139,250,0.15); color: var(--groovy); }
+  .tag.p { background: rgba(52,211,153,0.15); color: var(--powershell); }
+  .tag.w { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">JENKINS <span>REFERENCE</span></div>
+  <nav>
+    <a href="#structure">Structure</a>
+    <a href="#groovy">Groovy</a>
+    <a href="#powershell">PowerShell</a>
+    <a href="#bridge">Bridge</a>
+    <a href="#patterns">Patterns</a>
+    <a href="#cheatsheet">Cheatsheet</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">FinIQ DevOps — Pipeline Reference</div>
+  <h1>Jenkins Pipeline<br><span class="g">Groovy</span> + <span class="p">PowerShell</span></h1>
+  <p class="hero-sub">Everything you need to write any Jenkins pipeline independently. Concepts, syntax, patterns, and commands — all in one place.</p>
+  <div class="toc-grid">
+    <a href="#structure" class="toc-item"><span class="dot"></span>Pipeline Structure</a>
+    <a href="#groovy" class="toc-item"><span class="dot"></span>Groovy Concepts</a>
+    <a href="#powershell" class="toc-item ps"><span class="dot"></span>PowerShell Commands</a>
+    <a href="#bridge" class="toc-item"><span class="dot"></span>Groovy ↔ PowerShell</a>
+    <a href="#patterns" class="toc-item"><span class="dot"></span>Common Patterns</a>
+    <a href="#cheatsheet" class="toc-item ps"><span class="dot"></span>Quick Cheatsheet</a>
+  </div>
+</div>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 1 — PIPELINE STRUCTURE
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="structure">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Pipeline Structure</h2>
+      <span class="badge both">Jenkins</span>
+    </div>
+
+    <div class="rules" style="margin-bottom:1.5rem">
+      <div class="rule">
+        <span class="rule-icon">🧱</span>
+        <div class="rule-text">
+          <strong>Two Pipeline Styles</strong>
+          We use <strong>Scripted</strong> style for Pipeline 1 (<code>node { }</code>) and <strong>Declarative</strong> style for Pipeline 2 (<code>pipeline { }</code>). Both are valid. Scripted is more flexible. Declarative has more structure and built-in features like <code>post</code>, <code>parameters</code>, <code>environment</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot-g">●</span> Scripted Pipeline (Pipeline 1)</div>
+          <pre><span class="cmt">// Variables declared here live for all stages</span>
+<span class="kw">node</span> {
+    <span class="kw">def</span> <span class="var">myVar</span> = <span class="str">''</span>
+
+    <span class="fn">stage</span>(<span class="str">'Checkout'</span>) {
+        <span class="cmt">// runs git pull etc</span>
+    }
+
+    <span class="fn">stage</span>(<span class="str">'Build'</span>) {
+        <span class="cmt">// runs dotnet build etc</span>
+    }
+
+    <span class="fn">stage</span>(<span class="str">'Trigger'</span>) {
+        <span class="cmt">// fires Pipeline 2</span>
+    }
+}</pre>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <div class="code-label"><span class="dot-g">●</span> Declarative Pipeline (Pipeline 2)</div>
+          <pre><span class="kw">pipeline</span> {
+    <span class="kw">agent</span> any
+
+    <span class="kw">parameters</span> {
+        <span class="fn">string</span>(<span class="var">name</span>: <span class="str">'MY_PARAM'</span>, ...)
+    }
+
+    <span class="kw">environment</span> {
+        <span class="var">MY_VAR</span> = <span class="str">"value"</span>
+    }
+
+    <span class="kw">stages</span> {
+        <span class="fn">stage</span>(<span class="str">'Stage Name'</span>) {
+            <span class="kw">steps</span> {
+                <span class="fn">script</span> {
+                    <span class="cmt">// Groovy logic here</span>
+                }
+            }
+        }
+    }
+
+    <span class="kw">post</span> {
+        <span class="kw">success</span> { <span class="fn">echo</span> <span class="str">"done"</span> }
+        <span class="kw">failure</span> { <span class="fn">echo</span> <span class="str">"failed"</span> }
+        <span class="kw">aborted</span> { <span class="fn">echo</span> <span class="str">"aborted"</span> }
+    }
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules" style="margin-top:1.5rem">
+      <div class="rule warn">
+        <span class="rule-icon">⚠️</span>
+        <div class="rule-text">
+          <strong>Helper functions must go OUTSIDE pipeline{ }</strong>
+          In Declarative pipelines, <code>def myFunction() { }</code> must be declared before the <code>pipeline { }</code> block. Functions defined inside pipeline fail at runtime.
+        </div>
+      </div>
+      <div class="rule groovy">
+        <span class="rule-icon">💡</span>
+        <div class="rule-text">
+          <strong>script{ } block unlocks Groovy inside Declarative</strong>
+          Inside <code>steps { }</code> you can only use Jenkins built-in steps. Wrap any Groovy logic (loops, if/else, variables) in a <code>script { }</code> block.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 2 — GROOVY CONCEPTS
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="groovy">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Groovy Concepts</h2>
+      <span class="badge groovy">Groovy</span>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Variables</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">All variables use <code>def</code>. Declare at <code>node{ }</code> level to share across stages.</p>
+          <div class="code-block">
+            <pre><span class="kw">def</span> <span class="var">name</span>    = <span class="str">'hello'</span>       <span class="cmt">// String</span>
+<span class="kw">def</span> <span class="var">count</span>   = <span class="num">0</span>            <span class="cmt">// Integer</span>
+<span class="kw">def</span> <span class="var">flag</span>    = <span class="kw">true</span>         <span class="cmt">// Boolean</span>
+<span class="kw">def</span> <span class="var">list</span>    = []           <span class="cmt">// Empty list</span>
+<span class="kw">def</span> <span class="var">map</span>     = [:]          <span class="cmt">// Empty map</span>
+<span class="kw">def</span> <span class="var">result</span>  = <span class="str">''</span>           <span class="cmt">// Empty string</span>
+
+<span class="cmt">// env.VAR = pipeline-level, survives across stages</span>
+<span class="var">env</span>.<span class="var">SERVICE_TAGS</span> = <span class="str">''</span>
+<span class="var">env</span>.<span class="var">DEPLOY_LOG</span>   = <span class="str">''</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">String Operations</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">String interpolation, splitting, trimming, contains checks.</p>
+          <div class="code-block">
+            <pre><span class="kw">def</span> <span class="var">s</span> = <span class="str">"CADB,SQLData,Workflow"</span>
+
+<span class="cmt">// Split into list</span>
+<span class="var">s</span>.<span class="fn">split</span>(<span class="str">','</span>)
+<span class="cmt">// → ["CADB", "SQLData", "Workflow"]</span>
+
+<span class="cmt">// Interpolation — inject variable</span>
+<span class="str">"Hello <span class="var">${s}</span>"</span>
+
+<span class="cmt">// Trim whitespace</span>
+<span class="var">s</span>.<span class="fn">trim</span>()
+
+<span class="cmt">// Check if empty</span>
+<span class="op">!</span><span class="var">s</span>?.<span class="fn">trim</span>()   <span class="cmt">// ? = null-safe</span>
+
+<span class="cmt">// Split by dot, get last part</span>
+<span class="str">"FinIQ.Services.CADB"</span>.<span class="fn">tokenize</span>(<span class="str">'.'</span>).<span class="fn">last</span>()
+<span class="cmt">// → "CADB"</span>
+
+<span class="cmt">// Substring from first {</span>
+<span class="var">raw</span>.<span class="fn">substring</span>(<span class="var">raw</span>.<span class="fn">indexOf</span>(<span class="str">'{'</span>))</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Lists and Loops</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc"><code>.each{}</code> loops, <code>.collect{}</code> transforms, <code>.findAll{}</code> filters.</p>
+          <div class="code-block">
+            <pre><span class="kw">def</span> <span class="var">items</span> = [<span class="str">"CADB"</span>, <span class="str">"SQLData"</span>, <span class="str">""</span>]
+
+<span class="cmt">// Loop — return = skip to next (like continue)</span>
+<span class="var">items</span>.<span class="fn">each</span> { <span class="var">item</span> ->
+    <span class="kw">if</span> (<span class="op">!</span><span class="var">item</span>) <span class="kw">return</span>
+    <span class="fn">echo</span> <span class="str">"<span class="var">${item}</span>"</span>
+}
+
+<span class="cmt">// Filter — remove empty strings</span>
+<span class="var">items</span>.<span class="fn">findAll</span> { <span class="var">it</span> }
+<span class="cmt">// → ["CADB", "SQLData"]</span>
+
+<span class="cmt">// Transform — add prefix to each</span>
+<span class="var">items</span>.<span class="fn">collect</span> { <span class="str">"ms-<span class="var">${it}</span>"</span> }
+<span class="cmt">// → ["ms-CADB", "ms-SQLData", "ms-"]</span>
+
+<span class="cmt">// Join list into string</span>
+[<span class="str">"a"</span>, <span class="str">"b"</span>, <span class="str">"c"</span>].<span class="fn">join</span>(<span class="str">","</span>)
+<span class="cmt">// → "a,b,c"</span>
+
+<span class="cmt">// it = current item (automatic variable)</span>
+<span class="cmt">// same as $_ in PowerShell</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Sorting + Max/Min</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">CPS-safe sorting using <code>.collect{}</code> + sort key. Used for version tag resolution.</p>
+          <div class="code-block">
+            <pre><span class="kw">def</span> <span class="var">tags</span> = [<span class="str">"1.0.0"</span>, <span class="str">"10.0.0"</span>, <span class="str">"1.0.9"</span>]
+
+<span class="cmt">// Convert each tag to sortable map</span>
+<span class="kw">def</span> <span class="var">latest</span> = <span class="var">tags</span>.<span class="fn">collect</span> { <span class="var">tag</span> ->
+    <span class="kw">def</span> <span class="var">p</span> = <span class="var">tag</span>.<span class="fn">tokenize</span>(<span class="str">'.'</span>)
+              .<span class="fn">collect</span> { <span class="var">it</span>.<span class="fn">toInteger</span>() }
+    [<span class="var">version</span>: <span class="var">tag</span>,
+     <span class="var">sortKey</span>: <span class="var">p</span>[<span class="num">0</span>] * <span class="num">10000</span> + <span class="var">p</span>[<span class="num">1</span>] * <span class="num">100</span> + <span class="var">p</span>[<span class="num">2</span>]]
+}.<span class="fn">max</span> { <span class="var">it</span>.<span class="var">sortKey</span> }.<span class="var">version</span>
+
+<span class="cmt">// → "10.0.0"</span>
+
+<span class="cmt">// WHY: string sort gives wrong order</span>
+<span class="cmt">// "10.0.0" < "9.0.0" alphabetically</span>
+<span class="cmt">// integer sort: 100000 > 90000 ✅</span>
+
+<span class="cmt">// Get second-to-last (previous tag)</span>
+<span class="var">sorted</span>[<span class="op">-</span><span class="num">2</span>].<span class="var">version</span>
+<span class="cmt">// -1 = last, -2 = second to last</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Try / Catch</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Handle failures gracefully so one service doesn't block others.</p>
+          <div class="code-block">
+            <pre><span class="kw">try</span> {
+    <span class="cmt">// code that might fail</span>
+    <span class="fn">bat</span> <span class="str">"docker push <span class="var">${image}</span>"</span>
+
+} <span class="kw">catch</span>(<span class="cls">Exception</span> <span class="var">e</span>) {
+    <span class="cmt">// runs if try block throws</span>
+    <span class="fn">echo</span> <span class="str">"Failed: <span class="var">${e.message}</span>"</span>
+
+} <span class="kw">finally</span> {
+    <span class="cmt">// ALWAYS runs — success or fail</span>
+    <span class="cmt">// used for cleanup (delete temp folders)</span>
+    <span class="fn">bat</span> <span class="str">"rmdir /S /Q temp"</span>
+}
+
+<span class="cmt">// Stop pipeline immediately</span>
+<span class="fn">error</span>(<span class="str">"Something went wrong"</span>)
+
+<span class="cmt">// Mark as aborted (yellow) not failed (red)</span>
+<span class="var">currentBuild</span>.<span class="var">result</span> = <span class="str">'ABORTED'</span>
+<span class="fn">error</span>(<span class="str">"Nothing to do"</span>)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">JSON Parsing</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Parse JSON responses from skopeo, APIs, curl. Used for tag resolution and AI responses.</p>
+          <div class="code-block">
+            <pre><span class="cmt">// Parse JSON string into Groovy map</span>
+<span class="kw">def</span> <span class="var">parsed</span> = <span class="kw">new</span> <span class="cls">groovy.json.JsonSlurper</span>()
+                .<span class="fn">parseText</span>(<span class="var">jsonString</span>)
+
+<span class="cmt">// Access fields</span>
+<span class="var">parsed</span>.<span class="var">Tags</span>                 <span class="cmt">// array</span>
+<span class="var">parsed</span>.<span class="var">choices</span>[<span class="num">0</span>]           <span class="cmt">// first item</span>
+<span class="var">parsed</span>.<span class="var">choices</span>[<span class="num">0</span>].<span class="var">message</span>.<span class="var">content</span>
+
+<span class="cmt">// bat() output includes Windows prompt line</span>
+<span class="cmt">// strip it before parsing:</span>
+<span class="kw">def</span> <span class="var">raw</span>  = <span class="fn">bat</span>(..., <span class="var">returnStdout</span>: <span class="kw">true</span>).<span class="fn">trim</span>()
+<span class="kw">def</span> <span class="var">json</span> = <span class="var">raw</span>.<span class="fn">substring</span>(<span class="var">raw</span>.<span class="fn">indexOf</span>(<span class="str">'{'</span>))
+<span class="kw">def</span> <span class="var">obj</span>  = <span class="kw">new</span> <span class="cls">groovy.json.JsonSlurper</span>()
+                .<span class="fn">parseText</span>(<span class="var">json</span>)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Spaceship Operator &lt;=&gt;</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Three-way comparison. Returns -1, 0, or 1. Used inside sort comparators.</p>
+          <div class="code-block">
+            <pre"><span class="num">1</span> <span class="op">&lt;=&gt;</span> <span class="num">2</span>   <span class="cmt">// → -1  (1 is less than 2)</span>
+<span class="num">2</span> <span class="op">&lt;=&gt;</span> <span class="num">2</span>   <span class="cmt">// →  0  (equal)</span>
+<span class="num">3</span> <span class="op">&lt;=&gt;</span> <span class="num">2</span>   <span class="cmt">// →  1  (3 greater than 2)</span>
+
+<span class="cmt">// Used in version comparison:</span>
+<span class="kw">def</span> <span class="var">majorCmp</span> = <span class="var">aParts</span>[<span class="num">0</span>] <span class="op">&lt;=&gt;</span> <span class="var">bParts</span>[<span class="num">0</span>]
+<span class="kw">if</span> (<span class="var">majorCmp</span> <span class="op">!=</span> <span class="num">0</span>) <span class="kw">return</span> <span class="var">majorCmp</span>
+<span class="cmt">// if major differs → decided</span>
+<span class="cmt">// if major equal → check minor next</span>
+
+<span class="cmt">// Note: .sort{} with closure causes</span>
+<span class="cmt">// CPS error in Jenkins pipeline.</span>
+<span class="cmt">// Use .collect{}.max{} instead ✅</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Triggering Another Job</span>
+          <span class="card-lang lang-groovy">Groovy</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Only Groovy can trigger other Jenkins jobs. PowerShell cannot.</p>
+          <div class="code-block">
+            <pre><span class="cmt">// Fire and forget — Pipeline 1 closes</span>
+<span class="fn">build</span> <span class="var">job</span>: <span class="str">"Pipeline2-JobName"</span>,
+    <span class="var">parameters</span>: [
+        <span class="fn">string</span>(<span class="var">name</span>: <span class="str">'CHANGED_SERVICES'</span>,
+               <span class="var">value</span>: <span class="var">changedServices</span>),
+        <span class="fn">string</span>(<span class="var">name</span>: <span class="str">'MAJOR_MINOR'</span>,
+               <span class="var">value</span>: <span class="var">params</span>.<span class="var">MAJOR_MINOR</span> <span class="op">?:</span> <span class="str">''</span>)
+    ],
+    <span class="var">wait</span>: <span class="kw">false</span>   <span class="cmt">// don't block</span>
+
+<span class="cmt">// Wait for result (e.g. Selenium)</span>
+<span class="kw">def</span> <span class="var">result</span> = <span class="fn">build</span> <span class="var">job</span>: <span class="str">"SeleniumJob"</span>,
+    <span class="var">wait</span>: <span class="kw">true</span>,
+    <span class="var">propagate</span>: <span class="kw">false</span>  <span class="cmt">// don't auto-fail</span>
+
+<span class="kw">if</span> (<span class="var">result</span>.<span class="var">result</span> <span class="op">!=</span> <span class="str">'SUCCESS'</span>) {
+    <span class="cmt">// handle failure</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 3 — POWERSHELL COMMANDS
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="powershell">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>PowerShell Commands</h2>
+      <span class="badge ps">PowerShell</span>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">File Copy — Robocopy</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Robust file copy with exclusions. Used to copy published output excluding config files.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Basic robocopy</span>
+<span class="fn">cmd</span> /c <span class="str">"robocopy `"$src`" `"$dest`" /E /PURGE"</span>
+
+<span class="cmt"># With exclusions and retry</span>
+<span class="fn">cmd</span> /c <span class="str">"robocopy `"$src`" `"$dest`" /E /PURGE /R:3 /W:5 /XF web.config /XF file.xml"</span>
+
+<span class="cmt"># Flags:</span>
+<span class="cmt"># /E     = copy all subfolders including empty</span>
+<span class="cmt"># /PURGE = delete files in dest not in source</span>
+<span class="cmt"># /XF    = exclude file (one per file)</span>
+<span class="cmt"># /XD    = exclude directory</span>
+<span class="cmt"># /R:3   = retry 3 times on failure</span>
+<span class="cmt"># /W:5   = wait 5 seconds between retries</span>
+<span class="cmt"># /NFL   = no file list (cleaner output)</span>
+
+<span class="cmt"># Exit codes 0-7 = success, 8+ = error</span>
+<span class="var">$rc</span> = <span class="var">$LASTEXITCODE</span>
+<span class="kw">if</span> (<span class="var">$rc</span> <span class="op">-gt</span> <span class="num">7</span>) {
+    <span class="kw">throw</span> <span class="str">"Robocopy failed: exit $rc"</span>
+}
+<span class="var">$global:LASTEXITCODE</span> = <span class="num">0</span>  <span class="cmt"># reset</span>
+
+<span class="cmt"># IMPORTANT: trim trailing backslash</span>
+<span class="cmt"># "D:\path\" breaks quote escaping</span>
+<span class="var">$src</span> = <span class="var">$src</span>.<span class="fn">TrimEnd</span>([<span class="cls">char</span>]<span class="num">92</span>)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">File Copy — simple copy</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">For copying specific files (like nginx.conf, Dockerfile) into temp build folder.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Copy single file — /Y = overwrite</span>
+<span class="fn">copy</span> /Y <span class="str">"$src\nginx.conf"</span> <span class="str">"$dest\nginx.conf"</span>
+
+<span class="cmt"># PowerShell native copy</span>
+<span class="fn">Copy-Item</span> -Path <span class="str">"$src\file.conf"</span> `
+          -Destination <span class="str">"$dest\file.conf"</span> `
+          -Force
+
+<span class="cmt"># Copy entire folder recursively</span>
+<span class="fn">Copy-Item</span> -Path <span class="str">"$src\*"</span> `
+          -Destination <span class="var">$dest</span> `
+          -Recurse -Force
+
+<span class="cmt"># Copy multiple specific files</span>
+<span class="kw">foreach</span> (<span class="var">$file</span> <span class="kw">in</span> @(<span class="str">"nginx.conf"</span>, <span class="str">"default.conf"</span>, <span class="str">"Dockerfile"</span>)) {
+    <span class="fn">Copy-Item</span> -Path <span class="str">"$nginxPath\$file"</span> `
+              -Destination <span class="str">"$tempFolder\$file"</span> `
+              -Force
+}</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Folder Operations</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Create, delete, check existence of folders. Used for temp build folders and output dirs.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Check if folder exists</span>
+<span class="kw">if</span> (<span class="fn">Test-Path</span> <span class="var">$path</span>) { ... }
+<span class="kw">if</span> (<span class="op">!</span>(<span class="fn">Test-Path</span> <span class="var">$path</span>)) { ... }
+
+<span class="cmt"># Create folder</span>
+<span class="fn">New-Item</span> -ItemType Directory -Path <span class="var">$path</span> -Force
+
+<span class="cmt"># Create folder (cmd style)</span>
+<span class="fn">mkdir</span> <span class="str">"$path"</span>
+
+<span class="cmt"># Delete folder recursively</span>
+<span class="fn">Remove-Item</span> -Path <span class="var">$path</span> -Recurse -Force
+
+<span class="cmt"># Delete folder (cmd style — faster)</span>
+<span class="fn">rmdir</span> /S /Q <span class="str">"$path"</span>
+
+<span class="cmt"># Create fresh temp folder</span>
+<span class="fn">bat</span> <span class="str">"""
+    if exist "$temp" rmdir /S /Q "$temp"
+    mkdir "$temp"
+"""</span>
+
+<span class="cmt"># Join paths safely</span>
+<span class="var">$full</span> = <span class="fn">Join-Path</span> <span class="var">$base</span> <span class="var">$sub</span>
+<span class="cmt"># better than "$base\$sub" (avoids double \\)</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Path Operations</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Convert relative to absolute paths, get parts of a path. Used for csproj OutputPath resolution.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Convert relative to absolute</span>
+<span class="var">$abs</span> = [<span class="cls">System.IO.Path</span>]::<span class="fn">GetFullPath</span>(
+    (<span class="fn">Join-Path</span> <span class="var">$csproj</span>.<span class="var">DirectoryName</span> <span class="var">$relPath</span>)
+)
+<span class="cmt"># resolves ..\ and .\ in path</span>
+
+<span class="cmt"># Get filename from path</span>
+<span class="var">$file</span>.<span class="var">FullName</span>       <span class="cmt"># full path</span>
+<span class="var">$file</span>.<span class="var">DirectoryName</span>  <span class="cmt"># folder only</span>
+<span class="var">$file</span>.<span class="var">Name</span>           <span class="cmt"># filename.ext</span>
+<span class="var">$file</span>.<span class="var">BaseName</span>       <span class="cmt"># filename only</span>
+
+<span class="cmt"># Split path string by backslash</span>
+<span class="var">$parts</span> = <span class="var">$path</span>.<span class="fn">Split</span>(<span class="str">'\'</span>)
+
+<span class="cmt"># Get last part (folder/file name)</span>
+<span class="var">$parts</span>[<span class="op">-</span><span class="num">1</span>]
+
+<span class="cmt"># Trim trailing backslash ALWAYS before</span>
+<span class="cmt"># passing to robocopy or cmd /c</span>
+<span class="var">$path</span> = <span class="var">$path</span>.<span class="fn">TrimEnd</span>([<span class="cls">char</span>]<span class="num">92</span>)</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Finding Files</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Search for files by pattern. Used to find .csproj files inside service folders.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Find first .csproj recursively</span>
+<span class="var">$csproj</span> = <span class="fn">Get-ChildItem</span> <span class="var">$path</span> `
+    -Filter <span class="str">*.csproj</span> `
+    -Recurse | <span class="fn">Select-Object</span> -First <span class="num">1</span>
+
+<span class="cmt"># Find all .json files</span>
+<span class="fn">Get-ChildItem</span> <span class="var">$path</span> -Filter <span class="str">*.json</span> -Recurse
+
+<span class="cmt"># Check result is not null</span>
+<span class="kw">if</span> (<span class="op">!</span><span class="var">$csproj</span>) {
+    <span class="fn">Write-Host</span> <span class="str">"No csproj found"</span>
+    <span class="kw">continue</span>
+}
+
+<span class="cmt"># Read XML file (.csproj is XML)</span>
+[<span class="cls">xml</span>]<span class="var">$xml</span> = <span class="fn">Get-Content</span> <span class="var">$csproj</span>.<span class="var">FullName</span>
+
+<span class="cmt"># Navigate XML nodes</span>
+<span class="var">$node</span> = <span class="var">$xml</span>.<span class="var">Project</span>.<span class="var">PropertyGroup</span> |
+    <span class="fn">Where-Object</span> { <span class="var">$_</span>.<span class="var">OutputPath</span> } |
+    <span class="fn">Select-Object</span> -Last <span class="num">1</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">String Operations</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Split, join, trim, replace. Used for service name extraction and exclude flag building.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Split string</span>
+<span class="str">"a,b,c"</span>.<span class="fn">Split</span>(<span class="str">","</span>)        <span class="cmt"># → ["a","b","c"]</span>
+<span class="str">"a.b.c"</span>.<span class="fn">Split</span>(<span class="str">"."</span>)        <span class="cmt"># → ["a","b","c"]</span>
+
+<span class="cmt"># Get last element</span>
+<span class="var">$arr</span>[-<span class="num">1</span>]                    <span class="cmt"># last item</span>
+<span class="var">$service</span>.<span class="fn">Split</span>(<span class="str">'.'</span>)[-<span class="num">1</span>]  <span class="cmt"># last part</span>
+
+<span class="cmt"># Join array into string</span>
+<span class="var">$arr</span> <span class="op">-join</span> <span class="str">","</span>             <span class="cmt"># → "a,b,c"</span>
+
+<span class="cmt"># Build exclude flags for robocopy</span>
+<span class="var">$excludeStr</span> = (<span class="var">$env:EXCLUDE_FILES</span>.<span class="fn">Split</span>(<span class="str">","</span>) |
+    <span class="fn">ForEach-Object</span> { <span class="str">"/XF $($_.Trim())"</span> }) <span class="op">-join</span> <span class="str">" "</span>
+<span class="cmt"># → "/XF web.config /XF file.xml"</span>
+
+<span class="cmt"># $_ = current item in loop (like 'it' in Groovy)</span>
+<span class="cmt"># $() = subexpression to evaluate inside string</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Git Commands</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Detect changed files between commits. Core of Pipeline 1 change detection.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Pull latest from remote</span>
+<span class="fn">git</span> pull origin master
+
+<span class="cmt"># Get changed files vs previous commit</span>
+<span class="var">$result</span> = <span class="fn">git</span> diff --name-only HEAD~1 HEAD <span class="num">2</span>><span class="var">$null</span>
+<span class="cmt"># → list of changed file paths</span>
+<span class="cmt"># e.g. Source_Code/8.0/API/FinIQ.Services.CADB/File.cs</span>
+
+<span class="cmt"># 2>$null = suppress error output</span>
+
+<span class="cmt"># Parse paths to extract service name</span>
+<span class="kw">foreach</span>(<span class="var">$name</span> <span class="kw">in</span> <span class="var">$result</span>) {
+    <span class="var">$parts</span> = <span class="var">$name</span>.<span class="fn">Split</span>(<span class="str">"/"</span>)
+    <span class="var">$idx</span>   = <span class="var">$parts</span>.<span class="fn">IndexOf</span>(<span class="str">"API"</span>)
+    <span class="kw">if</span> (<span class="var">$idx</span> <span class="op">-ge</span> <span class="num">0</span>) {
+        <span class="var">$service</span> = <span class="var">$parts</span>[<span class="var">$idx</span> + <span class="num">1</span>]
+    }
+}
+
+<span class="cmt"># Add safe directory (run once)</span>
+<span class="fn">git</span> config --global --add safe.directory <span class="var">$path</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">dotnet Commands</span>
+          <span class="card-lang lang-ps">PowerShell</span>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">Build and publish .NET projects. Core of the MS build stage.</p>
+          <div class="code-block">
+            <pre"><span class="cmt"># Restore NuGet packages</span>
+<span class="fn">dotnet</span> restore <span class="var">$csproj</span>.<span class="var">FullName</span> | <span class="fn">Out-Host</span>
+
+<span class="cmt"># Publish (build + output)</span>
+<span class="fn">dotnet</span> publish <span class="var">$csproj</span>.<span class="var">FullName</span> `
+    -c Release `
+    -o <span class="var">$outputPath</span> `
+    --no-restore | <span class="fn">Out-Host</span>
+
+<span class="cmt"># -c Release = Release configuration</span>
+<span class="cmt"># -o = output directory</span>
+<span class="cmt"># --no-restore = skip restore (already done)</span>
+<span class="cmt"># | Out-Host = send output to console log</span>
+<span class="cmt">#   NOT captured by returnStdout</span>
+
+<span class="cmt"># Check if command succeeded</span>
+<span class="kw">if</span> (<span class="var">$LASTEXITCODE</span> <span class="op">-ne</span> <span class="num">0</span>) {
+    <span class="fn">Write-Host</span> <span class="str">"Build failed for $service"</span>
+    <span class="kw">continue</span>   <span class="cmt"># skip to next service</span>
+}</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 4 — GROOVY ↔ POWERSHELL BRIDGE
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="bridge">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Groovy ↔ PowerShell Bridge</h2>
+      <span class="badge both">Both</span>
+    </div>
+
+    <div class="rules" style="margin-bottom:2rem">
+      <div class="rule danger">
+        <span class="rule-icon">🚨</span>
+        <div class="rule-text">
+          <strong>The Golden Rule — Single vs Double Quotes</strong>
+          Use <code>'''single quotes'''</code> when PowerShell variables like <code>$service</code> must stay as PowerShell variables. Use <code>"""double quotes"""</code> when you need Groovy to inject a value first — but escape every PowerShell <code>$</code> as <code>\$</code> and every <code>\</code> as <code>\\\\</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div class="code-block">
+          <div class="code-label">Single Quotes — PowerShell variables stay as-is</div>
+          <pre><span class="fn">powershell</span>(<span class="var">script</span>: <span class="str">'''
+    # Groovy leaves everything alone
+    # $service is PowerShell variable ✅
+    $service = "CADB"
+    Write-Host $service
+    $path = "D:\some\path"
+    $arr = $items -join ","
+'''</span>)</pre>
+        </div>
+        <div class="rules" style="margin-top:0.75rem">
+          <div class="rule success">
+            <span class="rule-icon">✅</span>
+            <div class="rule-text"><strong>Use single quotes when</strong> the script is self-contained and doesn't need values from Groovy variables.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <div class="code-label">withEnv — cleanest way to pass Groovy → PowerShell</div>
+          <pre><span class="fn">withEnv</span>([
+    <span class="str">"OUTPUT_PATH=<span class="var">${outputPath}</span>"</span>,
+    <span class="str">"EXCLUDE_FILES=<span class="var">${excludeFiles}</span>"</span>
+]) {
+    <span class="fn">powershell</span>(<span class="var">script</span>: <span class="str">'''
+        # Read Groovy values as env vars
+        $dest    = $env:OUTPUT_PATH
+        $exclude = $env:EXCLUDE_FILES
+        # No escaping needed ✅
+    '''</span>)
+}</pre>
+        </div>
+        <div class="rules" style="margin-top:0.75rem">
+          <div class="rule success">
+            <span class="rule-icon">✅</span>
+            <div class="rule-text"><strong>Use withEnv when</strong> you need to pass Groovy variables into PowerShell without mixing quote styles.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block" style="margin-top:1.5rem">
+      <div class="code-label">Capturing PowerShell output back into Groovy</div>
+      <pre><span class="cmt">// returnStdout: true captures EVERYTHING printed to stdout</span>
+<span class="cmt">// Write-Host → goes to Jenkins console log (NOT captured)</span>
+<span class="cmt">// Write-Output → goes to stdout (IS captured)</span>
+<span class="cmt">// | Out-Host → forces to console log (NOT captured)</span>
+
+<span class="kw">def</span> <span class="var">result</span> = <span class="fn">powershell</span>(
+    <span class="var">returnStdout</span>: <span class="kw">true</span>,
+    <span class="var">script</span>: <span class="str">'''
+        Write-Host "This goes to console only"      # not captured
+        dotnet publish ... | Out-Host               # not captured
+        cmd /c robocopy ... | Out-Host              # not captured
+        $services = @("CADB","SQLData")
+        Write-Output ($services -join ",")          # CAPTURED ✅
+    '''</span>
+).<span class="fn">trim</span>()</pre>
+    </div>
+
+    <div class="code-block" style="margin-top:1rem">
+      <div class="code-label">bat() vs powershell() — when to use which</div>
+      <pre><span class="cmt">// bat() — runs Windows cmd commands</span>
+<span class="cmt">// use for: docker, helm, oc, skopeo, robocopy, git</span>
+<span class="fn">bat</span> <span class="str">"docker push <span class="var">${fullImage}</span>"</span>
+<span class="fn">bat</span> <span class="str">"helm upgrade --install ms-<span class="var">${service}</span> ..."</span>
+
+<span class="cmt">// bat() with returnStdout — output includes Windows prompt line</span>
+<span class="cmt">// always strip it:</span>
+<span class="kw">def</span> <span class="var">raw</span>  = <span class="fn">bat</span>(<span class="var">script</span>: <span class="str">"skopeo list-tags ..."</span>, <span class="var">returnStdout</span>: <span class="kw">true</span>).<span class="fn">trim</span>()
+<span class="kw">def</span> <span class="var">json</span> = <span class="var">raw</span>.<span class="fn">substring</span>(<span class="var">raw</span>.<span class="fn">indexOf</span>(<span class="str">'{'</span>))  <span class="cmt">// strip prompt line</span>
+
+<span class="cmt">// powershell() — runs PowerShell scripts</span>
+<span class="cmt">// use for: file ops, path resolution, git diff, dotnet, loops</span>
+<span class="fn">powershell</span>(<span class="var">script</span>: <span class="str">'''
+    # multi-line PowerShell logic
+'''</span>)
+
+<span class="cmt">// Multi-line bat with line continuation ^</span>
+<span class="fn">bat</span> <span class="str">"""
+    helm upgrade --install ms-<span class="var">${service}</span> <span class="var">${helmPath}</span> ^
+    -f <span class="var">${helmPath}</span>\\ms-values\\ms-<span class="var">${service}</span>-values.yaml ^
+    --set image.tag=<span class="var">${tag}</span> ^
+    -n <span class="var">${namespace}</span>
+"""</span></pre>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Use Groovy</th>
+            <th>Use PowerShell</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-concept">Variables shared across stages</td>
+            <td class="col-groovy">def var = '' (node level)</td>
+            <td class="col-ps">—</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Trigger another Jenkins job</td>
+            <td class="col-groovy">build job: "name"</td>
+            <td class="col-ps">— (not possible)</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Parse JSON</td>
+            <td class="col-groovy">JsonSlurper().parseText()</td>
+            <td class="col-ps">ConvertFrom-Json</td>
+          </tr>
+          <tr>
+            <td class="col-concept">File copy with exclusions</td>
+            <td class="col-ps">—</td>
+            <td class="col-ps">robocopy /XF</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Build .NET project</td>
+            <td class="col-ps">—</td>
+            <td class="col-ps">dotnet publish</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Docker / Helm / OC commands</td>
+            <td class="col-groovy">bat "docker ..."</td>
+            <td class="col-ps">also possible</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Stop pipeline on failure</td>
+            <td class="col-groovy">error("message")</td>
+            <td class="col-ps">— (stops PS only)</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Pass value between stages</td>
+            <td class="col-groovy">def var or env.VAR</td>
+            <td class="col-ps">Write-Output (captured)</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Read file paths / XML</td>
+            <td class="col-ps">—</td>
+            <td class="col-ps">Get-Content, [xml]</td>
+          </tr>
+          <tr>
+            <td class="col-concept">Credentials (safe)</td>
+            <td class="col-groovy">withCredentials([...])</td>
+            <td class="col-ps">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 5 — COMMON PATTERNS
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="patterns">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Common Patterns</h2>
+      <span class="badge both">Patterns</span>
+    </div>
+
+    <div class="card-wide">
+      <div class="card-head">
+        <span class="card-title">Pattern 1 — Process Multiple Services with Skip on Failure</span>
+        <span class="card-lang lang-both">Both</span>
+      </div>
+      <div class="card-body">
+        <div class="code-block">
+          <pre><span class="cmt">// Standard pattern used in both MS and MFE pipelines</span>
+<span class="var">params</span>.<span class="var">CHANGED_SERVICES</span>.<span class="fn">split</span>(<span class="str">','</span>)
+    .<span class="fn">findAll</span> { <span class="var">it</span> }          <span class="cmt">// remove empty strings</span>
+    .<span class="fn">each</span> { <span class="var">service</span> ->
+
+        <span class="var">service</span> = <span class="var">service</span>.<span class="fn">trim</span>()
+
+        <span class="cmt">// Skip invalid entries</span>
+        <span class="kw">if</span> (<span class="op">!</span><span class="var">service</span> <span class="op">||</span> <span class="var">service</span>.<span class="fn">contains</span>(<span class="str">' '</span>)) {
+            <span class="fn">echo</span> <span class="str">"Skipping invalid: [<span class="var">${service}</span>]"</span>
+            <span class="kw">return</span>   <span class="cmt">// = continue in Groovy .each{}</span>
+        }
+
+        <span class="kw">try</span> {
+            <span class="cmt">// do work per service</span>
+            <span class="var">env</span>.<span class="var">SERVICE_TAGS</span> += <span class="str">"<span class="var">${service}</span>=<span class="var">${image}</span>,"</span>
+
+        } <span class="kw">catch</span>(<span class="cls">Exception</span> <span class="var">e</span>) {
+            <span class="fn">echo</span> <span class="str">"Failed for <span class="var">${service}</span>: <span class="var">${e.message}</span>"</span>
+            <span class="kw">return</span>   <span class="cmt">// skip this service, continue with next</span>
+        }
+    }</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-wide">
+      <div class="card-head">
+        <span class="card-title">Pattern 2 — Credentials Block</span>
+        <span class="card-lang lang-groovy">Groovy</span>
+      </div>
+      <div class="card-body">
+        <div class="code-block">
+          <pre><span class="cmt">// Username + Password (Quay, Bitbucket, OCP)</span>
+<span class="fn">withCredentials</span>([<span class="fn">usernamePassword</span>(
+    <span class="var">credentialsId</span>: <span class="str">"my-creds-id"</span>,
+    <span class="var">usernameVariable</span>: <span class="str">'MY_USER'</span>,
+    <span class="var">passwordVariable</span>: <span class="str">'MY_PASS'</span>
+)]) {
+    <span class="fn">bat</span> <span class="str">"docker login -u %MY_USER% -p %MY_PASS%"</span>
+    <span class="cmt">// %VAR% = Windows env var syntax in bat()</span>
+    <span class="cmt">// $env:VAR = PowerShell env var syntax</span>
+}
+
+<span class="cmt">// Single secret string (API keys, tokens)</span>
+<span class="fn">withCredentials</span>([<span class="fn">string</span>(
+    <span class="var">credentialsId</span>: <span class="str">"my-api-key-id"</span>,
+    <span class="var">variable</span>: <span class="str">'API_KEY'</span>
+)]) {
+    <span class="fn">bat</span> <span class="str">"curl -H \"api-key: %API_KEY%\" ..."</span>
+}
+
+<span class="cmt">// Credentials are MASKED in Jenkins logs automatically</span>
+<span class="cmt">// Never hardcode passwords in Jenkinsfile</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-wide">
+      <div class="card-head">
+        <span class="card-title">Pattern 3 — Auto Rollback Flow</span>
+        <span class="card-lang lang-groovy">Groovy</span>
+      </div>
+      <div class="card-body">
+        <div class="code-block">
+          <pre"><span class="cmt">// Deploy → health check → helm rollback → previous tag</span>
+<span class="cmt">// Each step only runs if previous failed</span>
+
+<span class="fn">bat</span> <span class="str">"helm upgrade --install ms-<span class="var">${svc}</span> ..."</span>  <span class="cmt">// Step 1 deploy</span>
+
+<span class="kw">if</span> (<span class="fn">isPodHealthy</span>(<span class="var">svc</span>, <span class="var">namespace</span>)) { <span class="kw">return</span> }  <span class="cmt">// ✅ done</span>
+
+<span class="cmt">// Step 2 — helm rollback</span>
+<span class="fn">bat</span> <span class="str">"helm rollback ms-<span class="var">${svc}</span> -n <span class="var">${namespace}</span>"</span>
+<span class="fn">sleep</span>(<span class="var">time</span>: <span class="num">30</span>, <span class="var">unit</span>: <span class="str">'SECONDS'</span>)
+
+<span class="kw">if</span> (<span class="fn">isPodHealthy</span>(<span class="var">svc</span>, <span class="var">namespace</span>)) { <span class="kw">return</span> }  <span class="cmt">// ✅ done</span>
+
+<span class="cmt">// Step 3 — re-deploy previous Quay tag</span>
+<span class="kw">def</span> <span class="var">prevTag</span> = <span class="fn">getPreviousTag</span>(<span class="var">svc</span>, ...)
+
+<span class="kw">if</span> (<span class="var">prevTag</span>) {
+    <span class="fn">bat</span> <span class="str">"helm upgrade --install ms-<span class="var">${svc}</span> ... --set image.tag=<span class="var">${prevTag}</span>"</span>
+} <span class="kw">else</span> {
+    <span class="fn">echo</span> <span class="str">"No previous tag — manual intervention needed"</span>
+}
+
+<span class="cmt">// ALWAYS notify regardless of outcome</span>
+<span class="fn">sendFailureNotification</span>(<span class="var">svc</span>, <span class="var">tag</span>, <span class="var">namespace</span>, <span class="var">reason</span>, <span class="var">rollbackResult</span>)</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-wide">
+      <div class="card-head">
+        <span class="card-title">Pattern 4 — Temp Folder Build Context (MFE)</span>
+        <span class="card-lang lang-ps">PowerShell</span>
+      </div>
+      <div class="card-body">
+        <div class="code-block">
+          <pre><span class="cmt">// Create → populate → build → cleanup</span>
+<span class="cmt">// finally{} ensures cleanup even on failure</span>
+
+<span class="kw">try</span> {
+    <span class="cmt">// 1. Create fresh temp folder</span>
+    <span class="fn">bat</span> <span class="str">"""
+        if exist "<span class="var">${temp}</span>" rmdir /S /Q "<span class="var">${temp}</span>"
+        mkdir "<span class="var">${temp}</span>"
+    """</span>
+
+    <span class="cmt">// 2. Copy dist files</span>
+    <span class="fn">bat</span> <span class="str">"""
+        robocopy "<span class="var">${distSrc}</span>" "<span class="var">${temp}</span>\\dist" /E /R:3 /W:5
+        if %ERRORLEVEL% GTR 7 exit /b 1
+    """</span>
+
+    <span class="cmt">// 3. Copy nginx files</span>
+    <span class="fn">bat</span> <span class="str">"""
+        copy /Y "<span class="var">${nginxPath}</span>\\nginx.conf"   "<span class="var">${temp}</span>\\nginx.conf"
+        copy /Y "<span class="var">${nginxPath}</span>\\default.conf" "<span class="var">${temp}</span>\\default.conf"
+        copy /Y "<span class="var">${nginxPath}</span>\\Dockerfile"   "<span class="var">${temp}</span>\\Dockerfile"
+    """</span>
+
+    <span class="cmt">// 4. Docker build</span>
+    <span class="fn">bat</span> <span class="str">"docker build -t <span class="var">${image}</span> \"<span class="var">${temp}</span>\" --no-cache"</span>
+    <span class="fn">bat</span> <span class="str">"docker push <span class="var">${image}</span>"</span>
+
+} <span class="kw">catch</span>(<span class="cls">Exception</span> <span class="var">e</span>) {
+    <span class="fn">echo</span> <span class="str">"Failed: <span class="var">${e.message}</span>"</span>
+
+} <span class="kw">finally</span> {
+    <span class="cmt">// ALWAYS delete temp — success or fail</span>
+    <span class="fn">bat</span> <span class="str">"if exist \"<span class="var">${temp}</span>\" rmdir /S /Q \"<span class="var">${temp}</span>\""</span>
+}</pre>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 6 — QUICK CHEATSHEET
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="cheatsheet">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Quick Cheatsheet</h2>
+      <span class="badge both">Reference</span>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--groovy);margin-bottom:0.75rem;">Groovy Quick Reference</div>
+        <table class="compare-table">
+          <tbody>
+            <tr><td class="col-concept">Declare variable</td><td class="col-groovy">def x = ''</td></tr>
+            <tr><td class="col-concept">Pipeline variable</td><td class="col-groovy">env.VAR = ''</td></tr>
+            <tr><td class="col-concept">String inject</td><td class="col-groovy">"Hello ${var}"</td></tr>
+            <tr><td class="col-concept">Null safe</td><td class="col-groovy">var?.trim()</td></tr>
+            <tr><td class="col-concept">Elvis operator</td><td class="col-groovy">var ?: 'default'</td></tr>
+            <tr><td class="col-concept">Loop</td><td class="col-groovy">list.each { it }</td></tr>
+            <tr><td class="col-concept">Skip iteration</td><td class="col-groovy">return (inside each)</td></tr>
+            <tr><td class="col-concept">Filter list</td><td class="col-groovy">list.findAll { it }</td></tr>
+            <tr><td class="col-concept">Transform list</td><td class="col-groovy">list.collect { it }</td></tr>
+            <tr><td class="col-concept">Split string</td><td class="col-groovy">"a,b".split(',')</td></tr>
+            <tr><td class="col-concept">Tokenize</td><td class="col-groovy">"a.b.c".tokenize('.')</td></tr>
+            <tr><td class="col-concept">Last item</td><td class="col-groovy">list.last() or list[-1]</td></tr>
+            <tr><td class="col-concept">Join list</td><td class="col-groovy">list.join(",")</td></tr>
+            <tr><td class="col-concept">Compare 3-way</td><td class="col-groovy">a <=> b</td></tr>
+            <tr><td class="col-concept">To integer</td><td class="col-groovy">"5".toInteger()</td></tr>
+            <tr><td class="col-concept">Parse JSON</td><td class="col-groovy">new JsonSlurper().parseText(s)</td></tr>
+            <tr><td class="col-concept">Run cmd</td><td class="col-groovy">bat "command"</td></tr>
+            <tr><td class="col-concept">Capture output</td><td class="col-groovy">bat(script:"", returnStdout:true)</td></tr>
+            <tr><td class="col-concept">Fail pipeline</td><td class="col-groovy">error("msg")</td></tr>
+            <tr><td class="col-concept">Trigger job</td><td class="col-groovy">build job: "name", wait: false</td></tr>
+            <tr><td class="col-concept">Sleep</td><td class="col-groovy">sleep(time:60, unit:'SECONDS')</td></tr>
+            <tr><td class="col-concept">Manual gate</td><td class="col-groovy">input message: "...", ok: "Go"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--powershell);margin-bottom:0.75rem;">PowerShell Quick Reference</div>
+        <table class="compare-table">
+          <tbody>
+            <tr><td class="col-concept">Declare variable</td><td class="col-ps">$x = ''</td></tr>
+            <tr><td class="col-concept">Read env var</td><td class="col-ps">$env:MY_VAR</td></tr>
+            <tr><td class="col-concept">String inject</td><td class="col-ps">"Hello $($var)"</td></tr>
+            <tr><td class="col-concept">Subexpression</td><td class="col-ps">$($_.Trim())</td></tr>
+            <tr><td class="col-concept">Current item</td><td class="col-ps">$_ (in pipe)</td></tr>
+            <tr><td class="col-concept">Loop</td><td class="col-ps">foreach($x in $arr) {}</td></tr>
+            <tr><td class="col-concept">Skip iteration</td><td class="col-ps">continue</td></tr>
+            <tr><td class="col-concept">Pipe transform</td><td class="col-ps">$arr | ForEach-Object { }</td></tr>
+            <tr><td class="col-concept">Split string</td><td class="col-ps">"a,b".Split(",")</td></tr>
+            <tr><td class="col-concept">Join array</td><td class="col-ps">$arr -join ","</td></tr>
+            <tr><td class="col-concept">Last item</td><td class="col-ps">$arr[-1]</td></tr>
+            <tr><td class="col-concept">Array contains</td><td class="col-ps">$arr.Contains($val)</td></tr>
+            <tr><td class="col-concept">Trim string</td><td class="col-ps">$s.Trim()</td></tr>
+            <tr><td class="col-concept">Trim backslash</td><td class="col-ps">$s.TrimEnd([char]92)</td></tr>
+            <tr><td class="col-concept">Check exists</td><td class="col-ps">Test-Path $path</td></tr>
+            <tr><td class="col-concept">Create folder</td><td class="col-ps">New-Item -ItemType Directory</td></tr>
+            <tr><td class="col-concept">Delete folder</td><td class="col-ps">rmdir /S /Q "$path"</td></tr>
+            <tr><td class="col-concept">Copy file</td><td class="col-ps">copy /Y "$src" "$dest"</td></tr>
+            <tr><td class="col-concept">Copy folder</td><td class="col-ps">robocopy "$src" "$dest" /E</td></tr>
+            <tr><td class="col-concept">Join path</td><td class="col-ps">Join-Path $base $sub</td></tr>
+            <tr><td class="col-concept">Absolute path</td><td class="col-ps">[System.IO.Path]::GetFullPath($p)</td></tr>
+            <tr><td class="col-concept">Console only</td><td class="col-ps">Write-Host "msg"</td></tr>
+            <tr><td class="col-concept">Captured output</td><td class="col-ps">Write-Output "value"</td></tr>
+            <tr><td class="col-concept">Redirect to console</td><td class="col-ps">command | Out-Host</td></tr>
+            <tr><td class="col-concept">Exit code</td><td class="col-ps">$LASTEXITCODE</td></tr>
+            <tr><td class="col-concept">Line continuation</td><td class="col-ps">` (backtick)</td></tr>
+            <tr><td class="col-concept">cmd line continuation</td><td class="col-ps">^ (in bat blocks)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="rules">
+      <div class="rule warn">
+        <span class="rule-icon">⚠️</span>
+        <div class="rule-text"><strong>Robocopy exit codes 0-7 = success, 8+ = error</strong> Always capture <code>$rc = $LASTEXITCODE</code> immediately after robocopy, then check <code>if ($rc -gt 7)</code>. Then reset <code>$global:LASTEXITCODE = 0</code> so Jenkins doesn't see non-zero exit.</div>
+      </div>
+      <div class="rule warn">
+        <span class="rule-icon">⚠️</span>
+        <div class="rule-text"><strong>bat() output includes Windows prompt line</strong> When using <code>returnStdout: true</code> with <code>bat()</code>, always strip the prompt: <code>raw.substring(raw.indexOf('{'))</code> for JSON or <code>.trim()</code> for plain text.</div>
+      </div>
+      <div class="rule danger">
+        <span class="rule-icon">🚨</span>
+        <div class="rule-text"><strong>Trailing backslash breaks robocopy quotes</strong> Path ending with <code>\</code> inside quotes becomes <code>"D:\path\"</code> which escapes the closing quote. Always call <code>.TrimEnd([char]92)</code> on both source and destination paths before robocopy.</div>
+      </div>
+      <div class="rule danger">
+        <span class="rule-icon">🚨</span>
+        <div class="rule-text"><strong>.sort{closure} causes CPS error in Jenkins</strong> Never use <code>list.sort { a, b -> }</code> in Declarative pipeline. Use <code>.collect{ [version: it, sortKey: ...] }.max { it.sortKey }.version</code> instead.</div>
+      </div>
+      <div class="rule groovy">
+        <span class="rule-icon">💡</span>
+        <div class="rule-text"><strong>return inside .each{} = continue, not return</strong> In Groovy, <code>return</code> inside <code>.each{}</code> skips to the next iteration — it does NOT exit the parent function. To exit the parent function, use a boolean flag or restructure the logic.</div>
+      </div>
+      <div class="rule ps">
+        <span class="rule-icon">💡</span>
+        <div class="rule-text"><strong>Out-Host prevents stdout capture</strong> Pipe any command whose output you don't want captured (dotnet, robocopy) to <code>| Out-Host</code>. Only <code>Write-Output</code> at the very end should reach <code>returnStdout</code>.</div>
+      </div>
+      <div class="rule success">
+        <span class="rule-icon">✅</span>
+        <div class="rule-text"><strong>Helper functions go before pipeline{ }</strong> In Declarative pipelines, define all <code>def functionName() { }</code> blocks above the <code>pipeline { }</code> keyword. They cannot live inside stages or steps.</div>
+      </div>
+      <div class="rule success">
+        <span class="rule-icon">✅</span>
+        <div class="rule-text"><strong>finally{} for temp folder cleanup</strong> Always use <code>try { } catch { } finally { }</code> when creating temp folders. The <code>finally</code> block runs whether the build succeeded or failed — temp folder always gets deleted.</div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  FinIQ DevOps — Jenkins Pipeline Reference · Built for Sudhanshu Singh · OCP Migration Project 2026
+</footer>
+
+</body>
+</html>

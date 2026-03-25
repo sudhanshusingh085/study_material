@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Learn Context & Redux — From Zero</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0d0d12;
+  --bg2:      #13131a;
+  --bg3:      #1a1a24;
+  --bg4:      #22222f;
+  --border:   #2a2a3a;
+  --border2:  #38385a;
+  --text:     #e4e4f0;
+  --muted:    #7a7a9a;
+  --hint:     #3a3a55;
+  --purple:   #9b78ff;
+  --purple2:  #c5aaff;
+  --green:    #38dda0;
+  --gbg:      #091e16;
+  --amber:    #f9be24;
+  --abg:      #1e1600;
+  --coral:    #ff6b6b;
+  --cbg:      #1e0909;
+  --blue:     #5aaaff;
+  --bbg:      #08152a;
+  --teal:     #2ee5cc;
+  --tbg:      #072220;
+  --code:     #07070e;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.8;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;width:236px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;}
+.nl{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.nl .t{font-family:'Lora',serif;font-size:15px;color:var(--purple2);font-weight:600;}
+.nl .s{font-size:9.5px;color:var(--hint);text-transform:uppercase;letter-spacing:0.13em;margin-top:2px;}
+.ng{margin-top:4px;}
+.ngl{padding:10px 16px 3px;font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:var(--hint);}
+nav a{display:flex;align-items:flex-start;gap:8px;padding:6px 16px;color:var(--muted);text-decoration:none;font-size:12px;transition:all 0.12s;border-left:2px solid transparent;line-height:1.35;}
+nav a .dot{width:5px;height:5px;border-radius:50%;background:var(--hint);flex-shrink:0;margin-top:4px;transition:0.12s;}
+nav a:hover{color:var(--text);background:var(--bg3);}
+nav a.on{color:var(--purple2);border-left-color:var(--purple);background:var(--bg3);}
+nav a.on .dot{background:var(--purple);}
+
+/* ── MAIN ── */
+main{margin-left:236px;padding:70px 72px 130px;max-width:1000px;}
+
+/* ── HERO ── */
+.hero{padding-bottom:72px;border-bottom:1px solid var(--border);margin-bottom:86px;}
+.hero-label{display:inline-block;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 14px;font-size:10.5px;color:var(--purple);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:22px;}
+.hero h1{font-family:'Lora',serif;font-size:54px;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:18px;}
+.hero h1 em{font-style:italic;color:var(--purple2);}
+.hero .lead{font-size:16px;color:var(--muted);max-width:560px;line-height:1.65;margin-bottom:24px;}
+.promise{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;}
+.promise p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.6;}
+.promise strong{color:var(--green);}
+
+/* ── CHAPTER ── */
+.chapter{margin-bottom:100px;scroll-margin-top:48px;}
+.chapter-label{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.chapter-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:2px 8px;}
+.chapter-type{font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.12em;}
+h2{font-family:'Lora',serif;font-size:34px;letter-spacing:-0.02em;color:var(--text);margin-bottom:5px;line-height:1.1;}
+h2 em{font-style:italic;color:var(--purple2);}
+h3{font-size:16px;font-weight:600;color:var(--text);margin:30px 0 10px;}
+h4{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin:20px 0 8px;}
+p{color:var(--muted);margin-bottom:13px;font-size:14.5px;line-height:1.75;}
+strong{color:var(--text);font-weight:500;}
+ul{list-style:none;margin:10px 0;}
+ul li{color:var(--muted);font-size:14px;padding:4px 0 4px 18px;position:relative;}
+ul li::before{content:'→';color:var(--hint);position:absolute;left:0;}
+
+/* ── CALLOUT ── */
+.box{border-radius:10px;padding:16px 20px;margin:18px 0;border-left:3px solid;}
+.box p{font-size:13.5px;margin:4px 0 0;}.box strong{color:inherit;font-weight:600;}
+.box.blue{background:var(--bbg);border-color:var(--blue);color:var(--blue);}
+.box.green{background:var(--gbg);border-color:var(--green);color:var(--green);}
+.box.amber{background:var(--abg);border-color:var(--amber);color:var(--amber);}
+.box.coral{background:var(--cbg);border-color:var(--coral);color:var(--coral);}
+.box.purple{background:#180f30;border-color:var(--purple);color:var(--purple2);}
+.box.teal{background:var(--tbg);border-color:var(--teal);color:var(--teal);}
+
+/* ── CODE ── */
+pre{background:var(--code);border:1px solid var(--border);border-radius:10px;padding:20px 22px;overflow-x:auto;margin:14px 0;position:relative;}
+pre .lb{position:absolute;top:10px;right:12px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--hint);text-transform:uppercase;letter-spacing:0.08em;}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:#cccce8;}
+.kw{color:#a78bfa;}.fn{color:#60a5fa;}.str{color:#34d399;}.cm{color:#35354a;font-style:italic;}.nm{color:#fbbf24;}.tg{color:#f87171;}.pr{color:#7dd3fc;}.tp{color:#f472b6;}
+.ic{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--purple2);}
+
+/* ── SIDE-BY-SIDE ── */
+.sbs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0;align-items:start;}
+.sbs-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;}
+.sbs-card h4{margin-top:0;}
+.sbs-card p{font-size:13px;}
+
+/* ── DIAGRAM ── */
+.diagram{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:26px;margin:18px 0;}
+.diagram-title{font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:16px;}
+
+/* tree */
+.tree{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+.tree-row{display:flex;align-items:center;gap:6px;padding:2px 0;}
+.tree-branch{color:var(--hint);}
+.tnode{padding:5px 12px;border-radius:6px;border:1px solid;white-space:nowrap;font-size:12px;}
+.tnode.root{background:#180f30;border-color:var(--purple);color:var(--purple2);}
+.tnode.mid{background:var(--bg3);border-color:var(--border2);color:var(--muted);}
+.tnode.leaf{background:var(--bbg);border-color:var(--blue);color:var(--blue);}
+.tnode.need{background:var(--gbg);border-color:var(--green);color:var(--green);}
+.tnode.pain{background:var(--cbg);border-color:var(--coral);color:var(--coral);}
+.tnode.prov{background:#180f30;border-color:var(--purple);color:var(--purple2);}
+.tree-note{font-size:11px;color:var(--hint);margin-left:6px;}
+
+/* flow */
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.fl{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:7px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.fl.p{border-color:var(--purple);color:var(--purple2);background:#180f30;}
+.fl.g{border-color:var(--green);color:var(--green);background:var(--gbg);}
+.fl.a{border-color:var(--amber);color:var(--amber);background:var(--abg);}
+.fl.c{border-color:var(--coral);color:var(--coral);background:var(--cbg);}
+.fl.b{border-color:var(--blue);color:var(--blue);background:var(--bbg);}
+.fl.t{border-color:var(--teal);color:var(--teal);background:var(--tbg);}
+.arr{color:var(--hint);font-size:18px;}
+
+/* piece anatomy */
+.piece{border:1px solid var(--border2);border-radius:12px;margin:16px 0;overflow:hidden;}
+.piece-header{background:var(--bg3);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+.piece-title{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--purple2);}
+.piece-what{font-size:12.5px;color:var(--muted);}
+.piece-body{padding:18px 20px;}
+.piece-body p{font-size:13.5px;margin-bottom:8px;}
+.piece-body p:last-child{margin:0;}
+
+/* step-by-step */
+.steps{counter-reset:step;}
+.step{counter-increment:step;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px 20px 18px 20px;margin:12px 0;display:flex;gap:16px;}
+.step-n{background:var(--bg3);border:1px solid var(--purple);color:var(--purple2);font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-n::before{content:counter(step);}
+.step-body strong{display:block;font-size:14px;margin-bottom:4px;}
+.step-body p{font-size:13px;margin:0;}
+
+/* analogy */
+.analogy{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:18px 20px;margin:16px 0;display:flex;gap:14px;align-items:flex-start;}
+.analogy-icon{font-size:26px;flex-shrink:0;margin-top:2px;}
+.analogy-body strong{display:block;font-size:14px;color:var(--text);margin-bottom:4px;}
+.analogy-body p{font-size:13px;color:var(--muted);margin:0;}
+
+/* question-answer teaching */
+.qa{margin:20px 0;}
+.qa-q{font-size:14px;color:var(--amber);font-weight:500;margin-bottom:6px;}
+.qa-q::before{content:'Q: ';}
+.qa-a{font-size:13.5px;color:var(--muted);padding-left:16px;border-left:2px solid var(--border2);}
+
+/* checklist */
+.checklist{background:var(--gbg);border:1px solid var(--green);border-radius:10px;padding:16px 20px;margin:18px 0;}
+.checklist h4{color:var(--green);margin-top:0;margin-bottom:10px;font-size:12px;}
+.checklist ul li{color:var(--green);font-size:13px;}
+.checklist ul li::before{color:var(--green);}
+
+/* redux piece cards */
+.rdx-pieces{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
+.rp{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.rp .rp-name{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--purple2);margin-bottom:6px;}
+.rp .rp-role{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px;}
+.rp .rp-desc{font-size:12.5px;color:var(--muted);line-height:1.55;}
+.rp .rp-analogy{font-size:11.5px;color:var(--hint);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+
+/* template */
+.template{background:var(--code);border:2px solid var(--purple);border-radius:10px;padding:20px 22px;margin:16px 0;position:relative;}
+.template::before{content:'COPY THIS TEMPLATE';position:absolute;top:-1px;right:16px;background:var(--purple);color:#0d0d12;font-size:9.5px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:0 0 5px 5px;letter-spacing:0.06em;font-weight:500;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+@media(max-width:860px){
+  nav{display:none;}
+  main{margin-left:0;padding:28px 18px 80px;}
+  .sbs,.rdx-pieces{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+ <div style="background:#1e293b;color:white;padding:15px;font-weight:bold;">
+    📘 My Study Hub | 
+    <a href="index.html" style="color:#38bdf8;">Home</a>
+  </div>
+<!-- NAV -->
+<nav>
+  <div class="nl"><div class="t">Learn Context & Redux</div><div class="s">From zero · Build it yourself</div></div>
+
+  <div class="ng"><div class="ngl">The Problem</div>
+    <a href="#pain"><span class="dot"></span>Why this exists at all</a>
+    <a href="#prop-drill"><span class="dot"></span>Prop drilling — the pain</a>
+  </div>
+
+  <div class="ng"><div class="ngl">React Context</div>
+    <a href="#ctx-what"><span class="dot"></span>What Context is</a>
+    <a href="#ctx-3pieces"><span class="dot"></span>The 3 pieces you write</a>
+    <a href="#ctx-createcontext"><span class="dot"></span>① createContext</a>
+    <a href="#ctx-provider"><span class="dot"></span>② The Provider</a>
+    <a href="#ctx-usecontext"><span class="dot"></span>③ useContext / custom hook</a>
+    <a href="#ctx-together"><span class="dot"></span>All 3 together — full example</a>
+    <a href="#ctx-template"><span class="dot"></span>Copy-paste template</a>
+    <a href="#ctx-perf"><span class="dot"></span>The performance trap</a>
+    <a href="#ctx-when"><span class="dot"></span>When to use Context</a>
+  </div>
+
+  <div class="ng"><div class="ngl">Redux Toolkit</div>
+    <a href="#rdx-what"><span class="dot"></span>What Redux is</a>
+    <a href="#rdx-pieces"><span class="dot"></span>The 5 pieces you write</a>
+    <a href="#rdx-slice"><span class="dot"></span>① createSlice — state + actions</a>
+    <a href="#rdx-store"><span class="dot"></span>② configureStore</a>
+    <a href="#rdx-provider"><span class="dot"></span>③ Provider (Redux)</a>
+    <a href="#rdx-useselector"><span class="dot"></span>④ useSelector — read</a>
+    <a href="#rdx-dispatch"><span class="dot"></span>⑤ useDispatch — write</a>
+    <a href="#rdx-together"><span class="dot"></span>All 5 together — full example</a>
+    <a href="#rdx-template"><span class="dot"></span>Copy-paste template</a>
+    <a href="#rdx-async"><span class="dot"></span>Async — API calls</a>
+  </div>
+
+  <div class="ng"><div class="ngl">Putting It Together</div>
+    <a href="#ctx-vs-rdx"><span class="dot"></span>Context vs Redux — choose</a>
+    <a href="#checklist"><span class="dot"></span>Your mental checklist</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Zero to Writing It Yourself</div>
+  <h1>Learn Context<br/>& <em>Redux</em><br/>From Scratch</h1>
+  <p class="lead">You've built real React apps. You know useState and props. Now I'm going to teach you Context and Redux the way a senior dev would explain it — starting with the problem, then building each piece one at a time until you can write it yourself.</p>
+  <div class="promise">
+    <p><strong>What you'll be able to do after this:</strong> Build a Context from scratch without googling. Set up a Redux store from scratch without AI help. Know which one to reach for and why. Understand every single line you write.</p>
+  </div>
+</div>
+
+
+<!-- ══════════ PART 1: THE PROBLEM ══════════ -->
+
+<div class="chapter" id="pain">
+  <div class="chapter-label"><span class="chapter-num">01</span><span class="chapter-type">The Problem</span></div>
+  <h2>Why does any of this <em>exist?</em></h2>
+
+  <p>Before learning Context or Redux, you need to understand the exact pain they solve. Because if you don't feel that pain, the solution won't make sense.</p>
+  <p>You already know how React data flows: <strong>parent passes data down to child via props</strong>. That's it. That's the only built-in mechanism.</p>
+
+  <div class="analogy">
+    <div class="analogy-icon">📦</div>
+    <div class="analogy-body">
+      <strong>Think of it like a relay race</strong>
+      <p>Each runner (component) must receive the baton (data) from the previous runner and hand it to the next. If the data needs to reach a runner at the end of the chain, every runner in between must carry it — even if they don't need it personally.</p>
+    </div>
+  </div>
+
+  <p>This works great for small component trees. The problem starts when you have data that's needed by many different components scattered across your app — like the logged-in user's info. <strong>Where does that data live?</strong></p>
+</div>
+
+
+<div class="chapter" id="prop-drill">
+  <div class="chapter-label"><span class="chapter-num">02</span><span class="chapter-type">The Problem</span></div>
+  <h2>Prop Drilling — <em>the real pain</em></h2>
+
+  <p>Imagine your app needs to show the user's name in the Header, their avatar in the Sidebar, and their ID to fetch orders in the OrdersPage. The natural solution: put <span class="ic">user</span> state at the top and pass it down.</p>
+
+  <div class="diagram">
+    <div class="diagram-title">What your component tree looks like</div>
+    <div class="tree">
+      <div class="tree-row"><div class="tnode root">App — has user state</div></div>
+      <div class="tree-row" style="padding-left:20px"><span class="tree-branch">├─</span><div class="tnode pain">Layout — doesn't need user, just passes it down</div><span class="tree-note">😤 pain</span></div>
+      <div class="tree-row" style="padding-left:40px"><span class="tree-branch">├─</span><div class="tnode pain">Navbar — doesn't need user, just passes it</div><span class="tree-note">😤 pain</span></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">└─</span><div class="tnode need">Header — ACTUALLY needs user.name</div><span class="tree-note">✓ uses it</span></div>
+      <div class="tree-row" style="padding-left:40px"><span class="tree-branch">└─</span><div class="tnode pain">Content — doesn't need user, just passes it</div><span class="tree-note">😤 pain</span></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">├─</span><div class="tnode need">Sidebar — ACTUALLY needs user.avatar</div><span class="tree-note">✓ uses it</span></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">└─</span><div class="tnode need">OrdersPage — ACTUALLY needs user.id</div><span class="tree-note">✓ uses it</span></div>
+    </div>
+  </div>
+
+  <p>Here's what the code looks like. Read this carefully — notice how Layout, Navbar, and Content are <strong>forced to handle a prop they never use</strong>:</p>
+
+  <pre><code><span class="cm">// App.jsx — user state lives here</span>
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>({ name: <span class="str">'Alice'</span>, avatar: <span class="str">'...'</span>, id: <span class="str">'u1'</span> });
+  <span class="kw">return</span> <span class="tg">&lt;Layout</span> <span class="pr">user</span>={user} <span class="tg">/&gt;</span>;  <span class="cm">// must pass user down</span>
+}
+
+<span class="cm">// Layout.jsx — Layout has NOTHING to do with user</span>
+<span class="cm">// But it must accept the prop just to pass it further</span>
+<span class="kw">function</span> <span class="fn">Layout</span>({ user }) {           <span class="cm">// ← forced to accept user</span>
+  <span class="kw">return</span> (
+    <span class="tg">&lt;div&gt;</span>
+      <span class="tg">&lt;Navbar</span> <span class="pr">user</span>={user} <span class="tg">/&gt;</span>         <span class="cm">// ← forced to pass it on</span>
+      <span class="tg">&lt;Content</span> <span class="pr">user</span>={user} <span class="tg">/&gt;</span>        <span class="cm">// ← forced to pass it on</span>
+    <span class="tg">&lt;/div&gt;</span>
+  );
+}
+
+<span class="cm">// Navbar.jsx — same problem</span>
+<span class="kw">function</span> <span class="fn">Navbar</span>({ user }) {           <span class="cm">// ← forced to accept user</span>
+  <span class="kw">return</span> <span class="tg">&lt;Header</span> <span class="pr">user</span>={user} <span class="tg">/&gt;</span>;    <span class="cm">// ← forced to pass it on</span>
+}
+
+<span class="cm">// Header — finally uses it. 3 hops later.</span>
+<span class="kw">function</span> <span class="fn">Header</span>({ user }) {
+  <span class="kw">return</span> <span class="tg">&lt;h1&gt;</span>Hello {user.name}<span class="tg">&lt;/h1&gt;</span>;  <span class="cm">// ← FINALLY used</span>
+}<div class="lb">prop-drilling.jsx</div></code></pre>
+
+  <div class="box coral">
+    <strong>Why this is genuinely painful:</strong>
+    <p>1. Every middle component is cluttered with props it doesn't care about. 2. If you rename the prop, you have to update every file in the chain. 3. Add a new component anywhere in the tree? You must thread the prop through again. 4. At 5+ levels deep, this becomes unmanageable.</p>
+  </div>
+
+  <div class="box blue">
+    <strong>The solution both Context and Redux provide:</strong>
+    <p>A way for any component to reach data directly — without it being passed through every parent. Header can ask "give me the user" and get it, without Layout or Navbar ever knowing it exists.</p>
+  </div>
+</div>
+
+
+<!-- ══════════ PART 2: CONTEXT ══════════ -->
+
+<div class="chapter" id="ctx-what">
+  <div class="chapter-label"><span class="chapter-num">03</span><span class="chapter-type">React Context</span></div>
+  <h2>What Context <em>actually is</em></h2>
+
+  <div class="analogy">
+    <div class="analogy-icon">📻</div>
+    <div class="analogy-body">
+      <strong>Context is a radio broadcast</strong>
+      <p>You set up a radio station (the Provider) that broadcasts on a specific frequency (the Context object). Any component anywhere in the tree can tune in (useContext) and receive whatever the station is currently broadcasting. When the broadcast changes, every tuned-in component updates.</p>
+    </div>
+  </div>
+
+  <p>Context is <strong>built into React</strong> — no installation needed. It lets you make a value available to any component in your tree, without passing it through props at every level.</p>
+
+  <p>Here's the high-level picture before we go piece by piece:</p>
+
+  <div class="diagram">
+    <div class="diagram-title">How Context replaces prop drilling</div>
+    <div class="tree">
+      <div class="tree-row"><div class="tnode prov">UserContext.Provider — broadcasts user</div></div>
+      <div class="tree-row" style="padding-left:20px"><span class="tree-branch">├─</span><div class="tnode mid">Layout — doesn't know about user at all</div></div>
+      <div class="tree-row" style="padding-left:40px"><span class="tree-branch">├─</span><div class="tnode mid">Navbar — doesn't know about user at all</div></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">└─</span><div class="tnode need">Header — tunes in, gets user directly ✓</div></div>
+      <div class="tree-row" style="padding-left:40px"><span class="tree-branch">└─</span><div class="tnode mid">Content — doesn't know about user at all</div></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">├─</span><div class="tnode need">Sidebar — tunes in, gets user directly ✓</div></div>
+      <div class="tree-row" style="padding-left:60px"><span class="tree-branch">└─</span><div class="tnode need">OrdersPage — tunes in, gets user directly ✓</div></div>
+    </div>
+  </div>
+
+  <p>Layout, Navbar, and Content now have <strong>zero knowledge of user</strong>. The components that need it get it directly from the Provider above them.</p>
+</div>
+
+
+<div class="chapter" id="ctx-3pieces">
+  <div class="chapter-label"><span class="chapter-num">04</span><span class="chapter-type">React Context</span></div>
+  <h2>The 3 pieces you <em>always write</em></h2>
+
+  <p>Every time you use Context, you write exactly 3 things. Not 2, not 4. Always 3. Once you know what each one does, the pattern becomes automatic.</p>
+
+  <div class="sbs">
+    <div class="sbs-card">
+      <h4 style="color:var(--purple2);">The 3 pieces</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--purple2);margin-bottom:3px;">① createContext()</div>
+          <div style="font-size:12px;color:var(--muted);">Creates the "frequency" — the context object that ties Provider and consumers together</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--purple2);margin-bottom:3px;">② Provider component</div>
+          <div style="font-size:12px;color:var(--muted);">Wraps your app/subtree. Holds the state. Broadcasts the value down the tree.</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--purple2);margin-bottom:3px;">③ useContext hook</div>
+          <div style="font-size:12px;color:var(--muted);">Used inside any consumer component to tune in and get the value</div>
+        </div>
+      </div>
+    </div>
+    <div class="sbs-card">
+      <h4 style="color:var(--muted);">Where each one lives</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-size:12px;color:var(--muted);"><span style="color:var(--amber);">context/UserContext.jsx</span> — ① and ② live here together. This is the file you create.</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-size:12px;color:var(--muted);"><span style="color:var(--amber);">main.jsx</span> — you wrap your App with ② the Provider here</div>
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 13px;">
+          <div style="font-size:12px;color:var(--muted);"><span style="color:var(--amber);">Any component file</span> — you use ③ here to read the value</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>Now let's understand each one deeply — not just what it does, but <em>why it needs to exist</em>.</p>
+</div>
+
+
+<div class="chapter" id="ctx-createcontext">
+  <div class="chapter-label"><span class="chapter-num">05</span><span class="chapter-type">React Context</span></div>
+  <h2>① <em>createContext</em> — what is it?</h2>
+
+  <div class="qa">
+    <div class="qa-q">Why do we need to call createContext() at all? Why not just useContext directly?</div>
+    <div class="qa-a">Because you could have many different contexts in one app — UserContext, ThemeContext, CartContext. createContext() creates a unique "channel" object. Without it, React wouldn't know which channel you're trying to tune into.</div>
+  </div>
+
+  <p><span class="ic">createContext()</span> returns an <strong>object</strong>. That object has two things on it: a <span class="ic">.Provider</span> and a <span class="ic">.Consumer</span> (we don't use Consumer — we use the hook instead). You call it once, at the top of your context file, and export the result.</p>
+
+  <pre><code><span class="cm">// This is ALL createContext does — creates a unique channel object</span>
+<span class="kw">const</span> UserContext = <span class="fn">createContext</span>(null);
+
+<span class="cm">// The argument (null here) is the DEFAULT VALUE —</span>
+<span class="cm">// only used if a component tries to read this context</span>
+<span class="cm">// WITHOUT a Provider above it in the tree.</span>
+<span class="cm">// Usually null or undefined. We'll handle the "no provider" case</span>
+<span class="cm">// ourselves with an error message.</span>
+
+<span class="cm">// UserContext now looks like this internally:</span>
+<span class="cm">// {</span>
+<span class="cm">//   Provider: [special React component],</span>
+<span class="cm">//   Consumer: [special React component],</span>
+<span class="cm">//   _currentValue: null  ← starts as your default</span>
+<span class="cm">// }</span>
+<div class="lb">createContext.js</div></code></pre>
+
+  <div class="box blue">
+    <strong>Key insight:</strong>
+    <p>The context object you get from createContext() is just a "key". It's the shared key that connects your Provider (which sets the value) and your consumers (which read the value). Think of it like a TV channel number — Provider broadcasts on channel 5, consumers tune to channel 5.</p>
+  </div>
+</div>
+
+
+<div class="chapter" id="ctx-provider">
+  <div class="chapter-label"><span class="chapter-num">06</span><span class="chapter-type">React Context</span></div>
+  <h2>② The <em>Provider</em> — the most important piece</h2>
+
+  <p>This is the piece that was missing from your understanding. Let's go deep.</p>
+
+  <div class="qa">
+    <div class="qa-q">What is a Provider? Is it special React magic?</div>
+    <div class="qa-a">No. A Provider is just a React component — one that you wrap around other components. It receives a "value" prop and makes that value available to everything inside it. That's literally all it does.</div>
+  </div>
+
+  <p>The Provider has two responsibilities:</p>
+  <ul>
+    <li><strong>Hold the state</strong> — it uses useState internally to store whatever data you're sharing</li>
+    <li><strong>Broadcast it</strong> — it wraps children in <span class="ic">YourContext.Provider value={...}</span> which makes the data available to any consumer below</li>
+  </ul>
+
+  <div class="box amber">
+    <strong>This is the part that confuses people most:</strong>
+    <p>You're creating TWO things with the same name pattern. <span class="ic">UserContext</span> is the object from createContext(). <span class="ic">UserContext.Provider</span> is a built-in React component that lives on that object. You're writing a <em>wrapper component</em> (let's call it <span class="ic">UserProvider</span>) that uses <span class="ic">UserContext.Provider</span> inside it. Your wrapper holds state; <span class="ic">UserContext.Provider</span> broadcasts it.</p>
+  </div>
+
+  <pre><code><span class="cm">// Let's build the Provider piece by piece</span>
+
+<span class="cm">// STEP 1: Your wrapper component</span>
+<span class="kw">export function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="cm">// ↑ children = everything you wrap this around</span>
+  <span class="cm">// We use { children } because this component will wrap other components</span>
+
+  <span class="cm">// STEP 2: Put your state here — this is the state you want to share</span>
+  <span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="cm">// STEP 3: The built-in UserContext.Provider broadcasts your value</span>
+  <span class="cm">// value={...} is what every consumer will receive when they call useContext</span>
+  <span class="kw">return</span> (
+    <span class="tg">&lt;UserContext.Provider</span> <span class="pr">value</span>={{ user, setUser, loading, setLoading }}<span class="tg">&gt;</span>
+      {children}
+      <span class="cm">{/* ↑ everything you wrap this around renders here */}</span>
+    <span class="tg">&lt;/UserContext.Provider&gt;</span>
+  );
+}
+<div class="lb">UserProvider.jsx</div></code></pre>
+
+  <div class="qa">
+    <div class="qa-q">What is "children" — I keep seeing it but I don't fully get it</div>
+    <div class="qa-a">When you write &lt;UserProvider&gt;&lt;App /&gt;&lt;/UserProvider&gt;, the &lt;App /&gt; between the tags is automatically passed in as a prop called "children". Every React component can receive children. It just means "whatever is nested inside me". By rendering {children} in your Provider, you're saying "render whatever was nested inside me here".</div>
+  </div>
+
+  <pre><code><span class="cm">// main.jsx — this is how you USE the Provider</span>
+<span class="kw">import</span> { UserProvider } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+
+<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tg">&lt;UserProvider&gt;</span>       <span class="cm">// ← wraps everything</span>
+    <span class="tg">&lt;App /&gt;</span>              <span class="cm">// ← App is "children" — gets rendered inside Provider</span>
+  <span class="tg">&lt;/UserProvider&gt;</span>
+);
+
+<span class="cm">// What this means: every component inside &lt;App&gt; and all its descendants</span>
+<span class="cm">// can now access the user state — without any props being passed.</span>
+<div class="lb">main.jsx</div></code></pre>
+
+  <div class="box purple">
+    <strong>Why wrap at the top level?</strong>
+    <p>You only need to wrap as high as the highest component that needs the data. If only components inside the Dashboard need user data, wrap just Dashboard. If the whole app needs it (which is common for auth), wrap at the root. The Provider creates a "bubble" — everything inside can access the value, everything outside cannot.</p>
+  </div>
+
+  <h3>Adding functions to the Provider</h3>
+  <p>Your Provider doesn't just share data — it should also share the <em>functions to change that data</em>. This keeps your logic in one place.</p>
+
+  <pre><code><span class="kw">export function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser]       = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="cm">// Define functions here — they close over the state above</span>
+  <span class="kw">const</span> login = <span class="kw">async</span> (email, password) => {
+    setLoading(<span class="kw">true</span>);
+    <span class="kw">try</span> {
+      <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/login'</span>, {
+        method: <span class="str">'POST'</span>,
+        body: <span class="fn">JSON</span>.<span class="fn">stringify</span>({ email, password }),
+        headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> }
+      });
+      <span class="kw">const</span> data = <span class="kw">await</span> response.<span class="fn">json</span>();
+      <span class="fn">setUser</span>(data.user);      <span class="cm">// updates state → rerenders consumers</span>
+    } <span class="kw">finally</span> {
+      <span class="fn">setLoading</span>(<span class="kw">false</span>);
+    }
+  };
+
+  <span class="kw">const</span> logout = () => <span class="fn">setUser</span>(null);
+
+  <span class="cm">// Everything you include in "value" is available to consumers</span>
+  <span class="kw">return</span> (
+    <span class="tg">&lt;UserContext.Provider</span> <span class="pr">value</span>={{ user, loading, login, logout }}<span class="tg">&gt;</span>
+      {children}
+    <span class="tg">&lt;/UserContext.Provider&gt;</span>
+  );
+}<div class="lb">UserProvider-with-functions.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="ctx-usecontext">
+  <div class="chapter-label"><span class="chapter-num">07</span><span class="chapter-type">React Context</span></div>
+  <h2>③ <em>useContext</em> — how consumers read</h2>
+
+  <p>This is the easy part. Any component that wants to read from the context just calls <span class="ic">useContext(UserContext)</span>. React looks up the tree, finds the nearest <span class="ic">UserContext.Provider</span>, and returns whatever its <span class="ic">value</span> prop is.</p>
+
+  <pre><code><span class="cm">// Any component, anywhere in the tree</span>
+<span class="kw">import</span> { useContext } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { UserContext } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>; <span class="cm">// import the context OBJECT</span>
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="cm">// useContext returns the entire "value" you passed to the Provider</span>
+  <span class="kw">const</span> { user, logout } = <span class="fn">useContext</span>(UserContext);
+  <span class="cm">// ↑ destructure just the pieces you need from the value object</span>
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;header&gt;</span>
+      <span class="tg">&lt;span&gt;</span>Hello, {user?.name}<span class="tg">&lt;/span&gt;</span>
+      <span class="tg">&lt;button</span> <span class="pr">onClick</span>={logout}<span class="tg">&gt;</span>Log out<span class="tg">&lt;/button&gt;</span>
+    <span class="tg">&lt;/header&gt;</span>
+  );
+}
+<span class="cm">// No props. No drilling. Header just asks for what it needs directly.</span>
+<div class="lb">Header.jsx</div></code></pre>
+
+  <h3>The custom hook pattern — always do this</h3>
+  <p>Instead of calling <span class="ic">useContext(UserContext)</span> directly in every component, you create a custom hook. This is not optional style — it's the correct pattern for two reasons: you get a better error message if the Provider is missing, and consumers import one clean name instead of two things.</p>
+
+  <pre><code><span class="cm">// In your context file — add this function</span>
+<span class="kw">export function</span> <span class="fn">useUser</span>() {
+  <span class="kw">const</span> context = <span class="fn">useContext</span>(UserContext);
+
+  <span class="cm">// This check saves you hours of debugging.</span>
+  <span class="cm">// If you forgot to wrap with &lt;UserProvider&gt;, you get a clear error message</span>
+  <span class="cm">// instead of a cryptic "Cannot read property 'name' of undefined"</span>
+  <span class="kw">if</span> (context === null) {
+    <span class="kw">throw new</span> Error(<span class="str">'useUser must be used inside a &lt;UserProvider&gt;. Did you forget to wrap?'</span>);
+  }
+
+  <span class="kw">return</span> context;
+}
+
+<span class="cm">// Now components import and use ONE thing — much cleaner</span>
+<span class="kw">import</span> { useUser } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user, logout } = <span class="fn">useUser</span>(); <span class="cm">// ← clean, obvious, safe</span>
+  <span class="kw">return</span> <span class="tg">&lt;header&gt;</span>Hello {user?.name}<span class="tg">&lt;/header&gt;</span>;
+}
+<div class="lb">custom-hook.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="ctx-together">
+  <div class="chapter-label"><span class="chapter-num">08</span><span class="chapter-type">React Context</span></div>
+  <h2>All 3 pieces <em>together</em></h2>
+
+  <p>Now let's see the complete Context setup in the exact order you build it. Three files, that's all.</p>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 1: src/context/UserContext.jsx</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { createContext, useContext, useState } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cm">// ① Create the context object (the "channel")</span>
+<span class="kw">const</span> UserContext = <span class="fn">createContext</span>(null);
+
+<span class="cm">// ② The Provider — holds state, broadcasts it</span>
+<span class="kw">export function</span> <span class="fn">UserProvider</span>({ children }) {
+  <span class="kw">const</span> [user, setUser]       = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [loading, setLoading] = <span class="fn">useState</span>(<span class="kw">false</span>);
+
+  <span class="kw">const</span> login = <span class="kw">async</span> (email, password) => {
+    <span class="fn">setLoading</span>(<span class="kw">true</span>);
+    <span class="kw">const</span> res  = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/login'</span>, { method: <span class="str">'POST'</span>, body: <span class="fn">JSON</span>.<span class="fn">stringify</span>({ email, password }) });
+    <span class="kw">const</span> data = <span class="kw">await</span> res.<span class="fn">json</span>();
+    <span class="fn">setUser</span>(data.user);
+    <span class="fn">setLoading</span>(<span class="kw">false</span>);
+  };
+
+  <span class="kw">const</span> logout = () => <span class="fn">setUser</span>(null);
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;UserContext.Provider</span> <span class="pr">value</span>={{ user, loading, login, logout }}<span class="tg">&gt;</span>
+      {children}
+    <span class="tg">&lt;/UserContext.Provider&gt;</span>
+  );
+}
+
+<span class="cm">// ③ Custom hook — the clean way for components to read this context</span>
+<span class="kw">export function</span> <span class="fn">useUser</span>() {
+  <span class="kw">const</span> ctx = <span class="fn">useContext</span>(UserContext);
+  <span class="kw">if</span> (!ctx) <span class="kw">throw new</span> Error(<span class="str">'useUser must be inside &lt;UserProvider&gt;'</span>);
+  <span class="kw">return</span> ctx;
+}<div class="lb">context/UserContext.jsx</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 2: src/main.jsx — wrap your app</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { createRoot }  <span class="kw">from</span> <span class="str">'react-dom/client'</span>;
+<span class="kw">import</span> { UserProvider } <span class="kw">from</span> <span class="str">'./context/UserContext'</span>;
+<span class="kw">import</span> App <span class="kw">from</span> <span class="str">'./App'</span>;
+
+<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tg">&lt;UserProvider&gt;</span>     <span class="cm">// ← your wrapper Provider</span>
+    <span class="tg">&lt;App /&gt;</span>            <span class="cm">// ← now EVERY component in your app can access user</span>
+  <span class="tg">&lt;/UserProvider&gt;</span>
+);<div class="lb">main.jsx</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 3: any component that needs user</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { useUser } <span class="kw">from</span> <span class="str">'../context/UserContext'</span>;
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user, logout } = <span class="fn">useUser</span>();
+
+  <span class="kw">if</span> (!user) <span class="kw">return</span> <span class="tg">&lt;a</span> <span class="pr">href</span>=<span class="str">"/login"</span><span class="tg">&gt;</span>Log in<span class="tg">&lt;/a&gt;</span>;
+  <span class="kw">return</span> (
+    <span class="tg">&lt;header&gt;</span>
+      <span class="tg">&lt;span&gt;</span>Hello, {user.name}<span class="tg">&lt;/span&gt;</span>
+      <span class="tg">&lt;button</span> <span class="pr">onClick</span>={logout}<span class="tg">&gt;</span>Log out<span class="tg">&lt;/button&gt;</span>
+    <span class="tg">&lt;/header&gt;</span>
+  );
+}
+
+<span class="kw">function</span> <span class="fn">OrdersPage</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useUser</span>();   <span class="cm">// same hook, same data, zero prop drilling</span>
+  <span class="cm">// use user.id to fetch orders...</span>
+}<div class="lb">components.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="ctx-template">
+  <div class="chapter-label"><span class="chapter-num">09</span><span class="chapter-type">React Context</span></div>
+  <h2>Context <em>copy-paste template</em></h2>
+  <p>Every time you create a new Context, copy this. Replace the word "User" with whatever you're sharing (Theme, Cart, Auth, etc.). Replace the state and functions with yours.</p>
+
+  <div class="template">
+    <code><pre style="background:transparent;border:none;padding:0;margin:0;"><span class="kw">import</span> { createContext, useContext, useState } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cm">// 1. Create the context</span>
+<span class="kw">const</span> <span class="tp">XxxContext</span> = <span class="fn">createContext</span>(null);
+
+<span class="cm">// 2. Build the Provider</span>
+<span class="kw">export function</span> <span class="tp">XxxProvider</span>({ children }) {
+  <span class="cm">// — your state here —</span>
+  <span class="kw">const</span> [yourData, setYourData] = <span class="fn">useState</span>(null);
+
+  <span class="cm">// — your functions here —</span>
+  <span class="kw">const</span> doSomething = () => { <span class="cm">/* ... */</span> };
+
+  <span class="cm">// — everything consumers can access —</span>
+  <span class="kw">return</span> (
+    <span class="tg">&lt;<span class="tp">XxxContext</span>.Provider</span> <span class="pr">value</span>={{ yourData, doSomething }}<span class="tg">&gt;</span>
+      {children}
+    <span class="tg">&lt;/<span class="tp">XxxContext</span>.Provider&gt;</span>
+  );
+}
+
+<span class="cm">// 3. Custom hook for consuming</span>
+<span class="kw">export function</span> <span class="fn">useXxx</span>() {
+  <span class="kw">const</span> ctx = <span class="fn">useContext</span>(<span class="tp">XxxContext</span>);
+  <span class="kw">if</span> (!ctx) <span class="kw">throw new</span> Error(<span class="str">'useXxx must be inside &lt;XxxProvider&gt;'</span>);
+  <span class="kw">return</span> ctx;
+}</pre></code>
+  </div>
+
+  <div class="checklist">
+    <h4>✓ Context checklist — before you consider it done</h4>
+    <ul>
+      <li>Created the context object with createContext(null)</li>
+      <li>Provider component accepts {children} as prop</li>
+      <li>State lives inside the Provider with useState</li>
+      <li>Provider returns &lt;XxxContext.Provider value={...}&gt;{children}&lt;/XxxContext.Provider&gt;</li>
+      <li>Custom hook with null-check wraps useContext</li>
+      <li>Provider wraps your App (or relevant subtree) in main.jsx</li>
+      <li>Consumers import and use the custom hook — not useContext directly</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="chapter" id="ctx-perf">
+  <div class="chapter-label"><span class="chapter-num">10</span><span class="chapter-type">React Context</span></div>
+  <h2>The performance trap <em>you need to know</em></h2>
+
+  <p>Context has one significant limitation you must understand, or you'll create subtle performance bugs.</p>
+
+  <div class="box coral">
+    <strong>The rule:</strong>
+    <p>When a Provider's value changes, <strong>every single component</strong> that called useContext for that context will re-render — even if the specific piece of data they use didn't change.</p>
+  </div>
+
+  <pre><code><span class="cm">// Imagine this context holds three unrelated things</span>
+<span class="kw">export function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user,    setUser]    = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cart,    setCart]    = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+  <span class="kw">const</span> [notifs,  setNotifs]  = <span class="fn">useState</span>([]);
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;AppContext.Provider</span> <span class="pr">value</span>={{ user, cart, notifs, setCart, setNotifs }}<span class="tg">&gt;</span>
+      {children}
+    <span class="tg">&lt;/AppContext.Provider&gt;</span>
+  );
+}
+
+<span class="cm">// Header only reads user.name</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useContext</span>(AppContext);
+  <span class="kw">return</span> <span class="tg">&lt;h1&gt;</span>{user?.name}<span class="tg">&lt;/h1&gt;</span>;
+  <span class="cm">// ⚠️ Will re-render when someone adds to cart, or gets a notification</span>
+  <span class="cm">// Even though Header doesn't care about cart or notifs at all</span>
+}<div class="lb">perf-trap.jsx</div></code></pre>
+
+  <h3>The fix: split your contexts</h3>
+  <p>One context per concern. Components subscribe only to the context they actually need.</p>
+
+  <pre><code><span class="cm">// Split: three separate contexts</span>
+<span class="kw">export const</span> UserContext  = <span class="fn">createContext</span>(null);
+<span class="kw">export const</span> CartContext  = <span class="fn">createContext</span>(null);
+<span class="kw">export const</span> NotifsContext = <span class="fn">createContext</span>(null);
+
+<span class="cm">// Three providers, nested</span>
+<span class="kw">export function</span> <span class="fn">AppProvider</span>({ children }) {
+  <span class="kw">const</span> [user,   setUser]   = <span class="fn">useState</span>(null);
+  <span class="kw">const</span> [cart,   setCart]   = <span class="fn">useState</span>({ count: <span class="nm">0</span> });
+  <span class="kw">const</span> [notifs, setNotifs] = <span class="fn">useState</span>([]);
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;UserContext.Provider</span> <span class="pr">value</span>={{ user, setUser }}<span class="tg">&gt;</span>
+      <span class="tg">&lt;CartContext.Provider</span> <span class="pr">value</span>={{ cart, setCart }}<span class="tg">&gt;</span>
+        <span class="tg">&lt;NotifsContext.Provider</span> <span class="pr">value</span>={{ notifs, setNotifs }}<span class="tg">&gt;</span>
+          {children}
+        <span class="tg">&lt;/NotifsContext.Provider&gt;</span>
+      <span class="tg">&lt;/CartContext.Provider&gt;</span>
+    <span class="tg">&lt;/UserContext.Provider&gt;</span>
+  );
+}
+
+<span class="cm">// Now Header only re-renders when UserContext changes</span>
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> { user } = <span class="fn">useContext</span>(UserContext); <span class="cm">// ✓ isolated</span>
+  <span class="kw">return</span> <span class="tg">&lt;h1&gt;</span>{user?.name}<span class="tg">&lt;/h1&gt;</span>;
+}
+
+<span class="cm">// CartIcon only re-renders when CartContext changes</span>
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="kw">const</span> { cart } = <span class="fn">useContext</span>(CartContext); <span class="cm">// ✓ isolated</span>
+  <span class="kw">return</span> <span class="tg">&lt;span&gt;</span>{cart.count}<span class="tg">&lt;/span&gt;</span>;
+}<div class="lb">split-contexts.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="ctx-when">
+  <div class="chapter-label"><span class="chapter-num">11</span><span class="chapter-type">React Context</span></div>
+  <h2>When to <em>use Context</em></h2>
+
+  <div class="sbs">
+    <div class="sbs-card">
+      <h4 style="color:var(--green);">✓ Context is great for</h4>
+      <ul>
+        <li>Auth / user info (changes rarely — on login/logout)</li>
+        <li>Theme (dark/light — almost never changes)</li>
+        <li>Language / locale setting</li>
+        <li>Feature flags or app config</li>
+        <li>Any global state that <strong>changes infrequently</strong></li>
+      </ul>
+    </div>
+    <div class="sbs-card">
+      <h4 style="color:var(--coral);">✗ Context struggles with</h4>
+      <ul>
+        <li>Cart items (changes frequently)</li>
+        <li>Notification counts (real-time updates)</li>
+        <li>Form state across many fields</li>
+        <li>Any state that updates many times per second</li>
+        <li>State where different components need different "slices"</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>For high-frequency updates shared across many components — that's where Redux earns its place.</p>
+</div>
+
+
+<!-- ══════════ PART 3: REDUX ══════════ -->
+
+<div class="chapter" id="rdx-what">
+  <div class="chapter-label"><span class="chapter-num">12</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>What Redux <em>actually is</em></h2>
+
+  <div class="analogy">
+    <div class="analogy-icon">🏦</div>
+    <div class="analogy-body">
+      <strong>Redux is a bank</strong>
+      <p>Your state is the bank's ledger. The only way to change the ledger is by submitting a transaction form (dispatching an action). The bank teller processes it using strict rules (the reducer). Any customer (component) can check their balance (useSelector) — but they use a window so they only see what they need, not the whole ledger. Every transaction is logged permanently (Redux DevTools).</p>
+    </div>
+  </div>
+
+  <p>Redux is a <strong>separate library</strong> — install it with npm. It has one global store for your whole app's state, and a strict, predictable pattern for how that state can change. <strong>Redux Toolkit</strong> (RTK) is the modern official way — it removes most of the old boilerplate.</p>
+
+  <div class="box blue">
+    <strong>The key difference from Context:</strong>
+    <p>Context is a broadcast — change anything, all subscribers re-render. Redux has <strong>selectors</strong> — each component says "I only care about this specific value" and only re-renders when that specific value changes. This is what makes Redux better for high-frequency updates.</p>
+  </div>
+
+  <pre><code>npm install @reduxjs/toolkit react-redux
+<div class="lb">terminal</div></code></pre>
+</div>
+
+
+<div class="chapter" id="rdx-pieces">
+  <div class="chapter-label"><span class="chapter-num">13</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>The 5 pieces you <em>always write</em></h2>
+
+  <p>Redux has more moving parts than Context. Here they all are — we'll go through each one deeply.</p>
+
+  <div class="rdx-pieces">
+    <div class="rp">
+      <div class="rp-name">① createSlice()</div>
+      <div class="rp-role">Defines one domain of state + all its update logic</div>
+      <div class="rp-desc">You tell Redux: here's the initial state, here are all the ways it can change. It gives you back actions and a reducer automatically.</div>
+      <div class="rp-analogy">Analogy: one department in the bank (savings dept, loans dept)</div>
+    </div>
+    <div class="rp">
+      <div class="rp-name">② configureStore()</div>
+      <div class="rp-role">Combines all slices into one global store</div>
+      <div class="rp-desc">The bank itself. Combines all your department slices. Every component can read from it via useSelector.</div>
+      <div class="rp-analogy">Analogy: the bank building that contains all departments</div>
+    </div>
+    <div class="rp">
+      <div class="rp-name">③ &lt;Provider store={store}&gt;</div>
+      <div class="rp-role">Makes the store available to the whole app</div>
+      <div class="rp-desc">Redux's own Provider component from react-redux. Wraps your app in main.jsx just like Context's Provider.</div>
+      <div class="rp-analogy">Analogy: the bank's address — how everyone knows where to go</div>
+    </div>
+    <div class="rp">
+      <div class="rp-name">④ useSelector()</div>
+      <div class="rp-role">Read a specific piece of state from the store</div>
+      <div class="rp-desc">A hook you use in components. You pass it a function that picks exactly the piece you need. Only re-renders when that specific piece changes.</div>
+      <div class="rp-analogy">Analogy: the teller window — you ask for your balance, not the whole ledger</div>
+    </div>
+    <div class="rp">
+      <div class="rp-name">⑤ useDispatch()</div>
+      <div class="rp-role">Trigger a state change</div>
+      <div class="rp-desc">Returns the dispatch function. You call it with an action to update the store. Like submitting a transaction form to the bank.</div>
+      <div class="rp-analogy">Analogy: the transaction form — fill it out, submit it, state changes</div>
+    </div>
+  </div>
+</div>
+
+
+<div class="chapter" id="rdx-slice">
+  <div class="chapter-label"><span class="chapter-num">14</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>① createSlice — <em>state and all its changes</em></h2>
+
+  <p>A <strong>slice</strong> is one section of your global state, plus all the functions that can change it. You make one slice per domain: a user slice, a cart slice, an orders slice.</p>
+
+  <div class="qa">
+    <div class="qa-q">What does "slice" mean?</div>
+    <div class="qa-a">Your whole Redux state is one big object. A slice is literally one slice of that object — state.user is the user slice, state.cart is the cart slice. createSlice() is the RTK function that creates that slice for you.</div>
+  </div>
+
+  <pre><code><span class="cm">// store/userSlice.js</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> userSlice = <span class="fn">createSlice</span>({
+
+  <span class="cm">// "name" becomes the prefix for action type strings</span>
+  <span class="cm">// e.g. 'user/setUser', 'user/clearUser'</span>
+  name: <span class="str">'user'</span>,
+
+  <span class="cm">// What the state looks like at the start</span>
+  initialState: {
+    data:    null,
+    loading: <span class="kw">false</span>,
+    error:   null,
+  },
+
+  <span class="cm">// "reducers" — these are the ONLY ways state.user can change</span>
+  <span class="cm">// Each function here becomes an "action creator" automatically</span>
+  reducers: {
+
+    <span class="cm">// setUser(state, action) — action.payload is what you pass when dispatching</span>
+    <span class="fn">setUser</span>: (state, action) => {
+      state.data  = action.payload; <span class="cm">// ← looks like mutation — it's SAFE in RTK</span>
+      state.error = null;           <span class="cm">// RTK uses Immer to make this immutable under the hood</span>
+    },
+
+    <span class="fn">clearUser</span>: (state) => {
+      state.data = null;
+    },
+
+    <span class="fn">setLoading</span>: (state, action) => {
+      state.loading = action.payload; <span class="cm">// payload will be true or false</span>
+    },
+
+    <span class="fn">setError</span>: (state, action) => {
+      state.error = action.payload;
+      state.loading = <span class="kw">false</span>;
+    },
+  },
+});
+
+<span class="cm">// createSlice auto-generates action creators — these are what you dispatch</span>
+<span class="cm">// userSlice.actions.setUser  → creates { type: 'user/setUser', payload: ... }</span>
+<span class="cm">// userSlice.actions.clearUser → creates { type: 'user/clearUser' }</span>
+<span class="kw">export const</span> { setUser, clearUser, setLoading, setError } = userSlice.actions;
+
+<span class="cm">// Export the reducer — this is what configureStore needs</span>
+<span class="kw">export default</span> userSlice.reducer;
+<div class="lb">store/userSlice.js</div></code></pre>
+
+  <div class="box teal">
+    <strong>About the "mutation" in reducers:</strong>
+    <p>In vanilla Redux, you must return a new object — mutating state is forbidden. In RTK, you CAN write <span class="ic">state.data = action.payload</span> because RTK uses a library called Immer under the hood that converts your "mutation" into an immutable update automatically. This is one of RTK's biggest quality-of-life improvements.</p>
+  </div>
+
+  <h3>Build the cart slice the same way</h3>
+  <pre><code><span class="cm">// store/cartSlice.js</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> cartSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'cart'</span>,
+  initialState: {
+    items: [],
+    count: <span class="nm">0</span>,
+    total: <span class="nm">0</span>,
+  },
+  reducers: {
+    <span class="fn">addItem</span>: (state, action) => {
+      state.items.<span class="fn">push</span>(action.payload);   <span class="cm">// again — looks like mutation, is safe</span>
+      state.count += <span class="nm">1</span>;
+      state.total += action.payload.price;
+    },
+    <span class="fn">removeItem</span>: (state, action) => {
+      <span class="kw">const</span> index = state.items.<span class="fn">findIndex</span>(i => i.id === action.payload);
+      <span class="kw">if</span> (index !== -<span class="nm">1</span>) {
+        state.total -= state.items[index].price;
+        state.items.<span class="fn">splice</span>(index, <span class="nm">1</span>);
+        state.count -= <span class="nm">1</span>;
+      }
+    },
+    <span class="fn">clearCart</span>: (state) => {
+      state.items = [];
+      state.count = <span class="nm">0</span>;
+      state.total = <span class="nm">0</span>;
+    },
+  },
+});
+
+<span class="kw">export const</span> { addItem, removeItem, clearCart } = cartSlice.actions;
+<span class="kw">export default</span> cartSlice.reducer;
+<div class="lb">store/cartSlice.js</div></code></pre>
+</div>
+
+
+<div class="chapter" id="rdx-store">
+  <div class="chapter-label"><span class="chapter-num">15</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>② configureStore — <em>combine everything</em></h2>
+
+  <p>This is short. You take all your slices' reducers and combine them into one store. The key names you choose here become the keys on your state object.</p>
+
+  <pre><code><span class="cm">// store/index.js</span>
+<span class="kw">import</span> { configureStore } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+<span class="kw">import</span> userReducer  <span class="kw">from</span> <span class="str">'./userSlice'</span>;
+<span class="kw">import</span> cartReducer  <span class="kw">from</span> <span class="str">'./cartSlice'</span>;
+<span class="kw">import</span> ordersReducer <span class="kw">from</span> <span class="str">'./ordersSlice'</span>;
+
+<span class="kw">export const</span> store = <span class="fn">configureStore</span>({
+  reducer: {
+    user:   userReducer,    <span class="cm">// state.user   → managed by userSlice</span>
+    cart:   cartReducer,    <span class="cm">// state.cart   → managed by cartSlice</span>
+    orders: ordersReducer,  <span class="cm">// state.orders → managed by ordersSlice</span>
+  },
+});
+
+<span class="cm">// Your global state now looks like:</span>
+<span class="cm">// {</span>
+<span class="cm">//   user:   { data: null, loading: false, error: null },</span>
+<span class="cm">//   cart:   { items: [], count: 0, total: 0 },</span>
+<span class="cm">//   orders: { list: [], loading: false },</span>
+<span class="cm">// }</span>
+<div class="lb">store/index.js</div></code></pre>
+</div>
+
+
+<div class="chapter" id="rdx-provider">
+  <div class="chapter-label"><span class="chapter-num">16</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>③ Redux Provider — <em>connect to React</em></h2>
+
+  <p>Redux lives outside React — it's just a JS object. To make it available to your components, you wrap your app in <span class="ic">&lt;Provider&gt;</span> from react-redux and pass it your store. This is the bridge.</p>
+
+  <pre><code><span class="cm">// main.jsx</span>
+<span class="kw">import</span> { createRoot }  <span class="kw">from</span> <span class="str">'react-dom/client'</span>;
+<span class="kw">import</span> { Provider }    <span class="kw">from</span> <span class="str">'react-redux'</span>;        <span class="cm">// ← from react-redux, not react</span>
+<span class="kw">import</span> { store }       <span class="kw">from</span> <span class="str">'./store'</span>;            <span class="cm">// ← your store from step ②</span>
+<span class="kw">import</span> App             <span class="kw">from</span> <span class="str">'./App'</span>;
+
+<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tg">&lt;Provider</span> <span class="pr">store</span>={store}<span class="tg">&gt;</span>  <span class="cm">// ← pass your store here</span>
+    <span class="tg">&lt;App /&gt;</span>
+  <span class="tg">&lt;/Provider&gt;</span>
+);
+
+<span class="cm">// Now every component in &lt;App /&gt; and below can use</span>
+<span class="cm">// useSelector and useDispatch to interact with the store.</span>
+<div class="lb">main.jsx</div></code></pre>
+
+  <div class="box blue">
+    <strong>Same pattern as Context's Provider:</strong>
+    <p>You're doing the same thing — wrapping your app so everything inside has access. The difference is this Provider connects to an external Redux store instead of local React state.</p>
+  </div>
+</div>
+
+
+<div class="chapter" id="rdx-useselector">
+  <div class="chapter-label"><span class="chapter-num">17</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>④ useSelector — <em>read from the store</em></h2>
+
+  <p>This is how components read data from Redux. You pass it a <strong>selector function</strong> — a function that takes the entire state and returns the specific piece you need.</p>
+
+  <div class="qa">
+    <div class="qa-q">Why a function? Why not just useSelector('user.data')?</div>
+    <div class="qa-a">Because the function lets you do anything — compute derived values, combine multiple pieces, transform the data. It's powerful. And it's how React-Redux knows exactly what to compare when deciding whether to re-render.</div>
+  </div>
+
+  <pre><code><span class="kw">import</span> { useSelector } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+
+<span class="cm">// Selector function: takes ENTIRE state, returns ONE specific piece</span>
+<span class="cm">// state is your whole { user: {...}, cart: {...}, orders: {...} } object</span>
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="cm">// This component only cares about the user's name</span>
+  <span class="cm">// It will ONLY re-render when state.user.data changes</span>
+  <span class="cm">// Changing cart, orders, etc. will NOT re-render this</span>
+  <span class="kw">const</span> user = <span class="fn">useSelector</span>(state => state.user.data);
+
+  <span class="kw">return</span> <span class="tg">&lt;h1&gt;</span>Hello, {user?.name}<span class="tg">&lt;/h1&gt;</span>;
+}
+
+<span class="kw">function</span> <span class="fn">CartIcon</span>() {
+  <span class="cm">// Only cares about cart count — nothing else will trigger re-render</span>
+  <span class="kw">const</span> count = <span class="fn">useSelector</span>(state => state.cart.count);
+  <span class="kw">return</span> <span class="tg">&lt;span</span> <span class="pr">className</span>=<span class="str">"badge"</span><span class="tg">&gt;</span>{count}<span class="tg">&lt;/span&gt;</span>;
+}
+
+<span class="kw">function</span> <span class="fn">CartTotal</span>() {
+  <span class="cm">// You can compute derived values in the selector</span>
+  <span class="kw">const</span> total = <span class="fn">useSelector</span>(state =>
+    state.cart.items.<span class="fn">reduce</span>((sum, item) => sum + item.price, <span class="nm">0</span>)
+  );
+  <span class="kw">return</span> <span class="tg">&lt;span&gt;</span>Total: ${total.<span class="fn">toFixed</span>(<span class="nm">2</span>)}<span class="tg">&lt;/span&gt;</span>;
+}
+<div class="lb">using-useSelector.jsx</div></code></pre>
+
+  <div class="box coral">
+    <strong>Common mistake — don't do this:</strong>
+    <p>Never write <span class="ic">useSelector(state =&gt; state)</span> — that selects the entire store, so your component re-renders on every single dispatch, for any reason. Always select the smallest piece you need.</p>
+  </div>
+</div>
+
+
+<div class="chapter" id="rdx-dispatch">
+  <div class="chapter-label"><span class="chapter-num">18</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>⑤ useDispatch — <em>trigger a change</em></h2>
+
+  <p>Reading is done by useSelector. <strong>Writing</strong> — changing state — is done by dispatching actions. <span class="ic">useDispatch()</span> gives you the dispatch function. You call it with one of the action creators your slice generated.</p>
+
+  <pre><code><span class="kw">import</span> { useDispatch } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { addItem, removeItem } <span class="kw">from</span> <span class="str">'./store/cartSlice'</span>;
+<span class="kw">import</span> { clearUser } <span class="kw">from</span> <span class="str">'./store/userSlice'</span>;
+
+<span class="kw">function</span> <span class="fn">ProductCard</span>({ product }) {
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+
+  <span class="kw">const</span> handleAdd = () => {
+    <span class="cm">// dispatch takes an action object</span>
+    <span class="cm">// addItem() creates: { type: 'cart/addItem', payload: product }</span>
+    <span class="fn">dispatch</span>(<span class="fn">addItem</span>(product));
+    <span class="cm">// ↑ Redux receives this, finds the matching reducer in cartSlice,</span>
+    <span class="cm">// runs it, updates state.cart, and all cart subscribers re-render</span>
+  };
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;div&gt;</span>
+      <span class="tg">&lt;h3&gt;</span>{product.name}<span class="tg">&lt;/h3&gt;</span>
+      <span class="tg">&lt;button</span> <span class="pr">onClick</span>={handleAdd}<span class="tg">&gt;</span>Add to cart<span class="tg">&lt;/button&gt;</span>
+    <span class="tg">&lt;/div&gt;</span>
+  );
+}
+
+<span class="kw">function</span> <span class="fn">Header</span>() {
+  <span class="kw">const</span> user     = <span class="fn">useSelector</span>(state => state.user.data);
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+
+  <span class="kw">const</span> handleLogout = () => {
+    <span class="fn">dispatch</span>(<span class="fn">clearUser</span>());   <span class="cm">// clearUser() creates { type: 'user/clearUser' }</span>
+    <span class="fn">dispatch</span>(<span class="fn">clearCart</span>());   <span class="cm">// can dispatch multiple actions</span>
+  };
+
+  <span class="kw">return</span> <span class="tg">&lt;button</span> <span class="pr">onClick</span>={handleLogout}<span class="tg">&gt;</span>Logout<span class="tg">&lt;/button&gt;</span>;
+}<div class="lb">using-useDispatch.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="rdx-together">
+  <div class="chapter-label"><span class="chapter-num">19</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>All 5 pieces <em>together</em></h2>
+
+  <p>Here's the complete Redux Toolkit setup from scratch — all files, in the exact order you create them.</p>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 1: src/store/userSlice.js</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> userSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'user'</span>,
+  initialState: { data: null, loading: <span class="kw">false</span> },
+  reducers: {
+    <span class="fn">setUser</span>:    (state, { payload }) => { state.data = payload; },
+    <span class="fn">clearUser</span>:  state => { state.data = null; },
+    <span class="fn">setLoading</span>: (state, { payload }) => { state.loading = payload; },
+  },
+});
+<span class="kw">export const</span> { setUser, clearUser, setLoading } = userSlice.actions;
+<span class="kw">export default</span> userSlice.reducer;<div class="lb">store/userSlice.js</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 2: src/store/cartSlice.js</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> cartSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'cart'</span>,
+  initialState: { items: [], count: <span class="nm">0</span>, total: <span class="nm">0</span> },
+  reducers: {
+    <span class="fn">addItem</span>:    (state, { payload }) => {
+      state.items.<span class="fn">push</span>(payload);
+      state.count++;
+      state.total += payload.price;
+    },
+    <span class="fn">removeItem</span>: (state, { payload }) => {
+      <span class="kw">const</span> i = state.items.<span class="fn">findIndex</span>(item => item.id === payload);
+      <span class="kw">if</span> (i !== -<span class="nm">1</span>) { state.total -= state.items[i].price; state.items.<span class="fn">splice</span>(i, <span class="nm">1</span>); state.count--; }
+    },
+    <span class="fn">clearCart</span>: state => { state.items = []; state.count = <span class="nm">0</span>; state.total = <span class="nm">0</span>; },
+  },
+});
+<span class="kw">export const</span> { addItem, removeItem, clearCart } = cartSlice.actions;
+<span class="kw">export default</span> cartSlice.reducer;<div class="lb">store/cartSlice.js</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 3: src/store/index.js</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { configureStore } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+<span class="kw">import</span> userReducer <span class="kw">from</span> <span class="str">'./userSlice'</span>;
+<span class="kw">import</span> cartReducer <span class="kw">from</span> <span class="str">'./cartSlice'</span>;
+
+<span class="kw">export const</span> store = <span class="fn">configureStore</span>({
+  reducer: {
+    user: userReducer,   <span class="cm">// → state.user</span>
+    cart: cartReducer,   <span class="cm">// → state.cart</span>
+  },
+});<div class="lb">store/index.js</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 4: src/main.jsx</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { createRoot } <span class="kw">from</span> <span class="str">'react-dom/client'</span>;
+<span class="kw">import</span> { Provider }   <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { store }      <span class="kw">from</span> <span class="str">'./store'</span>;
+<span class="kw">import</span> App            <span class="kw">from</span> <span class="str">'./App'</span>;
+
+<span class="fn">createRoot</span>(document.<span class="fn">getElementById</span>(<span class="str">'root'</span>)).<span class="fn">render</span>(
+  <span class="tg">&lt;Provider</span> <span class="pr">store</span>={store}<span class="tg">&gt;</span>
+    <span class="tg">&lt;App /&gt;</span>
+  <span class="tg">&lt;/Provider&gt;</span>
+);<div class="lb">main.jsx</div></code></pre>
+
+  <pre><code><span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// FILE 5: any component</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> { useSelector, useDispatch } <span class="kw">from</span> <span class="str">'react-redux'</span>;
+<span class="kw">import</span> { addItem } <span class="kw">from</span> <span class="str">'./store/cartSlice'</span>;
+<span class="kw">import</span> { clearUser } <span class="kw">from</span> <span class="str">'./store/userSlice'</span>;
+
+<span class="kw">function</span> <span class="fn">ProductCard</span>({ product }) {
+  <span class="kw">const</span> user     = <span class="fn">useSelector</span>(s => s.user.data);  <span class="cm">// READ</span>
+  <span class="kw">const</span> count    = <span class="fn">useSelector</span>(s => s.cart.count);  <span class="cm">// READ</span>
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();                    <span class="cm">// WRITE</span>
+
+  <span class="kw">return</span> (
+    <span class="tg">&lt;div&gt;</span>
+      <span class="tg">&lt;span&gt;</span>{user?.name} — {count} items in cart<span class="tg">&lt;/span&gt;</span>
+      <span class="tg">&lt;button</span> <span class="pr">onClick</span>={() => <span class="fn">dispatch</span>(<span class="fn">addItem</span>(product))}<span class="tg">&gt;</span>
+        Add to cart
+      <span class="tg">&lt;/button&gt;</span>
+    <span class="tg">&lt;/div&gt;</span>
+  );
+}<div class="lb">ProductCard.jsx</div></code></pre>
+</div>
+
+
+<div class="chapter" id="rdx-template">
+  <div class="chapter-label"><span class="chapter-num">20</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>Redux <em>copy-paste template</em></h2>
+  <p>Every new slice you create, copy this. Replace "Xxx" with your domain name (User, Cart, Orders, etc.).</p>
+
+  <div class="template">
+    <code><pre style="background:transparent;border:none;padding:0;margin:0;"><span class="cm">// store/xxxSlice.js</span>
+<span class="kw">import</span> { createSlice } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">const</span> xxxSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'xxx'</span>,
+  initialState: {
+    <span class="cm">// your initial state here</span>
+    data:    null,
+    loading: <span class="kw">false</span>,
+    error:   null,
+  },
+  reducers: {
+    <span class="cm">// each function becomes an action creator</span>
+    <span class="fn">setData</span>: (state, { payload }) => {
+      state.data  = payload;
+      state.error = null;
+    },
+    <span class="fn">clearData</span>: state => {
+      state.data = null;
+    },
+    <span class="fn">setLoading</span>: (state, { payload }) => {
+      state.loading = payload;
+    },
+    <span class="fn">setError</span>: (state, { payload }) => {
+      state.error   = payload;
+      state.loading = <span class="kw">false</span>;
+    },
+  },
+});
+
+<span class="kw">export const</span> { setData, clearData, setLoading, setError } = xxxSlice.actions;
+<span class="kw">export default</span> xxxSlice.reducer;
+
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// In store/index.js — add your new slice:</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">import</span> xxxReducer <span class="kw">from</span> <span class="str">'./xxxSlice'</span>;
+
+<span class="kw">const</span> store = <span class="fn">configureStore</span>({
+  reducer: {
+    <span class="cm">// ... existing reducers ...</span>
+    xxx: xxxReducer,   <span class="cm">// → state.xxx</span>
+  },
+});
+
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// In components:</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">const</span> data     = <span class="fn">useSelector</span>(s => s.xxx.data);
+<span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+<span class="fn">dispatch</span>(<span class="fn">setData</span>(yourPayload));
+<span class="fn">dispatch</span>(<span class="fn">clearData</span>());</pre></code>
+  </div>
+
+  <div class="checklist">
+    <h4>✓ Redux checklist — before you consider it done</h4>
+    <ul>
+      <li>npm install @reduxjs/toolkit react-redux done</li>
+      <li>Each slice has: name, initialState, reducers</li>
+      <li>Action creators exported from slice.actions</li>
+      <li>Reducer exported as default</li>
+      <li>store/index.js combines all reducers with configureStore</li>
+      <li>main.jsx wraps App in &lt;Provider store={store}&gt;</li>
+      <li>Components use useSelector with specific selector (not state => state)</li>
+      <li>Components use useDispatch and call dispatch(actionCreator(payload))</li>
+    </ul>
+  </div>
+</div>
+
+
+<div class="chapter" id="rdx-async">
+  <div class="chapter-label"><span class="chapter-num">21</span><span class="chapter-type">Redux Toolkit</span></div>
+  <h2>Async actions — <em>API calls with Redux</em></h2>
+
+  <p>So far, all our reducers are synchronous. But in the real world, you fetch data from an API. Redux Toolkit has <span class="ic">createAsyncThunk</span> for this.</p>
+
+  <div class="qa">
+    <div class="qa-q">Why can't I just do async stuff inside a reducer?</div>
+    <div class="qa-a">Reducers must be pure functions — no side effects. An API call is a side effect. createAsyncThunk gives you a place to put async logic that then automatically dispatches actions when it starts, succeeds, or fails.</div>
+  </div>
+
+  <pre><code><span class="cm">// store/userSlice.js — adding async login</span>
+<span class="kw">import</span> { createSlice, createAsyncThunk } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="cm">// createAsyncThunk takes a name and an async function</span>
+<span class="cm">// It automatically dispatches three actions:</span>
+<span class="cm">// loginUser.pending  — when the fetch starts</span>
+<span class="cm">// loginUser.fulfilled — when it succeeds (payload = what you return)</span>
+<span class="cm">// loginUser.rejected  — when it fails (error)</span>
+<span class="kw">export const</span> loginUser = <span class="fn">createAsyncThunk</span>(
+  <span class="str">'user/login'</span>,                          <span class="cm">// action name prefix</span>
+  <span class="kw">async</span> ({ email, password }, thunkAPI) => {
+    <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/login'</span>, {
+      method: <span class="str">'POST'</span>,
+      headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+      body: <span class="fn">JSON</span>.<span class="fn">stringify</span>({ email, password }),
+    });
+
+    <span class="kw">if</span> (!response.ok) {
+      <span class="kw">return</span> thunkAPI.<span class="fn">rejectWithValue</span>(<span class="str">'Login failed'</span>); <span class="cm">// triggers .rejected</span>
+    }
+
+    <span class="kw">const</span> data = <span class="kw">await</span> response.<span class="fn">json</span>();
+    <span class="kw">return</span> data.user; <span class="cm">// this becomes action.payload in .fulfilled</span>
+  }
+);
+
+<span class="kw">const</span> userSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'user'</span>,
+  initialState: { data: null, loading: <span class="kw">false</span>, error: null },
+  reducers: {
+    <span class="fn">clearUser</span>: state => { state.data = null; },
+  },
+  <span class="cm">// extraReducers handles the thunk's auto-dispatched actions</span>
+  extraReducers: builder => {
+    builder
+      .<span class="fn">addCase</span>(loginUser.pending, state => {
+        state.loading = <span class="kw">true</span>;
+        state.error   = null;
+      })
+      .<span class="fn">addCase</span>(loginUser.fulfilled, (state, { payload }) => {
+        state.data    = payload;   <span class="cm">// payload = the user object we returned</span>
+        state.loading = <span class="kw">false</span>;
+      })
+      .<span class="fn">addCase</span>(loginUser.rejected, (state, { payload }) => {
+        state.error   = payload;   <span class="cm">// payload = 'Login failed'</span>
+        state.loading = <span class="kw">false</span>;
+      });
+  },
+});
+
+<span class="kw">export const</span> { clearUser } = userSlice.actions;
+<span class="kw">export default</span> userSlice.reducer;
+
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="cm">// In your component — dispatch it exactly like any other action</span>
+<span class="cm">// ─────────────────────────────────────────</span>
+<span class="kw">function</span> <span class="fn">LoginForm</span>() {
+  <span class="kw">const</span> dispatch = <span class="fn">useDispatch</span>();
+  <span class="kw">const</span> loading  = <span class="fn">useSelector</span>(s => s.user.loading);
+  <span class="kw">const</span> error    = <span class="fn">useSelector</span>(s => s.user.error);
+
+  <span class="kw">const</span> handleSubmit = async (email, password) => {
+    <span class="cm">// dispatch returns a promise — you can await it</span>
+    <span class="kw">const</span> result = <span class="kw">await</span> dispatch(<span class="fn">loginUser</span>({ email, password }));
+
+    <span class="cm">// Check if it succeeded</span>
+    <span class="kw">if</span> (loginUser.<span class="fn">fulfilled</span>.<span class="fn">match</span>(result)) {
+      <span class="cm">// success — navigate away</span>
+    }
+  };
+
+  <span class="kw">return</span> <span class="tg">&lt;form</span> <span class="pr">onSubmit</span>={handleSubmit}<span class="tg">&gt;</span>...<span class="tg">&lt;/form&gt;</span>;
+}<div class="lb">async-thunk.js</div></code></pre>
+</div>
+
+
+<!-- ══════════ PART 4: CHOOSE ══════════ -->
+
+<div class="chapter" id="ctx-vs-rdx">
+  <div class="chapter-label"><span class="chapter-num">22</span><span class="chapter-type">Decision</span></div>
+  <h2>Context vs Redux — <em>how to choose</em></h2>
+
+  <div class="sbs">
+    <div class="sbs-card">
+      <h4 style="color:var(--green);">Reach for Context when:</h4>
+      <ul>
+        <li>Data changes <strong>rarely</strong> (login/logout, theme toggle)</li>
+        <li>Small-to-medium app</li>
+        <li>No installation needed, simpler code</li>
+        <li>Only 2–3 components need the data</li>
+        <li>Example: theme, auth state, locale/language</li>
+      </ul>
+    </div>
+    <div class="sbs-card">
+      <h4 style="color:var(--purple2);">Reach for Redux when:</h4>
+      <ul>
+        <li>Data changes <strong>frequently</strong> (cart, feed, notifications)</li>
+        <li>Medium-to-large app</li>
+        <li>You want Redux DevTools (time travel debugging)</li>
+        <li>Many unrelated components need the same data</li>
+        <li>You have complex async flows (API chains)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box amber">
+    <strong>You can and should use both in one app:</strong>
+    <p>Theme → Context (never changes). Auth user → Context (changes only on login/logout). Cart, orders, products → Redux (update constantly). This is the real-world pattern.</p>
+  </div>
+</div>
+
+
+<div class="chapter" id="checklist">
+  <div class="chapter-label"><span class="chapter-num">23</span><span class="chapter-type">Your Checklist</span></div>
+  <h2>Your <em>mental checklist</em> before writing a line</h2>
+
+  <div class="diagram">
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Run through this every time you reach for shared state</div>
+
+      <div style="background:var(--bg3);border:1px solid var(--purple);border-radius:9px;padding:12px 16px;font-size:13.5px;color:var(--text);">
+        <span style="color:var(--purple);font-weight:600;">? </span>Do only 1–2 components nearby share this data?
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <div style="background:var(--gbg);border:1px solid #1a4030;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--green);">✓ YES → local useState, lift to nearest parent</div>
+          <div style="background:var(--bbg);border:1px solid #1a3a5e;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--blue);">✗ NO → keep going ↓</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg3);border:1px solid var(--purple);border-radius:9px;padding:12px 16px;font-size:13.5px;color:var(--text);">
+        <span style="color:var(--purple);font-weight:600;">? </span>Does it change rarely? (login, theme, locale)
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <div style="background:var(--gbg);border:1px solid #1a4030;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--green);">✓ YES → Context — split by concern, useMemo the value</div>
+          <div style="background:var(--bbg);border:1px solid #1a3a5e;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--blue);">✗ NO → keep going ↓</div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg3);border:1px solid var(--purple);border-radius:9px;padding:12px 16px;font-size:13.5px;color:var(--text);">
+        <span style="color:var(--purple);font-weight:600;">? </span>Changes frequently AND many components need it?
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <div style="background:var(--gbg);border:1px solid #1a4030;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--green);">✓ YES → Redux Toolkit — useSelector for surgical re-renders</div>
+          <div style="background:var(--bbg);border:1px solid #1a3a5e;border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--blue);">✗ NO → Context with split providers is likely fine</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box green">
+    <strong>✓ What you can now do — without AI help:</strong>
+    <p>Build a Context from scratch (createContext → Provider with state → custom hook → wrap app → consume). Build a Redux store (createSlice × N → configureStore → Provider → useSelector to read → useDispatch to write). Know which to use and why. Read any Context or Redux code and understand every line.</p>
+  </div>
+</div>
+
+</main>
+
+<script>
+const secs = document.querySelectorAll('.chapter');
+const links = document.querySelectorAll('nav a');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      links.forEach(l => l.classList.toggle('on', l.getAttribute('href') === '#' + e.target.id));
+  });
+}, { rootMargin: '-10% 0px -80% 0px' });
+secs.forEach(s => io.observe(s));
+</script>
+</body>
+</html>
