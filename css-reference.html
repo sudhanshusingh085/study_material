@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Reference — Complete Interactive Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;--bg4:#21262d;
+  --border:#30363d;--border2:#3d444d;
+  --text:#e6edf3;--text2:#8b949e;--text3:#656d76;
+  --blue:#58a6ff;--blue-bg:#1f6feb22;--blue-b:#1f6feb55;
+  --green:#3fb950;--green-bg:#0d2119;--green-b:#1a3a2a;
+  --amber:#d29922;--amber-bg:#271d00;--amber-b:#3d2e00;
+  --red:#f85149;--red-bg:#1c0a0a;--red-b:#3a1a1a;
+  --purple:#bc8cff;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --r:8px;--rl:12px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6}
+.app{display:flex;min-height:100vh}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:48px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:14px;font-weight:600}
+.search-wrap{margin-left:auto;position:relative}
+.search{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 12px 5px 32px;font-size:12px;color:var(--text);font-family:var(--sans);width:220px;outline:none}
+.search::placeholder{color:var(--text3)}
+.search:focus{border-color:var(--blue)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px}
+
+/* SIDEBAR */
+.sidebar{width:250px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);position:sticky;top:48px;height:calc(100vh - 48px);overflow-y:auto;padding:12px 0}
+.nav-cat{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:10px 16px 4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:5px 16px;font-size:12px;color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all .15s;cursor:pointer}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-link.active{color:var(--blue);border-left-color:var(--blue);background:var(--blue-bg)}
+.nav-link .tw{font-size:10px;color:var(--text3);font-family:var(--mono)}
+
+/* CONTENT */
+.content{flex:1;min-width:0;padding:32px 44px;max-width:920px}
+.section{margin-bottom:56px;scroll-margin-top:60px}
+.section-title{font-size:20px;font-weight:600;margin-bottom:4px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.section-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.7}
+
+/* PROPERTY CARD */
+.pcard{border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:18px}
+.phead{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.pname{font-family:var(--mono);font-size:12px;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-b);padding:2px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:1px}
+.pdesc{font-size:13px;color:var(--text2);line-height:1.6;flex:1;min-width:180px}
+.pbody{padding:16px}
+
+/* ANALOGY BOX */
+.analogy{background:var(--bg3);border-left:3px solid var(--amber);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+.analogy strong{color:var(--amber);font-weight:500}
+
+/* SIMPLE EXPLAIN */
+.simple{background:var(--green-bg);border:1px solid var(--green-b);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--green);line-height:1.7;margin-bottom:12px}
+.simple strong{color:var(--green);font-weight:500}
+
+/* CALLOUT */
+.callout{background:var(--bg3);border-left:3px solid var(--blue);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-top:10px}
+.callout strong{color:var(--text);font-weight:500}
+.warn{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 var(--r) var(--r) 0;padding:10px 14px;font-size:12px;color:var(--amber);margin-top:10px;line-height:1.7}
+
+/* VALUES TABLE */
+.vtable{margin-bottom:12px}
+.vtitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px}
+.vrow{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.vrow:last-child{border-bottom:none}
+.vcode{font-family:var(--mono);font-size:11px;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-b);padding:1px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.vtw{font-family:var(--mono);font-size:10px;color:var(--purple);background:#bc8cff15;border:1px solid #bc8cff33;padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.vexpl{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+
+/* CODE SNIPPET */
+.snip{font-family:var(--mono);font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;line-height:1.85;white-space:pre;overflow-x:auto}
+.kw{color:var(--red)}.v{color:var(--amber)}.cm{color:var(--text3);font-style:italic}.hl{color:var(--blue)}.ok{color:var(--green)}.pp{color:var(--purple)}
+
+/* DEMO */
+.demo{background:var(--bg3);border-radius:var(--r);padding:14px;margin-top:8px}
+.dlbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:10px}
+.ctrl{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ctrl label{font-size:12px;color:var(--text2);min-width:110px}
+.vv{font-family:var(--mono);font-size:11px;min-width:50px;color:var(--text)}
+select,input[type=range]{font-size:12px;font-family:var(--sans);padding:3px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg4);color:var(--text);cursor:pointer}
+.stage{background:var(--bg2);border-radius:var(--r);padding:12px;min-height:50px;border:1px solid var(--border)}
+
+/* DEMO BOXES */
+.b{background:var(--blue-bg);border:1.5px solid var(--blue);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--blue)}
+.g{background:var(--green-bg);border:1.5px solid var(--green);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--green)}
+.a{background:var(--amber-bg);border:1.5px solid var(--amber);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--amber)}
+.r{background:var(--red-bg);border:1.5px solid var(--red);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--red)}
+.p{background:#bc8cff15;border:1.5px solid #bc8cff55;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--purple)}
+
+/* TAILWIND BADGE */
+.tw-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tw-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);flex-shrink:0}
+.tw-tag{font-family:var(--mono);font-size:11px;color:var(--purple);background:#bc8cff15;border:1px solid #bc8cff33;padding:2px 8px;border-radius:4px;white-space:nowrap}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:14px 0}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@keyframes spin2{to{transform:rotate(360deg)}}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">CSS Reference</span>
+  <span style="font-size:12px;color:var(--text3)">Complete · Interactive · Tailwind included</span>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search" type="text" placeholder="Search any property..." oninput="doSearch(this.value)">
+  </div>
+</div>
+
+<div class="app">
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<div class="sidebar" id="sidebar">
+  <div class="nav-cat">Layout</div>
+  <a class="nav-link" onclick="jump('display')">display <span class="tw">block flex grid hidden</span></a>
+  <a class="nav-link" onclick="jump('flexbox-parent')">flexbox — parent</a>
+  <a class="nav-link" onclick="jump('flexbox-child')">flexbox — children</a>
+  <a class="nav-link" onclick="jump('grid')">grid</a>
+
+  <div class="nav-cat">Sizing</div>
+  <a class="nav-link" onclick="jump('width-height')">width & height</a>
+  <a class="nav-link" onclick="jump('min-max')">min / max</a>
+  <a class="nav-link" onclick="jump('box-sizing')">box-sizing</a>
+  <a class="nav-link" onclick="jump('calc')">calc()</a>
+
+  <div class="nav-cat">Spacing</div>
+  <a class="nav-link" onclick="jump('padding')">padding</a>
+  <a class="nav-link" onclick="jump('margin')">margin</a>
+  <a class="nav-link" onclick="jump('gap')">gap</a>
+
+  <div class="nav-cat">Overflow & Text</div>
+  <a class="nav-link" onclick="jump('overflow')">overflow</a>
+  <a class="nav-link" onclick="jump('white-space')">white-space</a>
+  <a class="nav-link" onclick="jump('text-overflow')">text-overflow ellipsis</a>
+  <a class="nav-link" onclick="jump('overflow-wrap')">overflow-wrap</a>
+  <a class="nav-link" onclick="jump('word-break')">word-break</a>
+
+  <div class="nav-cat">Typography</div>
+  <a class="nav-link" onclick="jump('font-size')">font-size</a>
+  <a class="nav-link" onclick="jump('font-weight')">font-weight</a>
+  <a class="nav-link" onclick="jump('font-family')">font-family</a>
+  <a class="nav-link" onclick="jump('line-height')">line-height</a>
+  <a class="nav-link" onclick="jump('letter-spacing')">letter-spacing</a>
+  <a class="nav-link" onclick="jump('text-transform')">text-transform</a>
+  <a class="nav-link" onclick="jump('text-align')">text-align</a>
+  <a class="nav-link" onclick="jump('color-prop')">color</a>
+
+  <div class="nav-cat">Visual</div>
+  <a class="nav-link" onclick="jump('background')">background</a>
+  <a class="nav-link" onclick="jump('border')">border</a>
+  <a class="nav-link" onclick="jump('border-radius')">border-radius</a>
+  <a class="nav-link" onclick="jump('opacity')">opacity</a>
+  <a class="nav-link" onclick="jump('box-shadow')">box-shadow</a>
+  <a class="nav-link" onclick="jump('outline')">outline</a>
+
+  <div class="nav-cat">Position</div>
+  <a class="nav-link" onclick="jump('position')">position</a>
+  <a class="nav-link" onclick="jump('top-left')">top / left / right / bottom</a>
+  <a class="nav-link" onclick="jump('z-index')">z-index</a>
+
+  <div class="nav-cat">Interaction</div>
+  <a class="nav-link" onclick="jump('cursor')">cursor</a>
+  <a class="nav-link" onclick="jump('user-select')">user-select</a>
+  <a class="nav-link" onclick="jump('pointer-events')">pointer-events</a>
+  <a class="nav-link" onclick="jump('resize-prop')">resize</a>
+
+  <div class="nav-cat">Animation</div>
+  <a class="nav-link" onclick="jump('transition')">transition</a>
+  <a class="nav-link" onclick="jump('transform')">transform</a>
+  <a class="nav-link" onclick="jump('animation')">animation & keyframes</a>
+
+  <div class="nav-cat">Pseudo-classes</div>
+  <a class="nav-link" onclick="jump('pseudo')">:hover :focus :active :disabled</a>
+
+  <div class="nav-cat">Units</div>
+  <a class="nav-link" onclick="jump('units')">px % vh vw em rem fr</a>
+</div>
+
+<!-- ════════════════ CONTENT ════════════════ -->
+<div class="content" id="content">
+
+<!-- ─────────────────────────────────────────
+     DISPLAY
+───────────────────────────────────────── -->
+<div class="section" id="display">
+  <div class="section-title">display</div>
+  <div class="section-sub">The most important CSS property. It controls how a div behaves — does it stack, sit inline, form a grid, or disappear?</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: block</span><span class="pdesc">Takes full width of parent. Always starts on a new line. This is the DEFAULT for div, p, h1.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">block</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A paragraph in a book. Each paragraph always starts on a new line and goes full width across the page.</div>
+      <div class="demo">
+        <div class="dlbl">Live</div>
+        <div class="stage">
+          <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;padding:6px 10px;font-size:12px;margin-bottom:4px;color:var(--blue)">Block — takes full width, new line</div>
+          <div style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;padding:6px 10px;font-size:12px;color:var(--blue)">Another block — also new line</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: inline</span><span class="pdesc">Sits within text. Only as wide as content. Cannot set width or height. Default for span, a.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">inline</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A word inside a sentence. It just sits in the flow of text — doesn't start a new line, doesn't take up extra space.</div>
+      <div class="demo">
+        <div class="stage" style="font-size:13px;color:var(--text2)">
+          Text with <span style="background:var(--green-bg);border:1px solid var(--green);border-radius:3px;padding:1px 5px;color:var(--green)">inline</span> element sitting <span style="background:var(--green-bg);border:1px solid var(--green);border-radius:3px;padding:1px 5px;color:var(--green)">inside</span> the line of text.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: inline-block</span><span class="pdesc">Sits inline like text BUT you CAN set width, height, padding. Used for buttons, badges.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">inline-block</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A small box sitting inside a sentence. It behaves like a word (stays inline) but you can give it a fixed size and padding like a box.</div>
+      <div class="demo">
+        <div class="stage">
+          <span style="display:inline-block;background:var(--amber-bg);border:1px solid var(--amber);border-radius:4px;padding:4px 12px;font-size:12px;margin-right:6px;color:var(--amber)">Badge 1</span>
+          <span style="display:inline-block;background:var(--amber-bg);border:1px solid var(--amber);border-radius:4px;padding:4px 12px;font-size:12px;color:var(--amber)">Badge 2</span>
+          <span style="font-size:12px;color:var(--text2);margin-left:8px">← side by side with padding, no block break</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: none</span><span class="pdesc">Element completely disappears. Takes ZERO space. Other elements fill the gap as if it doesn't exist.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">hidden</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> Removing a chair from a room. The other chairs slide together to fill the gap. Compare with opacity:0 which is like making a chair invisible but it still takes up floor space.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>toggle:</label>
+          <button onclick="var e=document.getElementById('dn1');e.style.display=e.style.display==='none'?'block':'none'" style="padding:4px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--bg4);color:var(--text);cursor:pointer;font-family:var(--sans);font-size:12px">Hide / Show</button>
+        </div>
+        <div class="stage">
+          <div style="font-size:12px;margin-bottom:4px;color:var(--text2)">Element before</div>
+          <div id="dn1" style="background:var(--red-bg);border:1px solid var(--red);border-radius:4px;padding:6px 10px;font-size:12px;margin-bottom:4px;color:var(--red)">I can be hidden — press button above</div>
+          <div style="font-size:12px;color:var(--text2)">Element after — jumps up when above is hidden</div>
+        </div>
+        <div class="callout">Notice "element after" <strong>jumps up</strong> when the middle is hidden — because display:none removes it from layout entirely. opacity:0 would NOT cause this jump.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: flex</span><span class="pdesc">Children line up in a row (or column). Most used layout in your app — topbar, panels, buttons, everything.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">flex</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A bookshelf. By default books (children) line up left to right. You control how they're spaced and aligned.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>display:</label>
+          <select onchange="document.getElementById('df1').style.display=this.value">
+            <option value="block">block — children stack vertically</option>
+            <option value="flex" selected>flex — children side by side</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="df1" style="display:flex;gap:6px">
+            <div class="b">Child A</div><div class="b">Child B</div><div class="b">Child C</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">display: grid</span><span class="pdesc">Two-dimensional layout. Defines rows AND columns. Your app uses it to split topbar + main area.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">grid</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A spreadsheet. You define the rows and columns, then content fills the cells. More powerful than flexbox for page-level layouts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     FLEXBOX PARENT
+───────────────────────────────────────── -->
+<div class="section" id="flexbox-parent">
+  <div class="section-title">flexbox — parent properties</div>
+  <div class="section-sub">These go on the flex container (the parent div). They control how all children inside it are arranged.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">flex-direction</span><span class="pdesc">Which direction do children flow? Row = horizontal. Column = vertical.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">flex-row</span><span class="tw-tag">flex-col</span><span class="tw-tag">flex-row-reverse</span><span class="tw-tag">flex-col-reverse</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">row</span><span class="vtw">flex-row</span><span class="vexpl">Left to right. Default. Children side by side.</span></div>
+        <div class="vrow"><span class="vcode">column</span><span class="vtw">flex-col</span><span class="vexpl">Top to bottom. Children stacked. Used inside your editor panel.</span></div>
+        <div class="vrow"><span class="vcode">row-reverse</span><span class="vtw">flex-row-reverse</span><span class="vexpl">Right to left.</span></div>
+        <div class="vrow"><span class="vcode">column-reverse</span><span class="vtw">flex-col-reverse</span><span class="vexpl">Bottom to top.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>flex-direction:</label>
+          <select onchange="document.getElementById('fd1').style.flexDirection=this.value">
+            <option value="row">row</option><option value="column">column</option>
+            <option value="row-reverse">row-reverse</option><option value="column-reverse">column-reverse</option>
+          </select>
+        </div>
+        <div class="stage"><div id="fd1" style="display:flex;flex-direction:row;gap:6px;min-height:44px">
+          <div class="b">A</div><div class="g">B</div><div class="a">C</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">justify-content</span><span class="pdesc">How to distribute children along the MAIN axis. In row = horizontal. In column = vertical.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">justify-start</span><span class="tw-tag">justify-end</span><span class="tw-tag">justify-center</span><span class="tw-tag">justify-between</span><span class="tw-tag">justify-around</span><span class="tw-tag">justify-evenly</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> How do you arrange books on a shelf? Push them all left? Center them? Space them evenly? That is justify-content.</div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">flex-start</span><span class="vtw">justify-start</span><span class="vexpl">Pack to start (left in row). Default.</span></div>
+        <div class="vrow"><span class="vcode">flex-end</span><span class="vtw">justify-end</span><span class="vexpl">Pack to end (right in row).</span></div>
+        <div class="vrow"><span class="vcode">center</span><span class="vtw">justify-center</span><span class="vexpl">Center all children.</span></div>
+        <div class="vrow"><span class="vcode">space-between</span><span class="vtw">justify-between</span><span class="vexpl">First at start, last at end, equal gaps between.</span></div>
+        <div class="vrow"><span class="vcode">space-around</span><span class="vtw">justify-around</span><span class="vexpl">Equal space around each child (half size at edges).</span></div>
+        <div class="vrow"><span class="vcode">space-evenly</span><span class="vtw">justify-evenly</span><span class="vexpl">Perfectly equal space everywhere including edges.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>justify-content:</label>
+          <select onchange="document.getElementById('jc1').style.justifyContent=this.value">
+            <option value="flex-start">flex-start</option><option value="flex-end">flex-end</option>
+            <option value="center">center</option><option value="space-between">space-between</option>
+            <option value="space-around">space-around</option><option value="space-evenly">space-evenly</option>
+          </select>
+        </div>
+        <div class="stage"><div id="jc1" style="display:flex;justify-content:flex-start">
+          <div class="b" style="margin:0 3px">A</div><div class="g" style="margin:0 3px">B</div><div class="a" style="margin:0 3px">C</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">align-items</span><span class="pdesc">Aligns children on the CROSS axis. In row direction = vertical alignment. This is how you vertically center things.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">items-start</span><span class="tw-tag">items-center</span><span class="tw-tag">items-end</span><span class="tw-tag">items-stretch</span><span class="tw-tag">items-baseline</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> You have a box that is 44px tall. Your children are 28px tall. Where do they sit inside the 44px? Top? Center? Bottom? That is align-items. Your topbar uses center so the logo and buttons sit perfectly in the middle of the 44px height.</div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">stretch</span><span class="vtw">items-stretch</span><span class="vexpl">Children stretch to fill container height. Default.</span></div>
+        <div class="vrow"><span class="vcode">flex-start</span><span class="vtw">items-start</span><span class="vexpl">Align to top (in row direction).</span></div>
+        <div class="vrow"><span class="vcode">center</span><span class="vtw">items-center</span><span class="vexpl">Vertically center. Most used in your app.</span></div>
+        <div class="vrow"><span class="vcode">flex-end</span><span class="vtw">items-end</span><span class="vexpl">Align to bottom.</span></div>
+        <div class="vrow"><span class="vcode">baseline</span><span class="vtw">items-baseline</span><span class="vexpl">Align the text baselines across all children.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>align-items:</label>
+          <select onchange="document.getElementById('ai1').style.alignItems=this.value">
+            <option value="flex-start">flex-start — stuck to top</option>
+            <option value="center">center — vertically centered</option>
+            <option value="flex-end">flex-end — stuck to bottom</option>
+            <option value="stretch">stretch — fills height</option>
+          </select>
+        </div>
+        <div class="stage"><div id="ai1" style="display:flex;align-items:flex-start;height:80px;gap:6px">
+          <div class="b">Short</div>
+          <div class="g" style="padding:16px 12px">Tall</div>
+          <div class="a">Short</div>
+        </div></div>
+        <div class="callout">Switch to <strong>center</strong> — all boxes align to the vertical midpoint of the 80px container. This is what your topbar uses so everything sits on the same horizontal line.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">flex-wrap</span><span class="pdesc">What happens when children don't fit in one line. By default they overflow — nowrap is default.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">flex-wrap</span><span class="tw-tag">flex-nowrap</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">nowrap</span><span class="vtw">flex-nowrap</span><span class="vexpl">All on one line. May overflow. Default.</span></div>
+        <div class="vrow"><span class="vcode">wrap</span><span class="vtw">flex-wrap</span><span class="vexpl">Spill to next line when there's no space. Used in your nav buttons.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>flex-wrap:</label>
+          <select onchange="document.getElementById('fw1').style.flexWrap=this.value">
+            <option value="nowrap">nowrap — all one line, may overflow</option>
+            <option value="wrap">wrap — spills to next line</option>
+          </select>
+        </div>
+        <div class="stage" style="overflow:hidden">
+          <div id="fw1" style="display:flex;flex-wrap:nowrap;gap:6px">
+            <div class="b" style="white-space:nowrap">Item one</div><div class="g" style="white-space:nowrap">Item two</div>
+            <div class="a" style="white-space:nowrap">Item three</div><div class="r" style="white-space:nowrap">Item four</div>
+            <div class="p" style="white-space:nowrap">Item five</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">gap</span><span class="pdesc">Space between flex (or grid) children. Replaces the old margin hack. Works in both flex and grid.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">gap-1</span><span class="tw-tag">gap-2</span><span class="tw-tag">gap-4</span><span class="tw-tag">gap-6</span><span class="tw-tag">gap-x-4</span><span class="tw-tag">gap-y-2</span></div>
+      <div class="simple"><strong>Simple rule:</strong> Instead of adding margin-right to every child, just add gap to the parent. gap:8px = 8px between every child automatically. gap-x = horizontal only, gap-y = vertical only.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>gap:</label>
+          <input type="range" min="0" max="28" value="8" oninput="document.getElementById('gp1').style.gap=this.value+'px';document.getElementById('gp1v').textContent=this.value+'px'">
+          <span class="vv" id="gp1v">8px</span>
+        </div>
+        <div class="stage"><div id="gp1" style="display:flex;gap:8px">
+          <div class="b">A</div><div class="g">B</div><div class="a">C</div><div class="r">D</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     FLEXBOX CHILDREN
+───────────────────────────────────────── -->
+<div class="section" id="flexbox-child">
+  <div class="section-title">flexbox — child properties</div>
+  <div class="section-sub">These go on the CHILDREN inside a flex container. They control how each individual child sizes and behaves.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">flex: 1</span><span class="pdesc">Shorthand. Means: grow to fill available space AND shrink if needed. Most common flex child value.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">flex-1</span><span class="tw-tag">flex-auto</span><span class="tw-tag">flex-none</span></div>
+      <div class="simple"><strong>flex:1 = three things at once:</strong><br>
+        flex-grow:1 → grow to fill available space<br>
+        flex-shrink:1 → shrink if not enough space<br>
+        flex-basis:0 → start from zero before growing</div>
+      <div class="snip"><span class="cm">/* In your app — editor and output panels both have flex:1 */</span>
+<span class="cm">/* Total width = 1200px */</span>
+<span class="cm">/* Sidebar = 56px (fixed) */</span>
+<span class="cm">/* Remaining = 1144px */</span>
+<span class="kw">.panel</span> { <span class="kw">flex</span>: <span class="v">1</span>; } <span class="cm">/* editor gets 572px, output gets 572px */</span>
+
+<span class="cm">/* If you set one to flex:2: */</span>
+<span class="cm">/* editor = 763px (2/3), output = 381px (1/3) */</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>left flex:</label>
+          <input type="range" min="1" max="3" value="1" step="1" oninput="document.getElementById('fl1').style.flex=this.value;document.getElementById('fl1v').textContent=this.value">
+          <span class="vv" id="fl1v">1</span>
+        </div>
+        <div class="stage"><div style="display:flex;gap:4px;height:60px">
+          <div id="fl1" style="flex:1;background:var(--blue-bg);border:1.5px solid var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--blue)">Left (flex:?)</div>
+          <div style="flex:1;background:var(--green-bg);border:1.5px solid var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--green)">Right (flex:1)</div>
+        </div></div>
+        <div class="callout">Drag to 2 — left gets twice the space. Drag to 3 — three times. Both at 1 = equal split. This is how your editor and output panels share the screen.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">flex-shrink: 0</span><span class="pdesc">This child REFUSES to shrink when space is tight. Stays full size always. Other siblings shrink instead.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">shrink-0</span><span class="tw-tag">shrink</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> You're sitting in a row of seats on a bus. flex-shrink:1 = you squeeze over when someone sits next to you. flex-shrink:0 = you refuse to move, you keep your full space no matter what.</div>
+      <div class="simple"><strong>In your app — what has flex-shrink:0 and WHY:</strong><br>
+        • Sidebar (56px) → always stays 56px when window shrinks<br>
+        • Panel header (38px) → always visible<br>
+        • Action bar → Run/Clear buttons always visible at bottom<br>
+        • TC form → textareas always visible<br>
+        • Stdin area → always visible<br>
+        Monaco editor has flex:1 → it takes the hit and shrinks</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>header shrink:</label>
+          <select onchange="document.getElementById('fs1').style.flexShrink=this.value">
+            <option value="0">0 — stays full size (correct)</option>
+            <option value="1">1 — gets squished (wrong)</option>
+          </select>
+        </div>
+        <div class="stage"><div style="display:flex;flex-direction:column;height:130px;gap:3px">
+          <div id="fs1" style="flex-shrink:0;height:36px;background:var(--green-bg);border:1px solid var(--green);border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--green)">Header — flex-shrink:0 — always 36px</div>
+          <div style="flex:1;background:var(--blue-bg);border:1px solid var(--blue);border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--blue)">Monaco — flex:1 — gets whatever is left</div>
+          <div style="flex-shrink:0;height:32px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--amber)">Action bar — flex-shrink:0</div>
+        </div></div>
+        <div class="callout">Switch header to <strong>flex-shrink:1</strong> — it competes with Monaco for space and loses its fixed height. flex-shrink:0 prevents that completely.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">min-width: 0</span><span class="pdesc">One of the most confusing CSS properties. By default flex children cannot shrink below their content width. min-width:0 removes this restriction.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">min-w-0</span></div>
+      <div class="analogy"><strong>Why this is confusing:</strong> You set flex:1 on a panel expecting it to share space. But it won't shrink below the width of its content — like a paragraph of very long text — even though you said flex:1. The browser says "I want to flex:1 BUT my content is 800px wide so I need at least 800px". min-width:0 says "forget about your content size, you can shrink as small as needed and the content will clip or wrap instead".</div>
+      <div class="simple"><strong>Rule:</strong> Whenever you have flex:1 on something that also contains text (especially long code lines), add min-width:0 to it. Without it, text overflow will break the layout.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>min-width:</label>
+          <select onchange="document.getElementById('mw1').style.minWidth=this.value">
+            <option value="auto">auto — content forces it wide (layout breaks)</option>
+            <option value="0">0 — can shrink, content clips (correct)</option>
+          </select>
+        </div>
+        <div class="stage" style="overflow:hidden">
+          <div style="display:flex;gap:4px">
+            <div style="flex-shrink:0;background:var(--amber-bg);border:1px solid var(--amber);border-radius:4px;padding:6px 8px;font-size:11px;color:var(--amber)">Label</div>
+            <div id="mw1" style="flex:1;min-width:0;background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;padding:6px 8px;font-size:11px;color:var(--blue);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">Very long content — in: 100 200 300 400 500 600 700 800 900 1000</div>
+          </div>
+        </div>
+        <div class="callout">Switch to <strong>auto</strong> — the blue div pushes wider than the container. Switch to <strong>0</strong> — it can shrink and the text truncates with ellipsis instead.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">align-self</span><span class="pdesc">Overrides align-items for one specific child. While siblings follow the parent's alignment, this one does its own thing.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">self-auto</span><span class="tw-tag">self-start</span><span class="tw-tag">self-center</span><span class="tw-tag">self-end</span><span class="tw-tag">self-stretch</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>middle align-self:</label>
+          <select onchange="document.getElementById('as1').style.alignSelf=this.value">
+            <option value="auto">auto (follows parent)</option>
+            <option value="flex-start">flex-start</option>
+            <option value="center">center</option>
+            <option value="flex-end">flex-end</option>
+            <option value="stretch">stretch</option>
+          </select>
+        </div>
+        <div class="stage"><div style="display:flex;align-items:flex-start;height:80px;gap:6px">
+          <div class="b">Sibling</div>
+          <div id="as1" class="g" style="align-self:auto">Self</div>
+          <div class="a">Sibling</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     GRID
+───────────────────────────────────────── -->
+<div class="section" id="grid">
+  <div class="section-title">grid</div>
+  <div class="section-sub">Grid is for two-dimensional layouts — rows AND columns at the same time. Your app uses it for the outermost layout.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">grid-template-rows</span><span class="pdesc">Defines the HEIGHT of each row. Your app: "44px 1fr" = fixed topbar + everything else.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">grid-rows-2</span><span class="tw-tag">grid-rows-[44px_1fr]</span></div>
+      <div class="snip"><span class="cm">/* Your app's outermost div: */</span>
+<span class="kw">display</span>: <span class="v">grid</span>;
+<span class="kw">grid-template-rows</span>: <span class="v">44px 1fr</span>;
+<span class="cm">/*
+  44px → topbar always exactly 44px
+  1fr  → main gets ALL remaining height
+  
+  Screen 900px tall → topbar=44px, main=856px
+  Screen 600px tall → topbar=44px, main=556px
+  Topbar never changes. Main auto-adjusts.
+*/</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>topbar height:</label>
+          <input type="range" min="20" max="90" value="44" step="1" oninput="document.getElementById('gr1').style.gridTemplateRows=this.value+'px 1fr';document.getElementById('gr1v').textContent=this.value+'px'">
+          <span class="vv" id="gr1v">44px</span>
+        </div>
+        <div class="stage"><div id="gr1" style="display:grid;grid-template-rows:44px 1fr;height:150px;gap:4px">
+          <div style="background:var(--green-bg);border:1.5px dashed var(--green);border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--green)">Topbar — fixed px</div>
+          <div style="background:var(--blue-bg);border:1.5px dashed var(--blue);border-radius:5px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--blue)">Main area — 1fr — auto</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">grid-template-columns</span><span class="pdesc">Defines the WIDTH of each column.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">grid-cols-2</span><span class="tw-tag">grid-cols-3</span><span class="tw-tag">grid-cols-[56px_1fr_1fr]</span></div>
+      <div class="vtable">
+        <div class="vtitle">Common patterns</div>
+        <div class="vrow"><span class="vcode">1fr 1fr</span><span class="vexpl">Two equal columns.</span></div>
+        <div class="vrow"><span class="vcode">56px 1fr 1fr</span><span class="vexpl">Fixed sidebar + two equal panels. Similar to your app's main layout.</span></div>
+        <div class="vrow"><span class="vcode">repeat(3, 1fr)</span><span class="vexpl">Same as 1fr 1fr 1fr. Shorthand for equal columns.</span></div>
+        <div class="vrow"><span class="vcode">minmax(0, 1fr)</span><span class="vexpl">Like 1fr but the column can shrink to zero. Prevents content overflow.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>columns:</label>
+          <select onchange="document.getElementById('gc1').style.gridTemplateColumns=this.value">
+            <option value="1fr 1fr">1fr 1fr — two equal</option>
+            <option value="1fr 1fr 1fr">1fr 1fr 1fr — three equal</option>
+            <option value="56px 1fr 1fr">56px 1fr 1fr — sidebar + panels</option>
+            <option value="200px 1fr">200px 1fr — fixed + flexible</option>
+            <option value="repeat(4,1fr)">repeat(4,1fr) — four equal</option>
+          </select>
+        </div>
+        <div class="stage"><div id="gc1" style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+          <div class="b" style="text-align:center">1</div><div class="g" style="text-align:center">2</div>
+          <div class="a" style="text-align:center">3</div><div class="r" style="text-align:center">4</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     WIDTH HEIGHT
+───────────────────────────────────────── -->
+<div class="section" id="width-height">
+  <div class="section-title">width & height</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">width & height</span><span class="pdesc">Set the size of an element. Many different unit options.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">w-full</span><span class="tw-tag">w-56</span><span class="tw-tag">h-full</span><span class="tw-tag">h-screen</span><span class="tw-tag">w-px</span><span class="tw-tag">h-10</span></div>
+      <div class="vtable">
+        <div class="vtitle">Common values</div>
+        <div class="vrow"><span class="vcode">100px</span><span class="vtw">w-[100px]</span><span class="vexpl">Fixed pixels. Always that size no matter what.</span></div>
+        <div class="vrow"><span class="vcode">100%</span><span class="vtw">w-full h-full</span><span class="vexpl">100% of the PARENT's width/height. Parent must have a defined size for this to work.</span></div>
+        <div class="vrow"><span class="vcode">100vh</span><span class="vtw">h-screen</span><span class="vexpl">100% of the browser window height. Used on your outermost app div.</span></div>
+        <div class="vrow"><span class="vcode">100vw</span><span class="vtw">w-screen</span><span class="vexpl">100% of browser window width.</span></div>
+        <div class="vrow"><span class="vcode">auto</span><span class="vtw">w-auto h-auto</span><span class="vexpl">Browser decides. Usually = fit content size.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>width:</label>
+          <input type="range" min="20" max="100" value="100" oninput="document.getElementById('wh1').style.width=this.value+'%';document.getElementById('wh1v').textContent=this.value+'%'">
+          <span class="vv" id="wh1v">100%</span>
+        </div>
+        <div class="ctrl">
+          <label>height:</label>
+          <input type="range" min="20" max="100" value="44" oninput="document.getElementById('wh1').style.height=this.value+'px';document.getElementById('wh1hv').textContent=this.value+'px'">
+          <span class="vv" id="wh1hv">44px</span>
+        </div>
+        <div class="stage"><div id="wh1" style="width:100%;height:44px;background:var(--blue-bg);border:1.5px solid var(--blue);border-radius:6px;transition:all .2s"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     MIN MAX
+───────────────────────────────────────── -->
+<div class="section" id="min-max">
+  <div class="section-title">min-width, max-width, min-height, max-height</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">max-height</span><span class="pdesc">The element can grow but NEVER exceed this value. Your TC panel uses max-height:320px.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">max-h-80</span><span class="tw-tag">max-h-[320px]</span><span class="tw-tag">max-h-full</span><span class="tw-tag">max-h-screen</span></div>
+      <div class="analogy"><strong>height vs max-height:</strong><br>
+        height:320px → always exactly 320px even with 1 item (wastes space, looks weird)<br>
+        max-height:320px → grows naturally with content, BUT caps at 320px and scrolls after</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>max-height:</label>
+          <select onchange="document.getElementById('mh1').style.maxHeight=this.value">
+            <option value="none">none — grows forever</option>
+            <option value="80px">80px — small cap</option>
+            <option value="160px" selected>160px — medium cap</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="mh1" style="max-height:160px;overflow-y:auto;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
+            <div style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">TC1 card</div>
+            <div style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">TC2 card</div>
+            <div style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">TC3 card</div>
+            <div style="padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2)">TC4 card</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">TC5 card</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">min-height</span><span class="pdesc">The element is at LEAST this tall. Can grow bigger but not smaller.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">min-h-0</span><span class="tw-tag">min-h-full</span><span class="tw-tag">min-h-screen</span><span class="tw-tag">min-h-[50px]</span></div>
+      <div class="simple"><strong>Common use:</strong> min-height:0 on a flex child that should be allowed to shrink below its content height. Same fix as min-width:0 but for vertical direction.</div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">max-width</span><span class="pdesc">Element can be any width up to this maximum. Used to prevent lines of text from getting too wide on large screens.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">max-w-sm</span><span class="tw-tag">max-w-lg</span><span class="tw-tag">max-w-full</span><span class="tw-tag">max-w-[920px]</span></div>
+      <div class="simple"><strong>In your app:</strong> The content area has max-width:920px so on very wide monitors the text doesn't stretch across the full 2000px screen width. It stays readable.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     BOX SIZING
+───────────────────────────────────────── -->
+<div class="section" id="box-sizing">
+  <div class="section-title">box-sizing</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">box-sizing: border-box</span><span class="pdesc">Changes how width and height are calculated. border-box includes padding and border IN the width. content-box (default) does NOT.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span>Tailwind includes box-sizing:border-box by default in its reset</div>
+      <div class="analogy"><strong>The problem without border-box:</strong><br>
+        You set width:200px and padding:10px.<br>
+        content-box → actual rendered width = 200 + 10 + 10 = 220px (broke your layout!)<br>
+        border-box → actual rendered width = 200px exactly (padding is INSIDE)</div>
+      <div class="simple"><strong>Always use this:</strong> Put <code>*, *::before, *::after { box-sizing: border-box; }</code> at the top of every CSS file. Your app already does this. You never need to think about this problem again.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     CALC
+───────────────────────────────────────── -->
+<div class="section" id="calc">
+  <div class="section-title">calc()</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">calc()</span><span class="pdesc">Mix different units in one value. Let the browser do the math.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">h-[calc(100%-320px)]</span><span class="tw-tag">w-[calc(100vw-56px)]</span></div>
+      <div class="snip"><span class="cm">/* In your app — Monaco height in judge mode: */</span>
+height={mode === "judge" ? <span class="v">"calc(100% - 320px)"</span> : <span class="v">"100%"</span>}
+
+<span class="cm">/* Without calc, you can't mix units: */</span>
+<span class="cm">/* height: 100% - 320px   ← this DOES NOT WORK */</span>
+<span class="cm">/* height: calc(100% - 320px)  ← this WORKS */</span>
+
+<span class="cm">/* Other examples: */</span>
+width: <span class="v">calc(50% - 8px)</span>;     <span class="cm">/* half width minus gap */</span>
+height: <span class="v">calc(100vh - 48px)</span>; <span class="cm">/* full window minus topbar */</span></div>
+      <div class="callout">calc() is one of the most useful CSS features. Whenever you need "full width minus some pixels" or "half minus gap", use calc().</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     PADDING
+───────────────────────────────────────── -->
+<div class="section" id="padding">
+  <div class="section-title">padding</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">padding</span><span class="pdesc">Space INSIDE the element, between the content and the border. Background color fills padding area.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">p-4</span><span class="tw-tag">px-4</span><span class="tw-tag">py-2</span><span class="tw-tag">pt-4</span><span class="tw-tag">pb-2</span><span class="tw-tag">pl-3</span><span class="tw-tag">pr-3</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> The cushion inside a picture frame. The frame (border) stays the same size. The cushion (padding) creates space between the picture (content) and the frame. The cushion is the same color as the background.</div>
+      <div class="vtable">
+        <div class="vtitle">Shorthand patterns</div>
+        <div class="vrow"><span class="vcode">padding: 10px</span><span class="vtw">p-[10px]</span><span class="vexpl">All four sides = 10px.</span></div>
+        <div class="vrow"><span class="vcode">padding: 8px 16px</span><span class="vtw">py-2 px-4</span><span class="vexpl">Top+bottom=8px, Left+right=16px. Your topbar uses padding:0 16px.</span></div>
+        <div class="vrow"><span class="vcode">padding: 4px 8px 12px 16px</span><span class="vexpl">Clockwise: Top Right Bottom Left.</span></div>
+        <div class="vrow"><span class="vcode">padding-top / padding-right...</span><span class="vtw">pt-1 pr-2 pb-3 pl-4</span><span class="vexpl">Individual sides.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>padding:</label>
+          <input type="range" min="0" max="30" value="10" oninput="document.getElementById('pd1').style.padding=this.value+'px';document.getElementById('pd1v').textContent=this.value+'px'">
+          <span class="vv" id="pd1v">10px</span>
+        </div>
+        <div class="stage" style="display:inline-block">
+          <div style="background:var(--bg3);border-radius:6px;border:1px dashed var(--border2);display:inline-block">
+            <div id="pd1" style="padding:10px;background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;font-size:11px;color:var(--blue);transition:padding .15s;display:inline-block">Content</div>
+          </div>
+        </div>
+        <div class="callout">Drag to 0 — content touches the border edge. The background color (blue tint) fills the padding area. Padding is INSIDE the border.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     MARGIN
+───────────────────────────────────────── -->
+<div class="section" id="margin">
+  <div class="section-title">margin</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">margin</span><span class="pdesc">Space OUTSIDE the element, between it and other elements. Transparent — background does NOT fill margin.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">m-4</span><span class="tw-tag">mx-auto</span><span class="tw-tag">mt-4</span><span class="tw-tag">mb-2</span><span class="tw-tag">ml-3</span><span class="tw-tag">mr-3</span></div>
+      <div class="analogy"><strong>Padding vs Margin:</strong><br>
+        Padding = space INSIDE (background fills it)<br>
+        Margin = space OUTSIDE (transparent, pushes other elements away)<br><br>
+        <strong>Think of it like:</strong> A framed photo. Padding = the white mat inside the frame. Margin = the space between the frame and the wall/other frames.</div>
+      <div class="simple"><strong>margin: auto</strong> — a special value. When set on left and right (margin: 0 auto or mx-auto in Tailwind), it centers a block element horizontally. Classic centering trick.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>margin:</label>
+          <input type="range" min="0" max="30" value="0" oninput="document.getElementById('mg1').style.margin=this.value+'px';document.getElementById('mg1v').textContent=this.value+'px'">
+          <span class="vv" id="mg1v">0px</span>
+        </div>
+        <div class="stage" style="background:var(--bg3);border-radius:6px">
+          <div id="mg1" style="margin:0;background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;padding:8px 12px;font-size:11px;color:var(--blue);transition:margin .15s">This element has margin</div>
+        </div>
+        <div class="warn">In flex containers, prefer <strong>gap</strong> over margin between children. gap is cleaner and doesn't create double-spacing edge cases.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     OVERFLOW
+───────────────────────────────────────── -->
+<div class="section" id="overflow">
+  <div class="section-title">overflow</div>
+  <div class="section-sub">What happens when content is BIGGER than its container? You have four choices.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">overflow</span><span class="pdesc">Controls what happens when content overflows the container boundaries.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">overflow-visible</span><span class="tw-tag">overflow-hidden</span><span class="tw-tag">overflow-auto</span><span class="tw-tag">overflow-scroll</span><span class="tw-tag">overflow-x-hidden</span><span class="tw-tag">overflow-y-auto</span></div>
+      <div class="analogy"><strong>Think of a fish tank (container) and water (content):</strong><br>
+        <br>
+        overflow:visible → the water spills out over the sides. The tank looks broken.<br>
+        overflow:hidden → an invisible lid on the tank. Water is capped at the tank edge.<br>
+        overflow:auto → lid appears only when water level reaches the top. Otherwise open.<br>
+        overflow:scroll → lid with a pump always visible even if the tank is not full.</div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">visible</span><span class="vtw">overflow-visible</span><span class="vexpl">Content spills outside. Default. Almost never what you want in your layouts.</span></div>
+        <div class="vrow"><span class="vcode">hidden</span><span class="vtw">overflow-hidden</span><span class="vexpl">Clips content at the container edge. Used on .tc-item to clip analysis box to rounded corners.</span></div>
+        <div class="vrow"><span class="vcode">auto</span><span class="vtw">overflow-auto</span><span class="vexpl">Scrollbar appears ONLY when content overflows. Clean. Used on output scroll area and TC list.</span></div>
+        <div class="vrow"><span class="vcode">scroll</span><span class="vtw">overflow-scroll</span><span class="vexpl">Scrollbar always visible even when content fits. Usually ugly — prefer auto.</span></div>
+        <div class="vrow"><span class="vcode">overflow-x / overflow-y</span><span class="vtw">overflow-x-hidden overflow-y-auto</span><span class="vexpl">Control horizontal and vertical separately.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>overflow:</label>
+          <select onchange="document.getElementById('ov1').style.overflow=this.value">
+            <option value="visible">visible — spills out</option>
+            <option value="hidden">hidden — clips</option>
+            <option value="auto">auto — scrollbar if needed</option>
+            <option value="scroll">scroll — always scrollbar</option>
+          </select>
+        </div>
+        <div class="stage" style="padding:6px">
+          <div id="ov1" style="overflow:visible;height:60px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:8px">
+            <div style="width:500px;height:30px;background:var(--blue-bg);border:1px solid var(--blue);border-radius:4px;display:flex;align-items:center;padding:0 10px;font-size:11px;color:var(--blue);white-space:nowrap">This content is 500px wide — much wider than the container above</div>
+          </div>
+        </div>
+        <div class="callout"><strong>overflow:hidden has a bonus effect:</strong> When a parent has border-radius AND overflow:hidden, children get clipped to that rounded shape. This is why your TC cards use it — the analysis box background clips to the card's 8px border-radius.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     WHITE-SPACE
+───────────────────────────────────────── -->
+<div class="section" id="white-space">
+  <div class="section-title">white-space</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">white-space</span><span class="pdesc">Controls how text wraps and how spaces/newlines are handled. Critical for code display.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">whitespace-normal</span><span class="tw-tag">whitespace-nowrap</span><span class="tw-tag">whitespace-pre</span><span class="tw-tag">whitespace-pre-wrap</span><span class="tw-tag">whitespace-pre-line</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values — explained simply</div>
+        <div class="vrow"><span class="vcode">normal</span><span class="vtw">whitespace-normal</span><span class="vexpl">Text wraps at container edge. Newlines in HTML are ignored. Default for most elements.</span></div>
+        <div class="vrow"><span class="vcode">nowrap</span><span class="vtw">whitespace-nowrap</span><span class="vexpl">NEVER wraps. All on one line. Used on TC input text so it stays on one line with ellipsis.</span></div>
+        <div class="vrow"><span class="vcode">pre</span><span class="vtw">whitespace-pre</span><span class="vexpl">Respects newlines exactly like a text editor. BUT never wraps at container edge. Can overflow.</span></div>
+        <div class="vrow"><span class="vcode">pre-wrap</span><span class="vtw">whitespace-pre-wrap</span><span class="vexpl">Respects newlines AND wraps at container edge. This is what your analysis box uses. The fix for your overflow bug.</span></div>
+        <div class="vrow"><span class="vcode">pre-line</span><span class="vtw">whitespace-pre-line</span><span class="vexpl">Respects newlines but collapses multiple spaces into one.</span></div>
+      </div>
+      <div class="analogy"><strong>Your overflow bug explained:</strong><br>
+        Original code used white-space:pre → it respected newlines but never wrapped. The AI hint was a long line with no natural break point → it went on forever horizontally → overflow.<br><br>
+        Fix: white-space:pre-wrap → same newline behavior BUT wraps at the container edge. No more overflow.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>white-space:</label>
+          <select onchange="document.getElementById('ws1').style.whiteSpace=this.value">
+            <option value="normal">normal</option><option value="nowrap">nowrap</option>
+            <option value="pre">pre</option><option value="pre-wrap">pre-wrap</option>
+          </select>
+        </div>
+        <div class="stage" style="overflow:auto">
+          <div id="ws1" style="white-space:normal;font-family:var(--mono);font-size:11px;background:var(--bg3);padding:8px;border-radius:6px;color:var(--text2)">Line one of analysis here
+Line two with a newline
+This is a very long line that the AI generated as a hint about fixing the code without any natural break point</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     TEXT OVERFLOW
+───────────────────────────────────────── -->
+<div class="section" id="text-overflow">
+  <div class="section-title">text-overflow: ellipsis</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">text-overflow: ellipsis</span><span class="pdesc">Shows "..." when text is cut off. REQUIRES two other properties to work — all three must be set together.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">truncate</span><span class="tw-tag">(truncate = all three at once)</span></div>
+      <div class="simple"><strong>The three properties that MUST go together:</strong><br>
+        1. white-space: nowrap → text stays on one line<br>
+        2. overflow: hidden → text is clipped at the edge<br>
+        3. text-overflow: ellipsis → show "..." at the cutoff<br><br>
+        Missing any one of them = ellipsis won't work.</div>
+      <div class="snip"><span class="cm">/* In your .tc-in class: */</span>
+<span class="kw">white-space</span>: <span class="v">nowrap</span>;        <span class="cm">/* step 1: one line */</span>
+<span class="kw">overflow</span>: <span class="v">hidden</span>;           <span class="cm">/* step 2: clip */</span>
+<span class="kw">text-overflow</span>: <span class="v">ellipsis</span>;    <span class="cm">/* step 3: show ... */</span>
+
+<span class="cm">/* Tailwind shorthand (all three): */</span>
+<span class="pp">className</span>=<span class="v">"truncate"</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>text-overflow:</label>
+          <select onchange="var e=document.getElementById('te1');e.style.textOverflow=this.value;e.style.overflow=this.value==='ellipsis'?'hidden':'visible';e.style.whiteSpace=this.value==='ellipsis'?'nowrap':'normal'">
+            <option value="ellipsis">ellipsis — shows ...</option>
+            <option value="clip">without — just clips or overflows</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="te1" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg3);padding:6px 10px;border-radius:5px">in: very long input value like 100 200 300 400 500 600 700 800 900 1000 the user typed</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     OVERFLOW-WRAP
+───────────────────────────────────────── -->
+<div class="section" id="overflow-wrap">
+  <div class="section-title">overflow-wrap</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">overflow-wrap: break-word</span><span class="pdesc">When a single word is too long for the container, break it mid-word. Prevents horizontal overflow.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">break-words</span><span class="tw-tag">break-all</span></div>
+      <div class="analogy"><strong>When do you need this?</strong><br>
+        Normal wrapping only breaks at spaces. But what if there are no spaces? A URL like "https://very-long-domain-name-that-goes-on-forever.com/path/to/something" has no spaces. It will overflow.<br>
+        overflow-wrap:break-word says "if a word is too long, break it mid-word at the container edge". Used in your analysis box pre tag.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>overflow-wrap:</label>
+          <select onchange="document.getElementById('ow1').style.overflowWrap=this.value">
+            <option value="normal">normal — long words overflow</option>
+            <option value="break-word">break-word — wraps mid-word</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="ow1" style="overflow-wrap:normal;font-family:var(--mono);font-size:11px;background:var(--bg3);padding:8px;border-radius:6px;overflow:hidden;white-space:pre-wrap;color:var(--text2)">Hint: seen[num]=i_stores_the_index_after_the_lookup_which_causes_wrong_results_consider_moving_it_before</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     WORD-BREAK
+───────────────────────────────────────── -->
+<div class="section" id="word-break">
+  <div class="section-title">word-break</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">word-break</span><span class="pdesc">Similar to overflow-wrap but more aggressive. break-all breaks at any character, not just long words.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">break-normal</span><span class="tw-tag">break-all</span><span class="tw-tag">break-keep</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">normal</span><span class="vtw">break-normal</span><span class="vexpl">Only break at allowed points (spaces, hyphens). Default.</span></div>
+        <div class="vrow"><span class="vcode">break-all</span><span class="vtw">break-all</span><span class="vexpl">Break at ANY character including mid-word. More aggressive. Used for code that has no spaces.</span></div>
+        <div class="vrow"><span class="vcode">keep-all</span><span class="vtw">break-keep</span><span class="vexpl">Never break mid-word even in CJK languages. Opposite of break-all.</span></div>
+      </div>
+      <div class="callout">In your analysis box, use both: <strong>white-space:pre-wrap + overflow-wrap:break-word + word-break:break-word</strong>. This handles all cases: newlines, long words, and URLs.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     TYPOGRAPHY
+───────────────────────────────────────── -->
+<div class="section" id="font-size">
+  <div class="section-title">font-size</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">font-size</span><span class="pdesc">How big the text is.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">text-xs</span><span class="tw-tag">text-sm</span><span class="tw-tag">text-base</span><span class="tw-tag">text-lg</span><span class="tw-tag">text-xl</span><span class="tw-tag">text-[11px]</span></div>
+      <div class="vtable">
+        <div class="vtitle">Sizes used in your app</div>
+        <div class="vrow"><span class="vcode">10px</span><span class="vtw">text-[10px]</span><span class="vexpl">Uppercase section labels like "INPUT", "LANG".</span></div>
+        <div class="vrow"><span class="vcode">11px</span><span class="vtw">text-[11px]</span><span class="vexpl">Monospace code text, TC cards, form inputs.</span></div>
+        <div class="vrow"><span class="vcode">12px</span><span class="vtw">text-xs</span><span class="vexpl">Button text, form labels, secondary text.</span></div>
+        <div class="vrow"><span class="vcode">13px</span><span class="vtw">text-sm</span><span class="vexpl">Body text, descriptions.</span></div>
+        <div class="vrow"><span class="vcode">14px</span><span class="vtw">text-sm</span><span class="vexpl">Logo, headings.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>font-size:</label>
+          <input type="range" min="8" max="28" value="13" oninput="document.getElementById('fs2').style.fontSize=this.value+'px';document.getElementById('fs2v').textContent=this.value+'px'">
+          <span class="vv" id="fs2v">13px</span>
+        </div>
+        <div class="stage"><div id="fs2" style="font-size:13px;color:var(--text)">The quick brown fox — adjust size above</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="font-weight">
+  <div class="section-title">font-weight</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">font-weight</span><span class="pdesc">How bold the text is. Numbers from 100 (thin) to 900 (black).</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">font-normal</span><span class="tw-tag">font-medium</span><span class="tw-tag">font-semibold</span><span class="tw-tag">font-bold</span></div>
+      <div class="vtable">
+        <div class="vtitle">Common values</div>
+        <div class="vrow"><span class="vcode">400</span><span class="vtw">font-normal</span><span class="vexpl">Regular. Default for body text.</span></div>
+        <div class="vrow"><span class="vcode">500</span><span class="vtw">font-medium</span><span class="vexpl">Slightly bold. Used for panel titles, tab labels in your app.</span></div>
+        <div class="vrow"><span class="vcode">600</span><span class="vtw">font-semibold</span><span class="vexpl">Semibold. Used for TC numbers, section labels.</span></div>
+        <div class="vrow"><span class="vcode">700</span><span class="vtw">font-bold</span><span class="vexpl">Bold. Used for the app title, Run button text.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>font-weight:</label>
+          <input type="range" min="100" max="900" value="400" step="100" oninput="document.getElementById('fw2').style.fontWeight=this.value;document.getElementById('fw2v').textContent=this.value">
+          <span class="vv" id="fw2v">400</span>
+        </div>
+        <div class="stage"><div id="fw2" style="font-size:18px;font-weight:400;color:var(--text)">CodeJudge — drag the slider</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="font-family">
+  <div class="section-title">font-family</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">font-family</span><span class="pdesc">Which font to use. Always include fallbacks in case the font doesn't load.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">font-sans</span><span class="tw-tag">font-serif</span><span class="tw-tag">font-mono</span></div>
+      <div class="snip"><span class="cm">/* In your app — two fonts: */</span>
+<span class="kw">font-family</span>: <span class="v">'DM Sans'</span>, system-ui, sans-serif;   <span class="cm">/* UI text */</span>
+<span class="kw">font-family</span>: <span class="v">'JetBrains Mono'</span>, monospace;       <span class="cm">/* code text */</span>
+
+<span class="cm">/* Monospace means every character is the same width */</span>
+<span class="cm">/* Critical for code — columns line up perfectly */</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>font-family:</label>
+          <select onchange="document.getElementById('ff1').style.fontFamily=this.value">
+            <option value="'DM Sans', sans-serif">DM Sans (UI text)</option>
+            <option value="'JetBrains Mono', monospace">JetBrains Mono (code)</option>
+            <option value="Georgia, serif">Georgia (serif)</option>
+            <option value="system-ui">system-ui (OS default)</option>
+          </select>
+        </div>
+        <div class="stage"><div id="ff1" style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text)">
+          The quick brown fox — notice how monospace makes every character the same width: iii WWW
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="line-height">
+  <div class="section-title">line-height</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">line-height</span><span class="pdesc">Vertical space between lines of text. Higher = more breathing room. Makes text more readable.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">leading-none</span><span class="tw-tag">leading-tight</span><span class="tw-tag">leading-normal</span><span class="tw-tag">leading-relaxed</span><span class="tw-tag">leading-loose</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>line-height:</label>
+          <input type="range" min="10" max="30" value="16" oninput="document.getElementById('lh1').style.lineHeight=(this.value/10).toFixed(1);document.getElementById('lh1v').textContent=(this.value/10).toFixed(1)">
+          <span class="vv" id="lh1v">1.6</span>
+        </div>
+        <div class="stage"><div id="lh1" style="line-height:1.6;font-size:13px;color:var(--text2)">
+          This is a block of text with multiple lines. The line-height property controls how much vertical space exists between each line. Too tight and it becomes hard to read. Too loose and it feels disconnected.
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="letter-spacing">
+  <div class="section-title">letter-spacing</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">letter-spacing</span><span class="pdesc">Space between individual characters. Used on your uppercase section labels to make them breathe.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">tracking-tight</span><span class="tw-tag">tracking-normal</span><span class="tw-tag">tracking-wide</span><span class="tw-tag">tracking-widest</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>letter-spacing:</label>
+          <input type="range" min="-2" max="10" value="0" oninput="document.getElementById('ls1').style.letterSpacing=this.value/10+'em';document.getElementById('ls1v').textContent=(this.value/10).toFixed(1)+'em'">
+          <span class="vv" id="ls1v">0em</span>
+        </div>
+        <div class="stage"><div id="ls1" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0;color:var(--text3)">INPUT — EXPECTED OUTPUT — LANG</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="text-transform">
+  <div class="section-title">text-transform</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">text-transform</span><span class="pdesc">Changes text case without changing the HTML. uppercase makes lowercase text appear as UPPERCASE.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">uppercase</span><span class="tw-tag">lowercase</span><span class="tw-tag">capitalize</span><span class="tw-tag">normal-case</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">uppercase</span><span class="vtw">uppercase</span><span class="vexpl">ALL CAPS. Used on section labels: "INPUT", "LANG", "EXPECTED OUTPUT".</span></div>
+        <div class="vrow"><span class="vcode">lowercase</span><span class="vtw">lowercase</span><span class="vexpl">all lowercase.</span></div>
+        <div class="vrow"><span class="vcode">capitalize</span><span class="vtw">capitalize</span><span class="vexpl">First Letter Of Each Word Capitalized.</span></div>
+        <div class="vrow"><span class="vcode">none</span><span class="vtw">normal-case</span><span class="vexpl">No transformation. Default.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>text-transform:</label>
+          <select onchange="document.getElementById('tt1').style.textTransform=this.value">
+            <option value="none">none</option><option value="uppercase">uppercase</option>
+            <option value="lowercase">lowercase</option><option value="capitalize">capitalize</option>
+          </select>
+        </div>
+        <div class="stage"><div id="tt1" style="font-size:13px;color:var(--text)">input — expected output — language selection</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="text-align">
+  <div class="section-title">text-align</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">text-align</span><span class="pdesc">Horizontal alignment of text inside a block element.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">text-left</span><span class="tw-tag">text-center</span><span class="tw-tag">text-right</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>text-align:</label>
+          <select onchange="document.getElementById('ta1').style.textAlign=this.value">
+            <option value="left">left</option><option value="center">center</option><option value="right">right</option>
+          </select>
+        </div>
+        <div class="stage"><div id="ta1" style="text-align:left;font-size:13px;color:var(--text2)">No test cases yet — add one using the form above</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="color-prop">
+  <div class="section-title">color</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">color</span><span class="pdesc">Text color. Accepts hex, rgb, hsl, or named colors.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">text-white</span><span class="tw-tag">text-gray-400</span><span class="tw-tag">text-green-500</span><span class="tw-tag">text-[#8b949e]</span></div>
+      <div class="vtable">
+        <div class="vtitle">Color formats</div>
+        <div class="vrow"><span class="vcode">#e6edf3</span><span class="vexpl">Hex. 6 digits = R G B. Most common in your app.</span></div>
+        <div class="vrow"><span class="vcode">#8b949e88</span><span class="vexpl">8-digit hex. Last 2 digits = opacity/alpha. 88 = about 53% opacity.</span></div>
+        <div class="vrow"><span class="vcode">rgb(230,237,243)</span><span class="vexpl">Red Green Blue. Each 0-255.</span></div>
+        <div class="vrow"><span class="vcode">rgba(230,237,243,0.5)</span><span class="vexpl">RGB with alpha (opacity). 0=transparent, 1=opaque.</span></div>
+        <div class="vrow"><span class="vcode">transparent</span><span class="vexpl">Fully transparent. Used on ghost button borders and inactive tab borders.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     BACKGROUND
+───────────────────────────────────────── -->
+<div class="section" id="background">
+  <div class="section-title">background</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">background / background-color</span><span class="pdesc">Sets the background. Fills the content area AND padding area.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">bg-transparent</span><span class="tw-tag">bg-gray-900</span><span class="tw-tag">bg-green-900/20</span><span class="tw-tag">bg-[#161b22]</span></div>
+      <div class="vtable">
+        <div class="vtitle">Patterns from your app</div>
+        <div class="vrow"><span class="vcode">#0d1117</span><span class="vexpl">Darkest background. Used on main background, editor area.</span></div>
+        <div class="vrow"><span class="vcode">#161b22</span><span class="vexpl">Slightly lighter. Used on panels, headers, TC cards.</span></div>
+        <div class="vrow"><span class="vcode">#1c2128</span><span class="vexpl">Even lighter. Used on editing state, hover states.</span></div>
+        <div class="vrow"><span class="vcode">#1f6feb22</span><span class="vexpl">Blue with 13% opacity (the 22 at the end = hex for 13% opacity). Used for subtle blue tints.</span></div>
+        <div class="vrow"><span class="vcode">transparent</span><span class="vexpl">No background. Ghost buttons, tab buttons.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     BORDER
+───────────────────────────────────────── -->
+<div class="section" id="border">
+  <div class="section-title">border</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">border</span><span class="pdesc">Shorthand: width style color. Creates an outline around the element.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">border</span><span class="tw-tag">border-2</span><span class="tw-tag">border-l-4</span><span class="tw-tag">border-t</span><span class="tw-tag">border-gray-700</span><span class="tw-tag">border-transparent</span></div>
+      <div class="vtable">
+        <div class="vtitle">Patterns from your app</div>
+        <div class="vrow"><span class="vcode">border: 1px solid #30363d</span><span class="vtw">border border-gray-700</span><span class="vexpl">Standard card border. Used on TC items, panels, forms everywhere.</span></div>
+        <div class="vrow"><span class="vcode">border-left: 3px solid #3fb950</span><span class="vtw">border-l-[3px] border-l-green-500</span><span class="vexpl">Status color on TC cards. Left-only border shows pass/fail at a glance.</span></div>
+        <div class="vrow"><span class="vcode">border-bottom: 2px solid #58a6ff</span><span class="vtw">border-b-2 border-b-blue-400</span><span class="vexpl">Active tab underline. The blue line under the selected tab.</span></div>
+        <div class="vrow"><span class="vcode">border: 1px solid transparent</span><span class="vtw">border-transparent</span><span class="vexpl">Invisible border that still takes up space. Inactive tabs have this so switching tabs doesn't shift layout.</span></div>
+        <div class="vrow"><span class="vcode">border: none</span><span class="vtw">border-0</span><span class="vexpl">Remove border entirely. Used on tab buttons so they look like plain text.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>border-left color:</label>
+          <select onchange="document.getElementById('bd1').style.borderLeftColor=this.value">
+            <option value="transparent">transparent — idle</option>
+            <option value="#d29922">amber — pending</option>
+            <option value="#3fb950">green — passed</option>
+            <option value="#f85149">red — failed</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="bd1" style="border:1px solid var(--border);border-left:3px solid transparent;border-radius:8px;padding:10px 12px;font-size:11px;color:var(--text2);background:var(--bg3);transition:border-left-color .2s;font-family:var(--mono)">TC1 — in: 3 2 4 — got: [0,2]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     BORDER RADIUS
+───────────────────────────────────────── -->
+<div class="section" id="border-radius">
+  <div class="section-title">border-radius</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">border-radius</span><span class="pdesc">Rounds the corners. Higher value = rounder. 50% on equal width+height = perfect circle.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">rounded</span><span class="tw-tag">rounded-md</span><span class="tw-tag">rounded-lg</span><span class="tw-tag">rounded-xl</span><span class="tw-tag">rounded-full</span><span class="tw-tag">rounded-[8px]</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values in your app</div>
+        <div class="vrow"><span class="vcode">4px</span><span class="vtw">rounded</span><span class="vexpl">Very subtle. Small badges, tags.</span></div>
+        <div class="vrow"><span class="vcode">6px</span><span class="vtw">rounded-md</span><span class="vexpl">Standard. Buttons, textareas, input fields.</span></div>
+        <div class="vrow"><span class="vcode">8px</span><span class="vtw">rounded-lg</span><span class="vexpl">Cards. TC item cards.</span></div>
+        <div class="vrow"><span class="vcode">12px</span><span class="vtw">rounded-xl</span><span class="vexpl">Larger cards.</span></div>
+        <div class="vrow"><span class="vcode">20px</span><span class="vtw">rounded-full</span><span class="vexpl">Pill shape on short elements. Status pills, language badges.</span></div>
+        <div class="vrow"><span class="vcode">50%</span><span class="vtw">rounded-full</span><span class="vexpl">Perfect circle on equal width+height. Language color dots in sidebar.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>border-radius:</label>
+          <input type="range" min="0" max="28" value="8" oninput="document.getElementById('br1').style.borderRadius=this.value+'px';document.getElementById('br1v').textContent=this.value+'px'">
+          <span class="vv" id="br1v">8px</span>
+        </div>
+        <div class="stage">
+          <div id="br1" style="border-radius:8px;background:var(--blue-bg);border:1.5px solid var(--blue);padding:12px 24px;font-size:12px;color:var(--blue);display:inline-block;transition:border-radius .15s">Box</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     OPACITY
+───────────────────────────────────────── -->
+<div class="section" id="opacity">
+  <div class="section-title">opacity</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">opacity</span><span class="pdesc">Controls transparency. 0 = invisible. 1 = fully visible. Unlike display:none, element still takes up space.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">opacity-0</span><span class="tw-tag">opacity-50</span><span class="tw-tag">opacity-60</span><span class="tw-tag">opacity-100</span></div>
+      <div class="simple"><strong>opacity vs display:none:</strong><br>
+        opacity:0 → invisible but STILL TAKES UP SPACE. Elements around it don't shift.<br>
+        display:none → removed entirely. Elements around it fill the gap.<br><br>
+        Your loading buttons use opacity:0.6 — still in place, just looks faded.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>opacity:</label>
+          <input type="range" min="0" max="10" value="10" oninput="document.getElementById('op1').style.opacity=this.value/10;document.getElementById('op1v').textContent=(this.value/10).toFixed(1)">
+          <span class="vv" id="op1v">1.0</span>
+        </div>
+        <div class="stage" style="display:flex;gap:8px;align-items:center">
+          <button id="op1" style="background:var(--green);color:#0d1117;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">▶ Run</button>
+          <span style="font-size:11px;color:var(--text2)">← drag to 0 — invisible but still takes space</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     BOX SHADOW
+───────────────────────────────────────── -->
+<div class="section" id="box-shadow">
+  <div class="section-title">box-shadow</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">box-shadow</span><span class="pdesc">Adds a shadow around (or inside) an element. Format: x-offset y-offset blur spread color.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">shadow</span><span class="tw-tag">shadow-md</span><span class="tw-tag">shadow-lg</span><span class="tw-tag">shadow-none</span><span class="tw-tag">ring-1</span></div>
+      <div class="snip"><span class="cm">/* Format: */</span>
+<span class="kw">box-shadow</span>: <span class="v">0 4px 6px rgba(0,0,0,0.4)</span>;
+<span class="cm">/*         x  y   blur  color */</span>
+
+<span class="cm">/* Focus ring (your text inputs): */</span>
+<span class="kw">box-shadow</span>: <span class="v">0 0 0 3px rgba(31,111,235,0.4)</span>;
+<span class="cm">/* x=0 y=0 blur=0 spread=3px → crisp ring, no blur */</span>
+
+<span class="cm">/* Inset shadow (inside the element): */</span>
+<span class="kw">box-shadow</span>: <span class="v">inset 0 2px 4px rgba(0,0,0,0.3)</span>;</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>shadow type:</label>
+          <select onchange="document.getElementById('bs1').style.boxShadow=this.value">
+            <option value="none">none</option>
+            <option value="0 4px 6px rgba(0,0,0,0.5)">small shadow</option>
+            <option value="0 10px 25px rgba(0,0,0,0.6)">large shadow</option>
+            <option value="0 0 0 3px rgba(31,111,235,0.5)">focus ring</option>
+            <option value="inset 0 2px 4px rgba(0,0,0,0.5)">inset</option>
+          </select>
+        </div>
+        <div class="stage" style="display:flex;align-items:center;justify-content:center;padding:20px">
+          <div id="bs1" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 24px;font-size:12px;color:var(--text2);transition:box-shadow .2s">Element with box-shadow</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     OUTLINE
+───────────────────────────────────────── -->
+<div class="section" id="outline">
+  <div class="section-title">outline</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">outline</span><span class="pdesc">Like border but OUTSIDE the element and doesn't take up space. Browsers add it on focus. Usually removed and replaced with box-shadow.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">outline-none</span><span class="tw-tag">focus:outline-none</span><span class="tw-tag">focus:ring-2</span></div>
+      <div class="simple"><strong>In your app:</strong> Your textareas have outline:none to remove the browser default focus outline. Then you use border-color change on focus instead — cleaner and more controlled.</div>
+      <div class="snip"><span class="cm">/* Your textarea: */</span>
+<span class="kw">outline</span>: <span class="v">none</span>;               <span class="cm">/* remove browser default */</span>
+<span class="cm">/* Then on focus: */</span>
+<span class="kw">border-color</span>: <span class="v">#1f6feb</span>;      <span class="cm">/* show blue border instead */</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     POSITION
+───────────────────────────────────────── -->
+<div class="section" id="position">
+  <div class="section-title">position</div>
+  <div class="section-sub">Controls how an element is placed in the page. Default is static — just follows normal flow.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">position: static</span><span class="pdesc">Default. Element follows normal document flow. top/left/right/bottom do NOTHING.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">static</span></div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">position: relative</span><span class="pdesc">Element stays in normal flow. Two effects: (1) you can nudge it with top/left/right/bottom, (2) it becomes a reference point for absolute children.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">relative</span></div>
+      <div class="analogy"><strong>Most important use:</strong> You almost never use relative to nudge elements. You use it to create a "coordinate box" for absolute children. The sidebar buttons in your app are position:relative so the absolute blue bar knows to position relative to the BUTTON, not the whole page.</div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">position: absolute</span><span class="pdesc">Pulled OUT of normal flow. Floats on top of other elements. Positioned relative to nearest parent that has position:relative (or relative/absolute/fixed/sticky).</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">absolute</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A sticky note on a piece of paper. The note floats above the paper content — other content ignores it. But if you move the paper, the note moves with it (because it's relative to the paper).</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>right value:</label>
+          <input type="range" min="0" max="40" value="0" oninput="document.getElementById('ab1').style.right=this.value+'px';document.getElementById('ab1v').textContent=this.value+'px'">
+          <span class="vv" id="ab1v">0px</span>
+        </div>
+        <div class="stage">
+          <div style="position:relative;width:48px;height:48px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+            <span style="width:7px;height:7px;border-radius:50%;background:#4584b6;display:block"></span>
+            <span style="font-size:9px;font-weight:600;color:var(--text)">PY</span>
+            <span id="ab1" style="position:absolute;right:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--blue);border-radius:2px 0 0 2px;transition:right .15s"></span>
+          </div>
+        </div>
+        <div class="callout">right:0 = bar's right edge flush with parent's right edge. The parent has position:relative so the bar positions relative to IT, not the whole page.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">position: fixed</span><span class="pdesc">Like absolute but positions relative to the BROWSER WINDOW, not a parent. Stays in place when you scroll.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">fixed</span></div>
+      <div class="simple"><strong>Common uses:</strong> Modals, floating action buttons, cookie banners, chat widgets. Anything that should stay visible while the page scrolls.</div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">position: sticky</span><span class="pdesc">Acts like relative UNTIL you scroll past it — then it sticks to the viewport edge.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">sticky top-0</span></div>
+      <div class="demo">
+        <div class="stage" style="height:100px;overflow-y:auto">
+          <div style="height:300px">
+            <div style="position:sticky;top:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:500">Sticky header — scroll this box</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">Row 1 — scroll down</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">Row 2</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">Row 3</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">Row 4</div>
+            <div style="padding:8px 10px;font-size:11px;color:var(--text2)">Row 5</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     TOP LEFT RIGHT BOTTOM
+───────────────────────────────────────── -->
+<div class="section" id="top-left">
+  <div class="section-title">top / left / right / bottom</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">top / left / right / bottom</span><span class="pdesc">Only work on non-static positioned elements (relative, absolute, fixed, sticky). Control where the element is placed.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">top-0</span><span class="tw-tag">right-0</span><span class="tw-tag">bottom-0</span><span class="tw-tag">left-0</span><span class="tw-tag">inset-0</span></div>
+      <div class="snip"><span class="cm">/* Your sidebar selected bar: */</span>
+<span class="kw">position</span>: <span class="v">absolute</span>;
+<span class="kw">right</span>: <span class="v">0</span>;           <span class="cm">/* stick to right edge of parent */</span>
+<span class="kw">top</span>: <span class="v">50%</span>;          <span class="cm">/* start at vertical midpoint */</span>
+<span class="kw">transform</span>: <span class="v">translateY(-50%)</span>; <span class="cm">/* shift up by half own height = perfect center */</span>
+
+<span class="cm">/* inset:0 = top:0 right:0 bottom:0 left:0 simultaneously */</span>
+<span class="cm">/* Used to make an absolute element fill its parent completely */</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     Z-INDEX
+───────────────────────────────────────── -->
+<div class="section" id="z-index">
+  <div class="section-title">z-index</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">z-index</span><span class="pdesc">Controls which element appears ON TOP when elements overlap. Higher number = in front.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">z-0</span><span class="tw-tag">z-10</span><span class="tw-tag">z-50</span><span class="tw-tag">z-100</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A stack of papers on a desk. z-index is the order in the stack. z-index:10 sits on top of z-index:5. Only works on positioned elements (not static).</div>
+      <div class="simple"><strong>Common values in your app:</strong><br>
+        topbar → z-index:100 (always on top of everything)<br>
+        dropdown menus → z-index:100<br>
+        normal content → z-index auto (default)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     CURSOR
+───────────────────────────────────────── -->
+<div class="section" id="cursor">
+  <div class="section-title">cursor</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">cursor</span><span class="pdesc">Changes the mouse cursor when hovering over the element.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">cursor-pointer</span><span class="tw-tag">cursor-default</span><span class="tw-tag">cursor-not-allowed</span><span class="tw-tag">cursor-text</span><span class="tw-tag">cursor-grab</span></div>
+      <div class="simple"><strong>Always add cursor:pointer to buttons.</strong> Without it the cursor stays as an arrow and the element doesn't feel clickable. This is a UX mistake that makes your app feel unfinished.</div>
+      <div class="vtable">
+        <div class="vtitle">Values</div>
+        <div class="vrow"><span class="vcode">pointer</span><span class="vtw">cursor-pointer</span><span class="vexpl">Hand. Add to every button, link, clickable element.</span></div>
+        <div class="vrow"><span class="vcode">default</span><span class="vtw">cursor-default</span><span class="vexpl">Arrow. Default for most elements.</span></div>
+        <div class="vrow"><span class="vcode">not-allowed</span><span class="vtw">cursor-not-allowed</span><span class="vexpl">Circle with line. Used on disabled buttons.</span></div>
+        <div class="vrow"><span class="vcode">text</span><span class="vtw">cursor-text</span><span class="vexpl">I-beam. Auto-applied to text inputs.</span></div>
+        <div class="vrow"><span class="vcode">grab / grabbing</span><span class="vtw">cursor-grab</span><span class="vexpl">Open/closed hand. Draggable elements.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>cursor:</label>
+          <select onchange="document.getElementById('cu1').style.cursor=this.value">
+            <option value="pointer">pointer</option><option value="default">default</option>
+            <option value="not-allowed">not-allowed</option><option value="grab">grab</option>
+            <option value="crosshair">crosshair</option><option value="wait">wait</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="cu1" style="cursor:pointer;background:var(--bg3);border-radius:6px;padding:12px;font-size:12px;color:var(--text2);text-align:center">Hover here — watch cursor change</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     USER-SELECT
+───────────────────────────────────────── -->
+<div class="section" id="user-select">
+  <div class="section-title">user-select</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">user-select: none</span><span class="pdesc">Prevents text from being selected when the user clicks and drags. Used on logos, labels, UI chrome.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">select-none</span><span class="tw-tag">select-text</span><span class="tw-tag">select-all</span></div>
+      <div class="simple"><strong>When to use it:</strong> Any text the user would never want to copy — logo name, language abbreviations (PY, JS), tab labels. Without it, clicking a button might accidentally select the button text.</div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>user-select:</label>
+          <select onchange="document.getElementById('us1').style.userSelect=this.value">
+            <option value="none">none — cannot select</option>
+            <option value="auto">auto — can select</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="us1" style="user-select:none;font-size:13px;padding:8px;color:var(--text);background:var(--bg3);border-radius:6px">Click and drag to try selecting this text</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     POINTER-EVENTS
+───────────────────────────────────────── -->
+<div class="section" id="pointer-events">
+  <div class="section-title">pointer-events</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">pointer-events: none</span><span class="pdesc">Makes an element completely ignore all mouse interactions — clicks, hover, everything passes through it.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">pointer-events-none</span><span class="tw-tag">pointer-events-auto</span></div>
+      <div class="analogy"><strong>Think of it like:</strong> A glass window. You can see through it but you can't interact with it — your click goes through to whatever is behind it.</div>
+      <div class="simple"><strong>Common use:</strong> Overlays and loading states. If you have a loading spinner on top of a button, add pointer-events:none to the spinner so clicks still reach the button behind it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     RESIZE
+───────────────────────────────────────── -->
+<div class="section" id="resize-prop">
+  <div class="section-title">resize</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">resize</span><span class="pdesc">Controls whether the user can drag-resize a textarea. Your app sets resize:none to prevent layout breaks.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">resize-none</span><span class="tw-tag">resize-y</span><span class="tw-tag">resize-x</span><span class="tw-tag">resize</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>resize:</label>
+          <select onchange="document.getElementById('rs1').style.resize=this.value">
+            <option value="none">none — no handle (your app)</option>
+            <option value="both">both — drag corners</option>
+            <option value="vertical">vertical only</option>
+            <option value="horizontal">horizontal only</option>
+          </select>
+        </div>
+        <div class="stage">
+          <textarea id="rs1" style="width:100%;height:60px;resize:none;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:11px;padding:8px;outline:none" placeholder="Switch to 'both' to see the drag handle appear in bottom-right corner"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     TRANSITION
+───────────────────────────────────────── -->
+<div class="section" id="transition">
+  <div class="section-title">transition</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">transition</span><span class="pdesc">When a CSS property changes, animate that change smoothly over time instead of an instant jump.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">transition</span><span class="tw-tag">transition-colors</span><span class="tw-tag">transition-all</span><span class="tw-tag">duration-150</span><span class="tw-tag">duration-300</span><span class="tw-tag">ease-in-out</span></div>
+      <div class="snip"><span class="cm">/* Format: property duration timing-function */</span>
+<span class="kw">transition</span>: <span class="v">color 0.15s ease</span>;
+<span class="cm">/*         ↑property ↑duration ↑timing */</span>
+
+<span class="cm">/* Multiple properties: */</span>
+<span class="kw">transition</span>: <span class="v">background 0.15s, border-color 0.15s</span>;
+
+<span class="cm">/* All properties at once: */</span>
+<span class="kw">transition</span>: <span class="v">all 0.15s</span>;  <span class="cm">/* easier but less performant */</span>
+
+<span class="cm">/* In your app: */</span>
+<span class="kw">transition</span>: <span class="v">color 0.15s, border-color 0.15s</span>;  <span class="cm">/* tabs */</span>
+<span class="kw">transition</span>: <span class="v">opacity 0.15s, transform 0.1s</span>;    <span class="cm">/* run button */</span>
+<span class="kw">transition</span>: <span class="v">width 0.3s ease</span>;                 <span class="cm">/* TC summary bar */</span></div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>duration:</label>
+          <select onchange="document.getElementById('tr1').style.transition='background '+this.value+', border-color '+this.value">
+            <option value="0s">0s — instant (no transition)</option>
+            <option value="0.15s">0.15s — fast (your app)</option>
+            <option value="0.5s">0.5s — medium</option>
+            <option value="1.5s">1.5s — slow</option>
+          </select>
+        </div>
+        <div class="stage">
+          <div id="tr1" style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:6px;padding:12px;text-align:center;font-size:12px;color:var(--blue);cursor:pointer;transition:background .15s,border-color .15s" onmouseenter="this.style.background='var(--green-bg)';this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseleave="this.style.background='var(--blue-bg)';this.style.borderColor='var(--blue)';this.style.color='var(--blue)'">Hover over me — watch speed change</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     TRANSFORM
+───────────────────────────────────────── -->
+<div class="section" id="transform">
+  <div class="section-title">transform</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">transform</span><span class="pdesc">Visually move, scale, rotate, or skew an element WITHOUT affecting the layout. Other elements don't shift.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">translate-y-[-50%]</span><span class="tw-tag">scale-95</span><span class="tw-tag">rotate-45</span><span class="tw-tag">-translate-x-1/2</span></div>
+      <div class="vtable">
+        <div class="vtitle">Values used in your app</div>
+        <div class="vrow"><span class="vcode">translateY(-50%)</span><span class="vtw">-translate-y-1/2</span><span class="vexpl">Move UP by 50% of element's OWN height. Combined with top:50% this perfectly vertically centers absolute elements. Used on sidebar selected bar.</span></div>
+        <div class="vrow"><span class="vcode">scale(0.97)</span><span class="vtw">scale-[0.97]</span><span class="vexpl">Shrink to 97% of size. Used on btn-run:active for the "press down" feel when clicking.</span></div>
+        <div class="vrow"><span class="vcode">rotate(360deg)</span><span class="vtw">rotate-180</span><span class="vexpl">Rotate. Used in the spin keyframe animation for the analysis loading spinner.</span></div>
+      </div>
+      <div class="demo">
+        <div class="ctrl">
+          <label>transform:</label>
+          <select onchange="document.getElementById('tf1').style.transform=this.value">
+            <option value="none">none</option>
+            <option value="scale(0.97)">scale(0.97) — press effect</option>
+            <option value="scale(1.1)">scale(1.1) — grow</option>
+            <option value="translateY(-10px)">translateY(-10px) — float up</option>
+            <option value="rotate(10deg)">rotate(10deg)</option>
+            <option value="translateX(20px)">translateX(20px) — shift right</option>
+          </select>
+        </div>
+        <div class="stage" style="display:flex;align-items:center;justify-content:center;height:80px">
+          <div id="tf1" style="background:var(--blue-bg);border:1px solid var(--blue);border-radius:6px;padding:10px 20px;font-size:12px;color:var(--blue);transition:transform .2s">Element</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     ANIMATION
+───────────────────────────────────────── -->
+<div class="section" id="animation">
+  <div class="section-title">animation & @keyframes</div>
+  <div class="pcard">
+    <div class="phead"><span class="pname">@keyframes + animation</span><span class="pdesc">Define a sequence of CSS states and loop through them. Used for your loading spinner and status dot pulse.</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">animate-spin</span><span class="tw-tag">animate-pulse</span><span class="tw-tag">animate-bounce</span><span class="tw-tag">animate-ping</span></div>
+      <div class="snip"><span class="cm">/* Step 1: Define what changes and when */</span>
+<span class="kw">@keyframes</span> spin {
+  from { <span class="kw">transform</span>: <span class="v">rotate(0deg)</span>; }
+  to   { <span class="kw">transform</span>: <span class="v">rotate(360deg)</span>; }
+}
+
+<span class="kw">@keyframes</span> pulse {
+  0%,100% { <span class="kw">opacity</span>: <span class="v">1</span>; }
+  50%     { <span class="kw">opacity</span>: <span class="v">0.3</span>; }
+}
+
+<span class="cm">/* Step 2: Apply to an element */</span>
+<span class="kw">.analysis-spinner</span> {
+  <span class="kw">animation</span>: <span class="v">spin 0.7s linear infinite</span>;
+  <span class="cm">/*         name  speed timing  repeat */</span>
+}
+<span class="kw">.status-dot--pulse</span> {
+  <span class="kw">animation</span>: <span class="v">pulse 1.2s ease-in-out infinite</span>;
+}</span></div>
+      <div class="demo">
+        <div class="stage" style="display:flex;gap:24px;align-items:center;padding:16px">
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Analysis spinner</div>
+            <div style="width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--amber);border-radius:50%;animation:spin2 .7s linear infinite"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Status pulse</div>
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse2 1.2s ease-in-out infinite"></div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Cursor blink</div>
+            <div style="width:2px;height:14px;background:var(--blue);border-radius:1px;animation:blink2 1.1s ease-in-out infinite"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     PSEUDO CLASSES
+───────────────────────────────────────── -->
+<div class="section" id="pseudo">
+  <div class="section-title">:hover :focus :active :disabled</div>
+  <div class="section-sub">Pseudo-classes apply styles only when a specific condition is true — mouse is over it, it is focused, being clicked, or disabled.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">:hover :focus :active :disabled</span></div>
+    <div class="pbody">
+      <div class="tw-row"><span class="tw-label">Tailwind:</span><span class="tw-tag">hover:bg-gray-700</span><span class="tw-tag">focus:border-blue-500</span><span class="tw-tag">active:scale-95</span><span class="tw-tag">disabled:opacity-50</span></div>
+      <div class="snip"><span class="cm">/* In your app: */</span>
+<span class="kw">.btn-run</span>:hover  { <span class="kw">opacity</span>: <span class="v">0.88</span>; }        <span class="cm">/* fade on hover */</span>
+<span class="kw">.btn-run</span>:active { <span class="kw">transform</span>: <span class="v">scale(0.97)</span>; }  <span class="cm">/* press on click */</span>
+
+<span class="kw">.btn-ghost</span>:hover {
+  <span class="kw">background</span>: <span class="v">#1c2128</span>;
+  <span class="kw">color</span>: <span class="v">#e6edf3</span>;
+}
+
+<span class="kw">.tc-textarea</span>:focus {
+  <span class="kw">border-color</span>: <span class="v">#1f6feb</span>;  <span class="cm">/* blue border on focus */</span>
+}
+
+<span class="kw">.btn-run</span>:disabled {
+  <span class="kw">opacity</span>: <span class="v">0.5</span>;
+  <span class="kw">cursor</span>: <span class="v">not-allowed</span>;
+}</span></div>
+      <div class="demo">
+        <div class="stage" style="display:flex;gap:10px;flex-wrap:wrap">
+          <button style="background:var(--green);color:#0d1117;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s" onmouseenter="this.style.opacity='.85'" onmouseleave="this.style.opacity='1'" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1)'">Run — hover and click me</button>
+          <button style="background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;transition:all .15s" onmouseenter="this.style.background='var(--bg3)';this.style.color='var(--text)'" onmouseleave="this.style.background='transparent';this.style.color='var(--text2)'">Ghost — hover me</button>
+          <button style="background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b);border-radius:6px;padding:7px 14px;font-size:12px;cursor:not-allowed;opacity:.5" disabled>Disabled</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────────────────
+     UNITS
+───────────────────────────────────────── -->
+<div class="section" id="units">
+  <div class="section-title">units cheatsheet</div>
+  <div class="section-sub">Every unit you will encounter in CSS, explained plainly.</div>
+
+  <div class="pcard">
+    <div class="phead"><span class="pname">all units</span></div>
+    <div class="pbody">
+      <div class="vtable">
+        <div class="vtitle">Absolute units</div>
+        <div class="vrow"><span class="vcode">px</span><span class="vtw">w-[10px]</span><span class="vexpl">Pixels. Always the same size regardless of screen or parent. Most used in your app for borders (1px), padding (10px, 16px), fixed component sizes (56px sidebar, 44px topbar).</span></div>
+      </div>
+      <div class="vtable">
+        <div class="vtitle">Relative units</div>
+        <div class="vrow"><span class="vcode">%</span><span class="vtw">w-full h-full</span><span class="vexpl">Percentage of the PARENT's size. width:100% = same width as parent. height:100% = same height as parent. Requires parent to have a defined size.</span></div>
+        <div class="vrow"><span class="vcode">vh</span><span class="vtw">h-screen</span><span class="vexpl">Viewport height. 1vh = 1% of browser window height. 100vh = full browser window. Used on your outermost app div.</span></div>
+        <div class="vrow"><span class="vcode">vw</span><span class="vtw">w-screen</span><span class="vexpl">Viewport width. 100vw = full browser width.</span></div>
+        <div class="vrow"><span class="vcode">em</span><span class="vexpl">Relative to the CURRENT element's font-size. If font-size is 14px: 1em=14px, 0.5em=7px. Problem: it compounds (nested elements stack up). Less predictable. Used in letter-spacing in your app.</span></div>
+        <div class="vrow"><span class="vcode">rem</span><span class="vexpl">Relative to the ROOT element's font-size (usually 16px in browsers). Always consistent regardless of nesting. 1rem=16px always. Better than em for font sizes and spacing.</span></div>
+        <div class="vrow"><span class="vcode">fr</span><span class="vtw">grid-cols-[1fr_1fr]</span><span class="vexpl">Fraction. Grid ONLY. 1fr = 1 fraction of available space. 1fr 1fr = two equal columns. 2fr 1fr = first column twice as wide as second.</span></div>
+      </div>
+      <div class="vtable">
+        <div class="vtitle">Special</div>
+        <div class="vrow"><span class="vcode">calc()</span><span class="vtw">h-[calc(100%-320px)]</span><span class="vexpl">Mix units in one value. Used for Monaco height in judge mode. calc(100% - 320px) = "full height minus exactly 320 pixels".</span></div>
+        <div class="vrow"><span class="vcode">auto</span><span class="vtw">w-auto h-auto</span><span class="vexpl">Browser calculates. For width = fit content. For height = fit content. For margin = distribute remaining space (centering trick: margin:0 auto).</span></div>
+        <div class="vrow"><span class="vcode">min-content</span><span class="vexpl">Shrink as small as possible without breaking content. Rarely used directly.</span></div>
+        <div class="vrow"><span class="vcode">max-content</span><span class="vexpl">Grow as large as content needs. No wrapping.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+</div><!-- end app -->
+
+<script>
+function jump(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function doSearch(q) {
+  const sections = document.querySelectorAll('.section');
+  if (!q.trim()) { sections.forEach(s => s.style.display='block'); return; }
+  q = q.toLowerCase();
+  sections.forEach(s => {
+    s.style.display = s.textContent.toLowerCase().includes(q) ? 'block' : 'none';
+  });
+}
+
+// Active nav on scroll
+const sections = document.querySelectorAll('.section');
+const links = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+  links.forEach(l => l.classList.toggle('active', l.getAttribute('onclick') && l.getAttribute('onclick').includes("'"+current+"'")));
+}, {passive:true});
+</script>
+</body>
+</html>
