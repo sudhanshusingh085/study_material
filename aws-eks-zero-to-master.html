@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS EKS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0B1220;
+    --bg-raised: #101A2C;
+    --bg-card: #131F35;
+    --line: #223050;
+    --text: #E8EAED;
+    --text-dim: #93A0B8;
+    --text-faint: #5C6B87;
+    --amber: #E8912D;
+    --cyan: #5EC4D6;
+    --green: #4A9B7F;
+    --red: #C4574A;
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.65;
+    font-size:16px;
+  }
+  ::selection{background:var(--amber);color:#0B1220;}
+
+  a{color:var(--cyan);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  code, .mono{font-family:var(--mono);}
+
+  /* layout shell */
+  .shell{display:flex;max-width:1440px;margin:0 auto;}
+  .sidebar{
+    width:280px;flex-shrink:0;
+    position:sticky;top:0;height:100vh;
+    overflow-y:auto;
+    border-right:1px solid var(--line);
+    padding:28px 20px 60px;
+  }
+  .sidebar::-webkit-scrollbar{width:6px;}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+  .brand{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:14px;
+    color:var(--amber);
+    letter-spacing:0.06em;
+    margin-bottom:4px;
+  }
+  .brand-sub{
+    font-size:12px;color:var(--text-faint);margin-bottom:28px;
+  }
+  .navgroup{margin-bottom:4px;}
+  .navgroup-label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--text-faint);
+    padding:14px 10px 6px;
+  }
+  .navlink{
+    display:block;
+    padding:7px 10px;
+    border-radius:6px;
+    font-size:13.5px;
+    color:var(--text-dim);
+    border-left:2px solid transparent;
+  }
+  .navlink:hover{background:var(--bg-raised);color:var(--text);text-decoration:none;}
+  .navlink.active{color:var(--amber);border-left-color:var(--amber);background:var(--bg-raised);}
+
+  main{flex:1;min-width:0;padding:0;}
+  .maxw{max-width:860px;margin:0 auto;padding:0 48px;}
+
+  /* hero */
+  .hero{padding:90px 48px 70px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
+  .hero-eyebrow{
+    font-family:var(--mono);font-size:12.5px;color:var(--amber);
+    letter-spacing:0.12em;text-transform:uppercase;margin-bottom:18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--amber);}
+  .hero h1{
+    font-size:52px;font-weight:800;letter-spacing:-0.02em;line-height:1.08;
+    max-width:780px;margin-bottom:22px;
+  }
+  .hero h1 .accent{color:var(--amber);}
+  .hero p.lead{font-size:18px;color:var(--text-dim);max-width:640px;margin-bottom:32px;}
+  .hero-stats{display:flex;gap:36px;flex-wrap:wrap;}
+  .hero-stat{}
+  .hero-stat .n{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--cyan);}
+  .hero-stat .l{font-size:12.5px;color:var(--text-faint);margin-top:2px;}
+
+  /* sections */
+  section{padding:64px 48px;border-bottom:1px solid var(--line);}
+  section.tight{padding-top:40px;}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;color:var(--text-faint);
+    letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;
+  }
+  .layer-num{
+    font-family:var(--mono);color:var(--amber);font-weight:700;
+  }
+  h2{font-size:32px;font-weight:800;letter-spacing:-0.01em;margin-bottom:16px;max-width:700px;}
+  h2 span.num{color:var(--text-faint);margin-right:14px;font-weight:700;}
+  h3{font-size:21px;font-weight:700;margin:36px 0 12px;color:var(--text);}
+  h4{font-size:16px;font-weight:700;margin:24px 0 8px;color:var(--amber);}
+  p{color:var(--text-dim);margin-bottom:16px;max-width:720px;}
+  p strong{color:var(--text);font-weight:600;}
+  ul, ol{color:var(--text-dim);margin:0 0 16px 22px;max-width:700px;}
+  li{margin-bottom:8px;}
+  li strong{color:var(--text);}
+  li::marker{color:var(--amber);}
+
+  .callout{
+    background:var(--bg-card);border:1px solid var(--line);border-left:3px solid var(--cyan);
+    border-radius:8px;padding:16px 20px;margin:20px 0;max-width:700px;
+  }
+  .callout.warn{border-left-color:var(--red);}
+  .callout.tip{border-left-color:var(--green);}
+  .callout-label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--cyan);margin-bottom:6px;font-weight:700;}
+  .callout.warn .callout-label{color:var(--red);}
+  .callout.tip .callout-label{color:var(--green);}
+  .callout p{margin-bottom:0;color:var(--text-dim);font-size:14.5px;}
+
+  pre{
+    background:#0A1220;border:1px solid var(--line);border-radius:8px;
+    padding:18px 20px;overflow-x:auto;margin:16px 0 24px;max-width:760px;
+  }
+  pre code{font-family:var(--mono);font-size:13.5px;color:#C9D6E8;line-height:1.6;}
+  .cmt{color:var(--text-faint);}
+  .str{color:var(--green);}
+  .kw{color:var(--cyan);}
+  .val{color:var(--amber);}
+  code.inline{
+    background:var(--bg-card);border:1px solid var(--line);
+    padding:2px 6px;border-radius:4px;font-size:0.88em;color:var(--amber);
+  }
+
+  table{width:100%;border-collapse:collapse;margin:20px 0 28px;max-width:760px;font-size:14px;}
+  th{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.06em;
+    color:var(--text-faint);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);
+  }
+  td{padding:12px 14px;border-bottom:1px solid var(--line);color:var(--text-dim);}
+  td strong{color:var(--text);}
+  tr:last-child td{border-bottom:none;}
+
+  .diagram-wrap{
+    background:var(--bg-raised);border:1px solid var(--line);border-radius:12px;
+    padding:28px;margin:24px 0 32px;max-width:820px;
+  }
+  .diagram-cap{font-size:12.5px;color:var(--text-faint);margin-top:14px;font-family:var(--mono);}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:760px;margin:20px 0;}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;}
+  .card h5{font-size:14px;color:var(--text);margin-bottom:6px;font-weight:700;}
+  .card p{font-size:13.5px;margin-bottom:0;}
+
+  .toc-hint{color:var(--text-faint);font-size:13px;}
+
+  footer{padding:48px;text-align:center;color:var(--text-faint);font-size:13px;}
+
+  @media (max-width: 980px){
+    .sidebar{display:none;}
+    .hero h1{font-size:36px;}
+    section{padding:44px 24px;}
+    .hero{padding:60px 24px 44px;}
+    .grid-2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">EKS // ZERO TO MASTER</div>
+    <div class="brand-sub">a complete field guide</div>
+
+    <div class="navgroup">
+      <div class="navgroup-label">Foundations</div>
+      <a class="navlink" href="#what-is-eks">00 · What is EKS</a>
+      <a class="navlink" href="#k8s-primer">01 · Kubernetes primer</a>
+      <a class="navlink" href="#architecture">02 · Cluster architecture</a>
+      <a class="navlink" href="#aws-internals">03 · AWS internals, under the hood</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Setup</div>
+      <a class="navlink" href="#account-setup">04 · AWS account & CLI</a>
+      <a class="navlink" href="#networking">05 · VPC & networking</a>
+      <a class="navlink" href="#create-cluster">06 · Creating a cluster</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Compute</div>
+      <a class="navlink" href="#node-groups">07 · Node groups</a>
+      <a class="navlink" href="#fargate">08 · Fargate</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Identity & Access</div>
+      <a class="navlink" href="#iam-rbac">09 · IAM, RBAC & IRSA</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Running Workloads</div>
+      <a class="navlink" href="#workloads">10 · Deployments & Services</a>
+      <a class="navlink" href="#ingress">11 · Ingress & the ALB Controller</a>
+      <a class="navlink" href="#storage">12 · Storage</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Operating at Scale</div>
+      <a class="navlink" href="#scaling">13 · Autoscaling</a>
+      <a class="navlink" href="#observability">14 · Observability, in depth</a>
+      <a class="navlink" href="#security">15 · Security hardening</a>
+      <a class="navlink" href="#cost">16 · Cost optimization</a>
+    </div>
+    <div class="navgroup">
+      <div class="navgroup-label">Practice</div>
+      <a class="navlink" href="#walkthrough">17 · Full hands-on build</a>
+      <a class="navlink" href="#troubleshooting">18 · Troubleshooting</a>
+      <a class="navlink" href="#glossary">19 · Glossary</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="hero-eyebrow">Amazon Elastic Kubernetes Service</div>
+      <h1>AWS EKS, from a<br>blank account to a<br> <span class="accent">running production cluster.</span></h1>
+      <p class="lead">Every concept explained from first principles — no prior AWS or Kubernetes experience assumed. Architecture diagrams, real commands, and the reasoning behind every decision.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="n">20</div><div class="l">sections</div></div>
+        <div class="hero-stat"><div class="n">0</div><div class="l">assumed knowledge</div></div>
+        <div class="hero-stat"><div class="n">1</div><div class="l">cluster you'll actually build</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION 00 -->
+    <section id="what-is-eks">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">00</span> Foundations</div>
+        <h2><span class="num">00</span>What is EKS, and why does it exist?</h2>
+        <p><strong>Kubernetes</strong> is software that runs your applications across a group of machines, restarting them when they crash, spreading them out for load, and rolling out updates without downtime. The problem: Kubernetes itself is made of several moving parts — a database (etcd), an API server, a scheduler, controllers — and someone has to install, patch, secure, and keep all of that alive 24/7. That "someone" is normally you.</p>
+        <p><strong>EKS (Elastic Kubernetes Service)</strong> is AWS running that hard part for you. AWS hosts and operates the Kubernetes control plane — the brain of the cluster — across multiple data centers, patches it, backs it up, and makes it highly available. You bring the worker machines (or let AWS manage those too), and you focus on running your applications instead of babysitting cluster infrastructure.</p>
+
+        <div class="callout">
+          <div class="callout-label">Mental model</div>
+          <p>Think of Kubernetes as an operating system for a data center, and EKS as AWS selling you that operating system already installed, patched, and monitored — you just plug in computers (nodes) and start running programs (pods) on it.</p>
+        </div>
+
+        <h3>Why not just run Kubernetes yourself on EC2?</h3>
+        <p>You can — it's called "self-managed Kubernetes," and tools like <code class="inline">kubeadm</code> exist for it. But you'd be responsible for: keeping 3+ control plane nodes alive across failure zones, upgrading Kubernetes versions without breaking your API, securing etcd (which holds every secret in your cluster), and scaling the control plane as load grows. EKS removes all of that. You pay AWS roughly $0.10/hour per cluster for the control plane, and in exchange you never SSH into a control plane node — because there isn't one you can access.</p>
+
+        <h3>Where EKS sits among your options</h3>
+        <table>
+          <tr><th>Option</th><th>What you manage</th><th>Best for</th></tr>
+          <tr><td><strong>EC2 + kubeadm</strong></td><td>Everything — control plane and workers</td><td>Learning internals, extreme customization</td></tr>
+          <tr><td><strong>EKS with EC2 nodes</strong></td><td>Worker nodes only</td><td>Most production workloads — this guide's focus</td></tr>
+          <tr><td><strong>EKS with Fargate</strong></td><td>Nothing — not even nodes</td><td>Simplicity, spiky/unpredictable workloads</td></tr>
+          <tr><td><strong>ECS</strong></td><td>Nothing, but it's not Kubernetes</td><td>AWS-only shops who don't need K8s portability</td></tr>
+        </table>
+
+        <div class="callout tip">
+          <div class="callout-label">Why this matters to you</div>
+          <p>Skills learned on EKS transfer to any Kubernetes — GKE, AKS, on-prem — because the API and concepts are identical. Only the "how the control plane is hosted" part is AWS-specific. This is the biggest reason companies pick EKS over ECS: it avoids lock-in.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 01 -->
+    <section id="k8s-primer">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">01</span> Foundations</div>
+        <h2><span class="num">01</span>Kubernetes primer — the vocabulary you need first</h2>
+        <p>Before touching AWS, you need five words. Everything else in Kubernetes is built from these.</p>
+
+        <div class="grid-2">
+          <div class="card"><h5>Pod</h5><p>The smallest deployable unit. One or more containers that always run together on the same machine, sharing network and storage.</p></div>
+          <div class="card"><h5>Node</h5><p>A machine (virtual or physical) that runs pods. In EKS, a node is an EC2 instance or a Fargate slot.</p></div>
+          <div class="card"><h5>Deployment</h5><p>A blueprint that tells Kubernetes "keep N copies of this pod running, and here's how to roll out changes."</p></div>
+          <div class="card"><h5>Service</h5><p>A stable network address that routes traffic to whichever pods are currently alive, even as pods are replaced.</p></div>
+          <div class="card"><h5>Namespace</h5><p>A virtual wall inside one cluster — a way to separate teams or environments (dev/staging/prod) without separate clusters.</p></div>
+          <div class="card"><h5>etcd</h5><p>The database that stores the entire cluster's state — every pod, service, and config. In EKS, AWS runs and secures this for you.</p></div>
+        </div>
+
+        <h3>The declarative model — the single most important idea</h3>
+        <p>You never tell Kubernetes "start a container." You describe the <strong>desired state</strong> in a YAML file — "I want 3 copies of this app running" — and submit it to the API server. A background loop called a <strong>controller</strong> continuously compares desired state to actual state and takes action to close the gap. Kill a pod manually, and within seconds a controller notices one is missing and starts a replacement. This self-healing loop is the core mechanic behind everything Kubernetes does.</p>
+
+        <div class="callout">
+          <div class="callout-label">Why EKS needs this context</div>
+          <p>Every AWS-specific thing you'll learn from here on — IAM roles, load balancers, storage classes — is just Kubernetes' declarative model calling out to AWS APIs to fulfill desired state. An Ingress object doesn't create a load balancer itself; a controller watches for Ingress objects and calls the AWS API on your behalf.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 02 -->
+    <section id="architecture">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">02</span> Foundations</div>
+        <h2><span class="num">02</span>Cluster architecture — the full map</h2>
+        <p>This is the diagram we'll keep returning to. It shows every layer of an EKS cluster: the AWS-managed control plane, your VPC, the subnets that separate public and private resources, and where your actual application pods run. Study this once now — every later section builds one piece of it.</p>
+      </div>
+
+      <div class="maxw" style="max-width:820px;">
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 760 620" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace;">
+          <!-- AWS Cloud boundary -->
+          <rect x="8" y="8" width="744" height="604" rx="10" fill="none" stroke="#223050" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <text x="24" y="30" fill="#5C6B87" font-size="11" letter-spacing="1">AWS ACCOUNT / REGION</text>
+
+          <!-- Control plane (AWS managed) -->
+          <rect x="24" y="44" width="712" height="110" rx="8" fill="#131F35" stroke="#E8912D" stroke-width="1.5"/>
+          <text x="40" y="66" fill="#E8912D" font-size="12" font-weight="700">EKS CONTROL PLANE — fully managed by AWS, spans 3 AZs</text>
+          <g font-size="10.5" fill="#93A0B8">
+            <rect x="40" y="80" width="150" height="56" rx="6" fill="#0B1220" stroke="#223050"/>
+            <text x="115" y="103" text-anchor="middle" fill="#E8EAED">API Server</text>
+            <text x="115" y="118" text-anchor="middle" fill="#5C6B87" font-size="9">your kubectl talks here</text>
+
+            <rect x="205" y="80" width="150" height="56" rx="6" fill="#0B1220" stroke="#223050"/>
+            <text x="280" y="103" text-anchor="middle" fill="#E8EAED">etcd</text>
+            <text x="280" y="118" text-anchor="middle" fill="#5C6B87" font-size="9">cluster state store</text>
+
+            <rect x="370" y="80" width="150" height="56" rx="6" fill="#0B1220" stroke="#223050"/>
+            <text x="445" y="103" text-anchor="middle" fill="#E8EAED">Scheduler</text>
+            <text x="445" y="118" text-anchor="middle" fill="#5C6B87" font-size="9">assigns pods to nodes</text>
+
+            <rect x="535" y="80" width="165" height="56" rx="6" fill="#0B1220" stroke="#223050"/>
+            <text x="617" y="103" text-anchor="middle" fill="#E8EAED">Controller Manager</text>
+            <text x="617" y="118" text-anchor="middle" fill="#5C6B87" font-size="9">reconciliation loops</text>
+          </g>
+
+          <!-- VPC boundary -->
+          <rect x="24" y="168" width="712" height="430" rx="8" fill="none" stroke="#5EC4D6" stroke-width="1.5"/>
+          <text x="40" y="190" fill="#5EC4D6" font-size="12" font-weight="700">YOUR VPC — 10.0.0.0/16</text>
+
+          <!-- Public subnets -->
+          <rect x="40" y="204" width="330" height="120" rx="6" fill="#101A2C" stroke="#223050"/>
+          <text x="52" y="222" fill="#93A0B8" font-size="10.5" letter-spacing="0.5">PUBLIC SUBNET — AZ-a &amp; AZ-b</text>
+          <rect x="52" y="232" width="140" height="42" rx="5" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="122" y="257" text-anchor="middle" fill="#E8EAED" font-size="10.5">NAT Gateway</text>
+          <rect x="202" y="232" width="150" height="42" rx="5" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="277" y="252" text-anchor="middle" fill="#E8EAED" font-size="10.5">Application</text>
+          <text x="277" y="264" text-anchor="middle" fill="#E8EAED" font-size="10.5">Load Balancer</text>
+          <text x="52" y="298" fill="#5C6B87" font-size="9.5">Internet Gateway attached — this is the</text>
+          <text x="52" y="311" fill="#5C6B87" font-size="9.5">only subnet with a direct route to 0.0.0.0/0</text>
+
+          <!-- Internet -->
+          <rect x="396" y="204" width="356" height="60" rx="6" fill="none" stroke="#223050" stroke-dasharray="3 3"/>
+          <text x="574" y="230" text-anchor="middle" fill="#93A0B8" font-size="11">🌐 Internet</text>
+          <text x="574" y="248" text-anchor="middle" fill="#5C6B87" font-size="9.5">your users</text>
+          <line x1="370" y1="240" x2="396" y2="234" stroke="#5EC4D6" stroke-width="1.5"/>
+
+          <!-- Private subnets -->
+          <rect x="40" y="340" width="712" height="240" rx="6" fill="#101A2C" stroke="#223050"/>
+          <text x="52" y="360" fill="#93A0B8" font-size="10.5" letter-spacing="0.5">PRIVATE SUBNETS — AZ-a &amp; AZ-b (no direct internet route)</text>
+
+          <!-- Node group 1 -->
+          <rect x="56" y="372" width="330" height="190" rx="6" fill="#0B1220" stroke="#E8912D" stroke-width="1.2"/>
+          <text x="70" y="392" fill="#E8912D" font-size="10.5" font-weight="700">MANAGED NODE GROUP</text>
+          <text x="70" y="405" fill="#5C6B87" font-size="9">EC2 worker nodes running kubelet</text>
+          <rect x="70" y="416" width="140" height="66" rx="5" fill="#131F35" stroke="#223050"/>
+          <text x="140" y="434" text-anchor="middle" fill="#E8EAED" font-size="10">Node (EC2)</text>
+          <rect x="80" y="442" width="50" height="16" rx="3" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="105" y="453" text-anchor="middle" fill="#4A9B7F" font-size="8">pod</text>
+          <rect x="135" y="442" width="50" height="16" rx="3" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="160" y="453" text-anchor="middle" fill="#4A9B7F" font-size="8">pod</text>
+          <rect x="80" y="463" width="105" height="16" rx="3" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="132" y="474" text-anchor="middle" fill="#4A9B7F" font-size="8">pod</text>
+
+          <rect x="226" y="416" width="140" height="66" rx="5" fill="#131F35" stroke="#223050"/>
+          <text x="296" y="434" text-anchor="middle" fill="#E8EAED" font-size="10">Node (EC2)</text>
+          <rect x="236" y="442" width="50" height="16" rx="3" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="261" y="453" text-anchor="middle" fill="#4A9B7F" font-size="8">pod</text>
+          <rect x="291" y="442" width="65" height="16" rx="3" fill="#0B1220" stroke="#4A9B7F"/>
+          <text x="323" y="453" text-anchor="middle" fill="#4A9B7F" font-size="8">pod</text>
+
+          <text x="70" y="504" fill="#5C6B87" font-size="9">kubelet on each node registers with the</text>
+          <text x="70" y="517" fill="#5C6B87" font-size="9">control plane's API server over a private link</text>
+
+          <rect x="70" y="530" width="296" height="20" rx="4" fill="none" stroke="#223050"/>
+          <text x="218" y="544" text-anchor="middle" fill="#5C6B87" font-size="9">VPC CNI — assigns real VPC IPs to pods</text>
+
+          <!-- Fargate -->
+          <rect x="404" y="372" width="332" height="190" rx="6" fill="#0B1220" stroke="#5EC4D6" stroke-width="1.2"/>
+          <text x="418" y="392" fill="#5EC4D6" font-size="10.5" font-weight="700">FARGATE PROFILE (optional, alt. compute)</text>
+          <text x="418" y="405" fill="#5C6B87" font-size="9">no EC2 nodes to manage — AWS runs pods directly</text>
+          <rect x="418" y="420" width="140" height="50" rx="5" fill="#131F35" stroke="#223050"/>
+          <text x="488" y="440" text-anchor="middle" fill="#E8EAED" font-size="10">Micro-VM</text>
+          <rect x="430" y="448" width="115" height="16" rx="3" fill="#0B1220" stroke="#5EC4D6"/>
+          <text x="487" y="459" text-anchor="middle" fill="#5EC4D6" font-size="8">1 pod</text>
+
+          <rect x="574" y="420" width="140" height="50" rx="5" fill="#131F35" stroke="#223050"/>
+          <text x="644" y="440" text-anchor="middle" fill="#E8EAED" font-size="10">Micro-VM</text>
+          <rect x="586" y="448" width="115" height="16" rx="3" fill="#0B1220" stroke="#5EC4D6"/>
+          <text x="643" y="459" text-anchor="middle" fill="#5EC4D6" font-size="8">1 pod</text>
+
+          <text x="418" y="500" fill="#5C6B87" font-size="9">billed per pod, per second of vCPU/memory</text>
+          <text x="418" y="513" fill="#5C6B87" font-size="9">used — no idle node capacity to pay for</text>
+
+          <!-- connecting lines control plane to nodes -->
+          <line x1="115" y1="136" x2="140" y2="416" stroke="#223050" stroke-width="1" stroke-dasharray="2 3"/>
+          <line x1="617" y1="136" x2="488" y2="420" stroke="#223050" stroke-width="1" stroke-dasharray="2 3"/>
+        </svg>
+        <div class="diagram-cap">Fig. 1 — An EKS cluster spans an AWS-managed control plane and your own VPC. You never see or touch the control plane's servers directly.</div>
+      </div>
+      </div>
+
+      <div class="maxw">
+        <h3>Reading this diagram</h3>
+        <ul>
+          <li><strong>Control plane (top, amber border):</strong> lives in an AWS-owned VPC you can't see. You interact with it only through the Kubernetes API — never SSH.</li>
+          <li><strong>Public subnets:</strong> host things that need direct internet exposure — NAT Gateways and Load Balancers. Your actual application pods should <em>not</em> run here.</li>
+          <li><strong>Private subnets:</strong> host your worker nodes and pods. They reach the internet outbound only through the NAT Gateway, and receive inbound traffic only through the Load Balancer.</li>
+          <li><strong>Two compute choices:</strong> Managed Node Groups (you pick EC2 instance types, AWS handles lifecycle) or Fargate (no EC2 visible at all — you pay per pod).</li>
+        </ul>
+        <div class="callout warn">
+          <div class="callout-label">Common beginner mistake</div>
+          <p>Putting worker nodes in public subnets "to make things simpler." This exposes every node directly to the internet and is flagged by every AWS security review. Always run nodes in private subnets — this guide does that from the start.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 03 -->
+    <section id="aws-internals">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">03</span> Foundations</div>
+        <h2><span class="num">03</span>Under the hood — how AWS actually runs this</h2>
+        <p>Everything so far described EKS from the outside. This section opens the box: what physically happens when you create a cluster, how the control plane achieves high availability, how VPC networking is implemented at the packet level, and how IAM authentication actually works. You don't need this to use EKS, but it's what separates "I can run commands" from "I know why they work."</p>
+
+        <h3>The control plane, internally</h3>
+        <p>When you run <code class="inline">eksctl create cluster</code>, AWS doesn't spin up one server for your control plane — it provisions a dedicated, per-cluster set of resources inside an AWS-owned VPC that no customer can see or access directly:</p>
+        <ul>
+          <li><strong>Multiple API server instances</strong> behind a Network Load Balancer, spread across at least 3 Availability Zones. This is why the control plane survives an entire AZ outage.</li>
+          <li><strong>A dedicated etcd cluster</strong> (typically 3 or 5 nodes for quorum), also multi-AZ, storing every object in your cluster as key-value pairs. etcd uses the Raft consensus algorithm — a write only succeeds once a majority of etcd nodes agree, which is why an odd number of nodes is used.</li>
+          <li><strong>Scheduler and controller-manager</strong> processes, running in an active/standby configuration with leader election, so exactly one instance is making decisions at any moment even though multiple are running.</li>
+        </ul>
+        <p>AWS runs this per-customer, per-cluster — your control plane is not multi-tenant with anyone else's. This isolation is why EKS clusters cost a flat hourly fee: you're paying for genuinely dedicated (if AWS-managed) infrastructure, not a shared pool.</p>
+
+        <div class="callout">
+          <div class="callout-label">Why you can't SSH into it</div>
+          <p>There's no meaningful "into" — the control plane's compute is inside AWS's own service account/VPC, invisible and inaccessible by design, similar to how you can't SSH into the server running S3. The only interface AWS exposes is the Kubernetes API itself.</p>
+        </div>
+
+        <h3>How the API server authenticates you, step by step</h3>
+        <p>Every <code class="inline">kubectl</code> command actually makes an HTTPS call to the API server. Here's the exact sequence for an EKS cluster specifically:</p>
+        <ol>
+          <li><code class="inline">kubectl</code> reads your kubeconfig, which (for EKS) doesn't store a static token — it stores a command to <em>generate</em> one, via the <code class="inline">aws eks get-token</code> mechanism.</li>
+          <li>That command uses your local AWS credentials to create a specially crafted, pre-signed STS (Security Token Service) URL — essentially an AWS API call that proves your IAM identity, valid for 60 seconds, without ever transmitting your secret key itself.</li>
+          <li>This signed token is sent to the API server as a bearer token.</li>
+          <li>The API server calls a component called <strong>aws-iam-authenticator</strong> (built into EKS), which validates the token against AWS STS and extracts your IAM identity (user or role ARN).</li>
+          <li>That IAM identity is looked up in the <code class="inline">aws-auth</code> ConfigMap (Section 08) to determine your Kubernetes username and groups.</li>
+          <li>Only now does standard Kubernetes RBAC evaluate whether that username/group can perform the requested action.</li>
+        </ol>
+        <p>This is why a brand new IAM user, even an Administrator, gets a "Unauthorized" error against a cluster they aren't mapped into — steps 1-4 succeed (AWS confirms who they are), but step 5 finds no matching entry.</p>
+
+        <h3>VPC networking, at the packet level</h3>
+        <p>The detail that surprises most newcomers: <strong>pods on EKS get real IP addresses from your VPC's actual CIDR range</strong> — not an overlay/NAT'd address like most other Kubernetes distributions use. This is the job of the <strong>VPC CNI</strong> plugin.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace;">
+            <rect x="20" y="20" width="300" height="220" rx="8" fill="#101A2C" stroke="#223050"/>
+            <text x="170" y="42" text-anchor="middle" fill="#93A0B8" font-size="11">EC2 NODE — e.g. t3.medium</text>
+            <text x="170" y="58" text-anchor="middle" fill="#5C6B87" font-size="9">supports up to 3 ENIs, 18 IPs each</text>
+
+            <rect x="40" y="72" width="110" height="150" rx="6" fill="#0B1220" stroke="#4A9B7F"/>
+            <text x="95" y="90" text-anchor="middle" fill="#4A9B7F" font-size="10">ENI (primary)</text>
+            <rect x="52" y="100" width="86" height="20" rx="3" fill="#131F35" stroke="#223050"/>
+            <text x="95" y="114" text-anchor="middle" fill="#E8EAED" font-size="9">10.0.1.10 → pod A</text>
+            <rect x="52" y="126" width="86" height="20" rx="3" fill="#131F35" stroke="#223050"/>
+            <text x="95" y="140" text-anchor="middle" fill="#E8EAED" font-size="9">10.0.1.11 → pod B</text>
+            <rect x="52" y="152" width="86" height="20" rx="3" fill="#131F35" stroke="#223050"/>
+            <text x="95" y="166" text-anchor="middle" fill="#E8EAED" font-size="9">10.0.1.12 → node itself</text>
+            <rect x="52" y="178" width="86" height="20" rx="3" fill="#131F35" stroke="#5C6B87" stroke-dasharray="2 2"/>
+            <text x="95" y="192" text-anchor="middle" fill="#5C6B87" font-size="9">.13 — warm/spare</text>
+
+            <rect x="170" y="72" width="110" height="150" rx="6" fill="#0B1220" stroke="#5EC4D6"/>
+            <text x="225" y="90" text-anchor="middle" fill="#5EC4D6" font-size="10">ENI (secondary)</text>
+            <rect x="182" y="100" width="86" height="20" rx="3" fill="#131F35" stroke="#223050"/>
+            <text x="225" y="114" text-anchor="middle" fill="#E8EAED" font-size="9">10.0.1.20 → pod C</text>
+            <rect x="182" y="126" width="86" height="20" rx="3" fill="#131F35" stroke="#5C6B87" stroke-dasharray="2 2"/>
+            <text x="225" y="140" text-anchor="middle" fill="#5C6B87" font-size="9">.21 — warm/spare</text>
+
+            <rect x="370" y="90" width="310" height="80" rx="6" fill="#131F35" stroke="#E8912D"/>
+            <text x="525" y="112" text-anchor="middle" fill="#E8912D" font-size="10.5" font-weight="700">VPC subnet — 10.0.1.0/24</text>
+            <text x="525" y="132" text-anchor="middle" fill="#93A0B8" font-size="9.5">Pod IPs are real VPC IPs, routable</text>
+            <text x="525" y="147" text-anchor="middle" fill="#93A0B8" font-size="9.5">by security groups &amp; route tables directly</text>
+            <line x1="280" y1="130" x2="370" y2="130" stroke="#5EC4D6" stroke-width="1.5"/>
+          </svg>
+          <div class="diagram-cap">Fig. 3 — The VPC CNI pre-allocates "warm" IPs onto each node's Elastic Network Interfaces so new pods start instantly instead of waiting on an IP request.</div>
+        </div>
+        <p>The practical consequence: <strong>your VPC's IP address space directly limits how many pods you can run.</strong> A <code class="inline">/24</code> subnet (256 addresses) fills up fast once you account for one IP per pod, per ENI overhead, and reserved AWS addresses. This is the single most common scaling wall production EKS teams hit — solved by either using larger CIDR blocks, enabling <strong>custom networking</strong> (a secondary, larger CIDR just for pods), or switching to <strong>prefix delegation</strong> mode, where each ENI is assigned an address prefix instead of individual IPs, multiplying pod density per node roughly 16x.</p>
+
+        <div class="callout warn">
+          <div class="callout-label">Plan your CIDR before you launch, not after</div>
+          <p>Resizing a VPC's CIDR after a cluster is live and full of resources is painful. For any cluster expected to grow, use at minimum a <code class="inline">/20</code> per subnet, and consider enabling prefix delegation from day one.</p>
+        </div>
+
+        <h3>How IAM roles actually authorize an AWS API call</h3>
+        <p>IAM has no concept of "identity" the way a username/password does. Under the hood, every single AWS API call — whether from your CLI, a pod via IRSA, or the EKS control plane itself — is a request signed with <strong>SigV4 (Signature Version 4)</strong>: a cryptographic signature computed from your credentials, the request contents, and a timestamp. AWS recomputes that same signature server-side using its own record of your secret key; if they match, the request is authentic and unmodified in transit.</p>
+        <p>This is why IRSA (Section 08) is secure without ever storing a secret key in your cluster: the pod obtains a short-lived <strong>temporary credential</strong> (access key + secret + session token, valid ~1 hour) from STS, and that temporary credential is what gets used to compute the SigV4 signature — not a permanent key. When it expires, the pod transparently fetches a new one.</p>
+
+        <div class="callout tip">
+          <div class="callout-label">The one-sentence version</div>
+          <p>AWS internals reduce to three durable ideas: the control plane is real, dedicated, multi-AZ infrastructure you simply can't reach directly; every authenticated action — human or pod — resolves to a signed, time-limited proof of identity; and pod networking is not virtual, it's genuinely your VPC's address space, which is why capacity planning for IPs matters as much as capacity planning for CPU.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 05 -->
+    <section id="account-setup">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">04</span> Setup</div>
+        <h2><span class="num">04</span>AWS account &amp; CLI setup</h2>
+        <p>Four tools, installed once, used for the rest of your EKS life.</p>
+
+        <table>
+          <tr><th>Tool</th><th>What it's for</th></tr>
+          <tr><td><strong>AWS CLI</strong></td><td>Talks to AWS in general — creates VPCs, IAM roles, EC2 instances</td></tr>
+          <tr><td><strong>eksctl</strong></td><td>A purpose-built CLI that creates an entire EKS cluster (VPC, control plane, node groups) in one command instead of 40</td></tr>
+          <tr><td><strong>kubectl</strong></td><td>Talks to the Kubernetes API itself — works identically on EKS, GKE, or your laptop's minikube</td></tr>
+          <tr><td><strong>helm</strong></td><td>A package manager for Kubernetes — installs pre-built applications (like the ALB Controller you'll need later) as one command instead of hand-writing YAML</td></tr>
+        </table>
+
+        <h3>1. Create an IAM user (never use the root account)</h3>
+        <p>Your AWS root account login can do <em>anything</em>, including delete your entire account. Never use it day to day. Instead create an IAM user with only the permissions you need.</p>
+        <pre><code><span class="cmt"># In AWS Console: IAM → Users → Create user</span>
+<span class="cmt"># Attach policy: AdministratorAccess (fine for learning; scope down for real teams)</span>
+<span class="cmt"># Create an access key: Security credentials → Create access key → CLI use case</span></code></pre>
+
+        <h3>2. Install and configure the AWS CLI</h3>
+        <pre><code><span class="cmt"># macOS</span>
+brew install awscli
+
+<span class="cmt"># then configure with the access key you just created</span>
+aws configure
+<span class="cmt"># AWS Access Key ID: ****************
+# AWS Secret Access Key: ****************
+# Default region name: us-east-1
+# Default output format: json</span></code></pre>
+
+        <div class="callout tip">
+          <div class="callout-label">Verify it worked</div>
+          <p><code class="inline">aws sts get-caller-identity</code> — if this prints your account ID and user ARN, you're authenticated.</p>
+        </div>
+
+        <h3>3. Install eksctl and kubectl</h3>
+        <pre><code><span class="cmt"># macOS</span>
+brew tap weaveworks/tap
+brew install weaveworks/tap/eksctl
+brew install kubectl
+
+<span class="cmt"># verify</span>
+eksctl version
+kubectl version --client</code></pre>
+
+        <h3>4. Install Helm</h3>
+        <pre><code>brew install helm
+helm version</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 05 -->
+    <section id="networking">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">05</span> Setup</div>
+        <h2><span class="num">05</span>VPC &amp; networking — the part everyone underestimates</h2>
+        <p>Networking mistakes are the #1 source of "why can't my pod reach the internet" and "why is my load balancer stuck pending" issues. Understanding this now saves hours later.</p>
+
+        <h3>Core vocabulary</h3>
+        <div class="grid-2">
+          <div class="card"><h5>VPC</h5><p>Your own private, isolated network inside AWS. Everything you create lives inside one.</p></div>
+          <div class="card"><h5>Subnet</h5><p>A slice of your VPC's IP range, tied to one Availability Zone. You split into public and private subnets.</p></div>
+          <div class="card"><h5>Availability Zone (AZ)</h5><p>A physically separate data center within a region. EKS requires subnets across at least 2 AZs for high availability.</p></div>
+          <div class="card"><h5>Route Table</h5><p>Rules that decide where traffic from a subnet goes. This is what makes a subnet "public" or "private."</p></div>
+          <div class="card"><h5>Internet Gateway (IGW)</h5><p>The door between your VPC and the internet. Attached at the VPC level, used by public subnets.</p></div>
+          <div class="card"><h5>NAT Gateway</h5><p>Lets private subnets reach the internet <em>outbound</em> (e.g. to pull a container image) without allowing inbound connections.</p></div>
+        </div>
+
+        <h3>What makes a subnet "public" vs "private"?</h3>
+        <p>There's no checkbox — it's purely defined by the route table. A subnet is <strong>public</strong> if its route table sends <code class="inline">0.0.0.0/0</code> traffic to an Internet Gateway. It's <strong>private</strong> if that traffic instead goes to a NAT Gateway (or nowhere at all).</p>
+
+        <pre><code><span class="cmt"># Public subnet route table</span>
+Destination: 10.0.0.0/16   → local
+Destination: 0.0.0.0/0     → igw-0123abcd     <span class="cmt">← this line makes it public</span>
+
+<span class="cmt"># Private subnet route table</span>
+Destination: 10.0.0.0/16   → local
+Destination: 0.0.0.0/0     → nat-0456efgh     <span class="cmt">← outbound only, this makes it private</span></code></pre>
+
+        <h3>EKS-specific subnet tags</h3>
+        <p>EKS and its controllers (like the load balancer controller you'll install later) discover subnets by AWS resource tags, not by asking you. If these tags are missing, your Ingress will silently fail to provision a load balancer — a very common point of confusion.</p>
+        <pre><code><span class="cmt"># Public subnets need:</span>
+kubernetes.io/role/elb                    = 1
+kubernetes.io/cluster/&lt;your-cluster-name&gt; = shared
+
+<span class="cmt"># Private subnets need:</span>
+kubernetes.io/role/internal-elb           = 1
+kubernetes.io/cluster/&lt;your-cluster-name&gt; = shared</code></pre>
+
+        <div class="callout tip">
+          <div class="callout-label">Good news</div>
+          <p>If you let <code class="inline">eksctl</code> create your VPC (next section), it applies all of these tags automatically. You only need to hand-manage tags if you brought your own pre-existing VPC.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 06 -->
+    <section id="create-cluster">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">06</span> Setup</div>
+        <h2><span class="num">06</span>Creating your first cluster</h2>
+        <p>Two ways to do this: the fast way (<code class="inline">eksctl</code>, one command) and the "understand every piece" way (AWS Console, click by click). Do the fast way first to get a working cluster, then read what it did.</p>
+
+        <h3>The fast way</h3>
+        <pre><code>eksctl create cluster \
+  --name my-first-cluster \
+  --region us-east-1 \
+  --version 1.30 \
+  --nodegroup-name standard-workers \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --managed</code></pre>
+
+        <p>This single command, over roughly 15–20 minutes:</p>
+        <ol>
+          <li>Creates a new VPC with public and private subnets across 2 AZs, correctly tagged</li>
+          <li>Creates the EKS control plane (the AWS-managed piece from Fig. 1)</li>
+          <li>Creates an IAM role for your nodes with the correct permissions</li>
+          <li>Launches a Managed Node Group of 2 EC2 instances in the private subnets</li>
+          <li>Wires up your local <code class="inline">kubectl</code> to talk to the new cluster</li>
+        </ol>
+
+        <div class="callout warn">
+          <div class="callout-label">This costs real money</div>
+          <p>The control plane is ~$0.10/hour (~$73/month) regardless of usage, plus EC2 costs for your nodes. Run <code class="inline">eksctl delete cluster --name my-first-cluster</code> when you're done experimenting to avoid ongoing charges.</p>
+        </div>
+
+        <h3>Verify it worked</h3>
+        <pre><code>kubectl get nodes
+<span class="cmt"># NAME                          STATUS   ROLES    AGE   VERSION
+# ip-192-168-45-12.ec2.internal Ready    &lt;none&gt;   4m    v1.30.0
+# ip-192-168-78-93.ec2.internal Ready    &lt;none&gt;   4m    v1.30.0</span>
+
+kubectl get svc
+<span class="cmt"># NAME         TYPE        CLUSTER-IP   PORT(S)   AGE
+# kubernetes   ClusterIP   10.100.0.1   443/TCP   10m</span></code></pre>
+
+        <p>If <code class="inline">kubectl get nodes</code> shows your two nodes as <code class="inline">Ready</code>, your control plane and worker nodes are talking to each other correctly — you have a real, working Kubernetes cluster running on AWS.</p>
+
+        <h3>What eksctl actually generated (the config-file way)</h3>
+        <p>For real projects, don't run one giant CLI command — write a YAML config file so your cluster definition is version-controlled and repeatable.</p>
+        <pre><code><span class="cmt"># cluster.yaml</span>
+<span class="kw">apiVersion</span>: eksctl.io/v1alpha5
+<span class="kw">kind</span>: ClusterConfig
+
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: my-first-cluster
+  <span class="kw">region</span>: us-east-1
+  <span class="kw">version</span>: <span class="str">"1.30"</span>
+
+<span class="kw">managedNodeGroups</span>:
+  - <span class="kw">name</span>: standard-workers
+    <span class="kw">instanceType</span>: t3.medium
+    <span class="kw">desiredCapacity</span>: 2
+    <span class="kw">minSize</span>: 2
+    <span class="kw">maxSize</span>: 4
+    <span class="kw">privateNetworking</span>: <span class="val">true</span></code></pre>
+        <pre><code>eksctl create cluster -f cluster.yaml</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 07 -->
+    <section id="node-groups">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">07</span> Compute</div>
+        <h2><span class="num">07</span>Node groups — managed vs. self-managed</h2>
+        <p>A node group is simply a set of EC2 instances that all join your cluster as worker nodes. There are two flavors.</p>
+
+        <table>
+          <tr><th></th><th>Managed Node Group</th><th>Self-managed Node Group</th></tr>
+          <tr><td><strong>AMI updates</strong></td><td>One-click via console/CLI</td><td>You build and rotate AMIs yourself</td></tr>
+          <tr><td><strong>Node draining on update</strong></td><td>Automatic, respects PodDisruptionBudgets</td><td>You script it</td></tr>
+          <tr><td><strong>Autoscaling</strong></td><td>Native ASG integration</td><td>You wire it up</td></tr>
+          <tr><td><strong>Custom AMIs / bootstrapping</strong></td><td>Limited</td><td>Full control</td></tr>
+          <tr><td><strong>When to use</strong></td><td>Default choice, 95% of cases</td><td>Custom kernel modules, GPU drivers, compliance images</td></tr>
+        </table>
+
+        <h3>Scaling a node group</h3>
+        <pre><code>eksctl scale nodegroup \
+  --cluster my-first-cluster \
+  --name standard-workers \
+  --nodes 4</code></pre>
+
+        <h3>Adding a second node group (e.g. for a different workload type)</h3>
+        <p>A very common real-world pattern: one node group of cheap instances for general workloads, another of larger/GPU instances for specific jobs. Kubernetes uses <strong>labels</strong> and <strong>taints</strong> to steer pods to the right group.</p>
+        <pre><code>eksctl create nodegroup \
+  --cluster my-first-cluster \
+  --name gpu-workers \
+  --node-type g4dn.xlarge \
+  --nodes 1 \
+  --node-labels "workload=gpu"</code></pre>
+        <pre><code><span class="cmt"># In your pod spec, request that label:</span>
+<span class="kw">nodeSelector</span>:
+  <span class="kw">workload</span>: gpu</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 08 -->
+    <section id="fargate">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">08</span> Compute</div>
+        <h2><span class="num">08</span>Fargate — running pods with zero visible servers</h2>
+        <p>With Fargate, there is no EC2 instance for you to see, patch, or scale. You define a <strong>Fargate profile</strong> that says "any pod landing in this namespace runs on Fargate," and AWS launches a right-sized micro-VM per pod automatically.</p>
+
+        <div class="callout">
+          <div class="callout-label">Trade-off</div>
+          <p>Fargate is simpler and bills per-pod-second, but has real constraints: no DaemonSets, no privileged containers, slower pod startup (30–60s vs. seconds on EC2), and it's typically more expensive at sustained high utilization than reserved EC2 capacity.</p>
+        </div>
+
+        <h3>Creating a Fargate profile</h3>
+        <pre><code>eksctl create fargateprofile \
+  --cluster my-first-cluster \
+  --name fp-default \
+  --namespace fargate-apps</code></pre>
+        <p>Any pod you now create in the <code class="inline">fargate-apps</code> namespace automatically runs on Fargate — no node group, no EC2, nothing else to configure.</p>
+
+        <h3>When to reach for Fargate</h3>
+        <ul>
+          <li>Batch or scheduled jobs with unpredictable, spiky demand</li>
+          <li>Small teams who want zero node patching responsibility</li>
+          <li>Multi-tenant clusters where strict pod-level isolation matters</li>
+        </ul>
+        <p>For steady, predictable, high-volume workloads, Managed Node Groups (especially with Spot instances) are usually cheaper — see the cost section later.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 09 -->
+    <section id="iam-rbac">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">09</span> Identity &amp; Access</div>
+        <h2><span class="num">09</span>IAM, RBAC &amp; IRSA — the most confusing part, explained clearly</h2>
+        <p>EKS has <em>two separate</em> permission systems that beginners constantly conflate:</p>
+
+        <div class="grid-2">
+          <div class="card"><h5>AWS IAM</h5><p>Controls who can call AWS APIs — create a cluster, describe a node group, read an S3 bucket. Lives entirely outside Kubernetes.</p></div>
+          <div class="card"><h5>Kubernetes RBAC</h5><p>Controls who can do what <em>inside</em> the cluster — create a pod, view a secret, delete a deployment. Lives entirely inside Kubernetes and knows nothing about AWS.</p></div>
+        </div>
+
+        <div class="callout warn">
+          <div class="callout-label">The gap this creates</div>
+          <p>Being an AWS Administrator does NOT automatically let you run <code class="inline">kubectl</code> commands against a cluster. IAM authenticates you as a user, but RBAC decides what that user is allowed to do inside Kubernetes. The two must be linked explicitly.</p>
+        </div>
+
+        <h3>Linking IAM to Kubernetes RBAC: aws-auth</h3>
+        <p>The bridge is a ConfigMap called <code class="inline">aws-auth</code> living in the <code class="inline">kube-system</code> namespace. It maps IAM users/roles to Kubernetes usernames and groups.</p>
+        <pre><code><span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ConfigMap
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: aws-auth
+  <span class="kw">namespace</span>: kube-system
+<span class="kw">data</span>:
+  <span class="kw">mapRoles</span>: |
+    - <span class="kw">rolearn</span>: arn:aws:iam::123456789012:role/eks-node-role
+      <span class="kw">username</span>: system:node:{{EC2PrivateDNSName}}
+      <span class="kw">groups</span>:
+        - system:bootstrappers
+        - system:nodes
+  <span class="kw">mapUsers</span>: |
+    - <span class="kw">userarn</span>: arn:aws:iam::123456789012:user/priya
+      <span class="kw">username</span>: priya
+      <span class="kw">groups</span>:
+        - system:masters   <span class="cmt"># full admin inside the cluster</span></code></pre>
+
+        <h3>The other direction: letting <em>pods</em> call AWS — IRSA</h3>
+        <p>Now flip it: your application pod needs to read from an S3 bucket. How does a pod safely get AWS credentials without you hardcoding an access key into your container (never do this)?</p>
+        <p>The answer is <strong>IRSA — IAM Roles for Service Accounts</strong>. EKS clusters have an OIDC (OpenID Connect) identity provider built in. This lets a Kubernetes ServiceAccount assume a real IAM role directly, with temporary, auto-rotating credentials, and zero secrets stored anywhere.</p>
+
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace;">
+            <rect x="20" y="70" width="150" height="70" rx="6" fill="#131F35" stroke="#4A9B7F"/>
+            <text x="95" y="100" text-anchor="middle" fill="#E8EAED" font-size="11">Pod +</text>
+            <text x="95" y="115" text-anchor="middle" fill="#E8EAED" font-size="11">ServiceAccount</text>
+
+            <line x1="170" y1="105" x2="255" y2="105" stroke="#5EC4D6" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="212" y="95" text-anchor="middle" fill="#5EC4D6" font-size="9">1. presents token</text>
+
+            <rect x="255" y="70" width="180" height="70" rx="6" fill="#131F35" stroke="#5EC4D6"/>
+            <text x="345" y="100" text-anchor="middle" fill="#E8EAED" font-size="11">EKS OIDC Provider</text>
+            <text x="345" y="115" text-anchor="middle" fill="#5C6B87" font-size="9">verifies pod identity</text>
+
+            <line x1="435" y1="105" x2="520" y2="105" stroke="#E8912D" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="477" y="95" text-anchor="middle" fill="#E8912D" font-size="9">2. assume role</text>
+
+            <rect x="520" y="70" width="160" height="70" rx="6" fill="#131F35" stroke="#E8912D"/>
+            <text x="600" y="100" text-anchor="middle" fill="#E8EAED" font-size="11">IAM Role</text>
+            <text x="600" y="115" text-anchor="middle" fill="#5C6B87" font-size="9">e.g. S3 read access</text>
+
+            <line x1="600" y1="140" x2="600" y2="175" stroke="#4A9B7F" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <text x="600" y="195" text-anchor="middle" fill="#4A9B7F" font-size="9">3. temp credentials returned to pod</text>
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L6,3 L0,6 Z" fill="#5EC4D6"/>
+              </marker>
+            </defs>
+          </svg>
+          <div class="diagram-cap">Fig. 2 — IRSA lets a single pod assume a narrowly-scoped IAM role, with no long-lived secret ever stored in the cluster.</div>
+        </div>
+
+        <pre><code><span class="cmt"># 1. Create an IAM role trusted by your cluster's OIDC provider, then annotate a ServiceAccount:</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: ServiceAccount
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: s3-reader
+  <span class="kw">namespace</span>: default
+  <span class="kw">annotations</span>:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/s3-read-role</code></pre>
+        <pre><code><span class="cmt"># 2. Reference that ServiceAccount from your pod/deployment:</span>
+<span class="kw">spec</span>:
+  <span class="kw">serviceAccountName</span>: s3-reader
+  <span class="kw">containers</span>:
+    - <span class="kw">name</span>: app
+      <span class="kw">image</span>: my-app:latest</code></pre>
+
+        <div class="callout tip">
+          <div class="callout-label">Rule of thumb</div>
+          <p>aws-auth answers "which humans/CI systems can run kubectl against my cluster." IRSA answers "which pods can call which AWS APIs." Never give a pod broad IAM permissions "just in case" — scope every IRSA role to exactly what that one workload needs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 10 -->
+    <section id="workloads">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">10</span> Running Workloads</div>
+        <h2><span class="num">10</span>Deployments &amp; Services — actually running your app</h2>
+        <p>With a cluster ready, here's the minimum you need to get a real application running and reachable.</p>
+
+        <h3>A Deployment</h3>
+        <pre><code><span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: hello-app
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: 3
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>:
+      <span class="kw">app</span>: hello-app
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>:
+        <span class="kw">app</span>: hello-app
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: hello-app
+          <span class="kw">image</span>: nginxdemos/hello:latest
+          <span class="kw">ports</span>:
+            - <span class="kw">containerPort</span>: 80
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>:
+              <span class="kw">cpu</span>: <span class="str">"100m"</span>
+              <span class="kw">memory</span>: <span class="str">"128Mi"</span>
+            <span class="kw">limits</span>:
+              <span class="kw">cpu</span>: <span class="str">"250m"</span>
+              <span class="kw">memory</span>: <span class="str">"256Mi"</span></code></pre>
+
+        <div class="callout warn">
+          <div class="callout-label">Never skip resources.requests/limits</div>
+          <p>Without these, the scheduler can't reason about bin-packing, one runaway pod can starve every other pod on the node, and autoscaling (Section 12) has nothing to calculate against. Set these on every workload, always.</p>
+        </div>
+
+        <h3>A Service</h3>
+        <p>Pods are ephemeral — they get new IPs every time they restart. A Service gives your app a stable address that automatically tracks whichever pods are currently healthy.</p>
+        <pre><code><span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: hello-app-svc
+<span class="kw">spec</span>:
+  <span class="kw">selector</span>:
+    <span class="kw">app</span>: hello-app   <span class="cmt"># matches the Deployment's pod labels</span>
+  <span class="kw">ports</span>:
+    - <span class="kw">port</span>: 80
+      <span class="kw">targetPort</span>: 80
+  <span class="kw">type</span>: ClusterIP  <span class="cmt"># internal-only by default</span></code></pre>
+
+        <pre><code>kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl get pods -w      <span class="cmt"># watch pods come up</span>
+kubectl get deployments  <span class="cmt"># check rollout status</span></code></pre>
+
+        <h3>Service types, and when to use each</h3>
+        <table>
+          <tr><th>Type</th><th>Reachable from</th><th>Use case</th></tr>
+          <tr><td><strong>ClusterIP</strong></td><td>Inside the cluster only</td><td>Internal microservice-to-microservice traffic (default, most common)</td></tr>
+          <tr><td><strong>NodePort</strong></td><td>Any node's IP, on a fixed port</td><td>Rarely used directly on EKS — mostly a building block</td></tr>
+          <tr><td><strong>LoadBalancer</strong></td><td>The public internet</td><td>Provisions a real AWS ELB — simple but one ELB per Service gets expensive at scale</td></tr>
+        </table>
+        <p>For exposing many services to the internet cost-effectively, you generally want a single shared load balancer routing by hostname/path — that's what <strong>Ingress</strong> is for, next.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 11 -->
+    <section id="ingress">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">11</span> Running Workloads</div>
+        <h2><span class="num">11</span>Ingress &amp; the AWS Load Balancer Controller</h2>
+        <p>An Ingress object describes URL-based routing rules ("/api goes to the api service, /web goes to the web service") — but by itself, Kubernetes doesn't know how to turn that into real infrastructure on AWS. You need a controller watching for Ingress objects and translating them into an actual Application Load Balancer (ALB).</p>
+
+        <h3>Install the AWS Load Balancer Controller</h3>
+        <pre><code><span class="cmt"># 1. Create the IAM policy it needs, then an IRSA-backed service account</span>
+eksctl create iamserviceaccount \
+  --cluster my-first-cluster \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --attach-policy-arn arn:aws:iam::123456789012:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+
+<span class="cmt"># 2. Install the controller itself via Helm</span>
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=my-first-cluster \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller</code></pre>
+
+        <h3>Define an Ingress</h3>
+        <pre><code><span class="kw">apiVersion</span>: networking.k8s.io/v1
+<span class="kw">kind</span>: Ingress
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: hello-app-ingress
+  <span class="kw">annotations</span>:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+<span class="kw">spec</span>:
+  <span class="kw">rules</span>:
+    - <span class="kw">http</span>:
+        <span class="kw">paths</span>:
+          - <span class="kw">path</span>: /
+            <span class="kw">pathType</span>: Prefix
+            <span class="kw">backend</span>:
+              <span class="kw">service</span>:
+                <span class="kw">name</span>: hello-app-svc
+                <span class="kw">port</span>:
+                  <span class="kw">number</span>: 80</code></pre>
+        <p>Apply it, wait a couple of minutes, then check <code class="inline">kubectl get ingress</code> — the <code class="inline">ADDRESS</code> column fills in with a real ALB DNS name once provisioning completes.</p>
+
+        <div class="callout warn">
+          <div class="callout-label">If ADDRESS stays empty</div>
+          <p>This is almost always the subnet tagging issue from Section 04 — the controller can't find subnets tagged <code class="inline">kubernetes.io/role/elb</code>. Check <code class="inline">kubectl logs -n kube-system deployment/aws-load-balancer-controller</code> for the exact reason.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 12 -->
+    <section id="storage">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">12</span> Running Workloads</div>
+        <h2><span class="num">12</span>Storage — persisting data beyond a pod's life</h2>
+        <p>Pods are disposable — anything written to a container's own filesystem vanishes when it restarts. For anything that needs to survive, EKS integrates with two AWS storage services via the <strong>Container Storage Interface (CSI)</strong>.</p>
+
+        <table>
+          <tr><th>Driver</th><th>Backing service</th><th>Access mode</th><th>Use case</th></tr>
+          <tr><td><strong>EBS CSI</strong></td><td>Elastic Block Store</td><td>One pod at a time (ReadWriteOnce)</td><td>Databases, single-writer workloads</td></tr>
+          <tr><td><strong>EFS CSI</strong></td><td>Elastic File System</td><td>Many pods at once (ReadWriteMany)</td><td>Shared config, multiple pods reading/writing the same files</td></tr>
+        </table>
+
+        <h3>Install the EBS CSI driver</h3>
+        <pre><code>eksctl create iamserviceaccount \
+  --cluster my-first-cluster \
+  --namespace kube-system \
+  --name ebs-csi-controller-sa \
+  --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+  --approve
+
+eksctl create addon --cluster my-first-cluster --name aws-ebs-csi-driver</code></pre>
+
+        <h3>Claiming storage for a pod</h3>
+        <pre><code><span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: PersistentVolumeClaim
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: db-storage
+<span class="kw">spec</span>:
+  <span class="kw">accessModes</span>: [<span class="str">"ReadWriteOnce"</span>]
+  <span class="kw">storageClassName</span>: gp3
+  <span class="kw">resources</span>:
+    <span class="kw">requests</span>:
+      <span class="kw">storage</span>: 20Gi</code></pre>
+        <p>Reference <code class="inline">db-storage</code> as a volume in your pod spec, and EKS provisions a real EBS volume on demand, attaching and mounting it wherever the pod is scheduled.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 13 -->
+    <section id="scaling">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">13</span> Operating at Scale</div>
+        <h2><span class="num">13</span>Autoscaling — three layers, not one</h2>
+        <p>"Autoscaling" on EKS actually means three independent systems, each answering a different question.</p>
+
+        <div class="grid-2">
+          <div class="card"><h5>HPA (Horizontal Pod Autoscaler)</h5><p>"Do I need more <em>copies</em> of my app?" Watches CPU/memory or custom metrics, adjusts replica count.</p></div>
+          <div class="card"><h5>Cluster Autoscaler / Karpenter</h5><p>"Do I need more <em>nodes</em>?" Watches for unschedulable pods and adds/removes EC2 capacity.</p></div>
+          <div class="card"><h5>VPA (Vertical Pod Autoscaler)</h5><p>"Is each pod sized correctly?" Recommends or auto-adjusts CPU/memory requests per pod.</p></div>
+        </div>
+
+        <h3>HPA — scale replicas by load</h3>
+        <pre><code><span class="kw">apiVersion</span>: autoscaling/v2
+<span class="kw">kind</span>: HorizontalPodAutoscaler
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: hello-app-hpa
+<span class="kw">spec</span>:
+  <span class="kw">scaleTargetRef</span>:
+    <span class="kw">apiVersion</span>: apps/v1
+    <span class="kw">kind</span>: Deployment
+    <span class="kw">name</span>: hello-app
+  <span class="kw">minReplicas</span>: 2
+  <span class="kw">maxReplicas</span>: 10
+  <span class="kw">metrics</span>:
+    - <span class="kw">type</span>: Resource
+      <span class="kw">resource</span>:
+        <span class="kw">name</span>: cpu
+        <span class="kw">target</span>:
+          <span class="kw">type</span>: Utilization
+          <span class="kw">averageUtilization</span>: 70</code></pre>
+        <p>This requires the <strong>Metrics Server</strong> add-on: <code class="inline">eksctl create addon --cluster my-first-cluster --name metrics-server</code></p>
+
+        <h3>Cluster Autoscaler vs. Karpenter</h3>
+        <p>When HPA needs more replicas but there's no room on existing nodes, pods sit <code class="inline">Pending</code> until something adds node capacity.</p>
+        <table>
+          <tr><th></th><th>Cluster Autoscaler</th><th>Karpenter</th></tr>
+          <tr><td><strong>Approach</strong></td><td>Scales predefined Auto Scaling Groups up/down</td><td>Provisions right-sized nodes directly, no ASG needed</td></tr>
+          <tr><td><strong>Speed</strong></td><td>Slower — bound by ASG scaling logic</td><td>Faster — picks optimal instance type/AZ in real time</td></tr>
+          <tr><td><strong>Maturity</strong></td><td>Older, battle-tested, K8s-project standard</td><td>Newer, AWS-built, increasingly the recommended default</td></tr>
+          <tr><td><strong>Recommendation</strong></td><td>Fine for simple, single-instance-type setups</td><td>Preferred for mixed instance types, Spot usage, cost optimization</td></tr>
+        </table>
+
+        <div class="callout tip">
+          <div class="callout-label">Karpenter in one command</div>
+          <p>AWS now ships a Karpenter Helm chart with sane EKS defaults — for new clusters in 2025+, start with Karpenter rather than Cluster Autoscaler unless you have a specific reason not to.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 14 -->
+    <section id="observability">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">14</span> Operating at Scale</div>
+        <h2><span class="num">14</span>Observability, in depth</h2>
+        <p>You cannot operate a cluster you can't see into. This section goes past "install an add-on" and into how each pillar actually works, how to run a real Prometheus/Grafana stack, how tracing is wired in, and how to alert on the metrics that matter.</p>
+
+        <table>
+          <tr><th>Pillar</th><th>Question it answers</th><th>Common EKS tooling</th></tr>
+          <tr><td><strong>Metrics</strong></td><td>Is CPU/memory/latency trending badly?</td><td>Amazon Managed Prometheus (AMP) + Grafana, or CloudWatch Container Insights</td></tr>
+          <tr><td><strong>Logs</strong></td><td>What exactly happened, and when?</td><td>Fluent Bit → CloudWatch Logs, or OpenSearch/a log platform</td></tr>
+          <tr><td><strong>Traces</strong></td><td>Where in a multi-service request did time go?</td><td>AWS X-Ray or OpenTelemetry Collector → Tempo/Jaeger</td></tr>
+        </table>
+
+        <h3>14.1 — How metrics actually flow, under the hood</h3>
+        <p>It helps to see the full pipeline rather than treat "metrics" as a black box.</p>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'JetBrains Mono',monospace;">
+            <rect x="16" y="60" width="130" height="80" rx="6" fill="#131F35" stroke="#4A9B7F"/>
+            <text x="81" y="90" text-anchor="middle" fill="#E8EAED" font-size="10.5">Your app pod</text>
+            <text x="81" y="106" text-anchor="middle" fill="#5C6B87" font-size="9">exposes /metrics</text>
+            <text x="81" y="119" text-anchor="middle" fill="#5C6B87" font-size="9">(Prometheus format)</text>
+
+            <line x1="146" y1="100" x2="210" y2="100" stroke="#5EC4D6" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="178" y="90" text-anchor="middle" fill="#5EC4D6" font-size="8.5">scrape</text>
+
+            <rect x="210" y="60" width="140" height="80" rx="6" fill="#131F35" stroke="#5EC4D6"/>
+            <text x="280" y="90" text-anchor="middle" fill="#E8EAED" font-size="10.5">Prometheus</text>
+            <text x="280" y="106" text-anchor="middle" fill="#5C6B87" font-size="9">server or AMP</text>
+            <text x="280" y="119" text-anchor="middle" fill="#5C6B87" font-size="9">collector agent</text>
+
+            <line x1="350" y1="100" x2="414" y2="100" stroke="#E8912D" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="382" y="90" text-anchor="middle" fill="#E8912D" font-size="8.5">remote_write</text>
+
+            <rect x="414" y="60" width="140" height="80" rx="6" fill="#131F35" stroke="#E8912D"/>
+            <text x="484" y="90" text-anchor="middle" fill="#E8EAED" font-size="10.5">Amazon Managed</text>
+            <text x="484" y="104" text-anchor="middle" fill="#E8EAED" font-size="10.5">Prometheus (AMP)</text>
+            <text x="484" y="120" text-anchor="middle" fill="#5C6B87" font-size="9">long-term storage</text>
+
+            <line x1="554" y1="100" x2="618" y2="100" stroke="#4A9B7F" stroke-width="1.5" marker-end="url(#a2)"/>
+            <text x="586" y="90" text-anchor="middle" fill="#4A9B7F" font-size="8.5">query</text>
+
+            <rect x="618" y="60" width="90" height="80" rx="6" fill="#131F35" stroke="#4A9B7F"/>
+            <text x="663" y="95" text-anchor="middle" fill="#E8EAED" font-size="10.5">Grafana</text>
+            <text x="663" y="112" text-anchor="middle" fill="#5C6B87" font-size="9">dashboards</text>
+            <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#93A0B8"/></marker></defs>
+          </svg>
+          <div class="diagram-cap">Fig. 4 — Metrics are pulled (scraped), not pushed. Each hop is a separate, swappable component.</div>
+        </div>
+        <p>Two implementation details that matter in practice: Prometheus works by <strong>scraping</strong> — it polls a known <code class="inline">/metrics</code> HTTP endpoint on each target on a schedule (commonly every 15–30s) — rather than apps pushing data out. And <code class="inline">kubectl top</code> / HPA don't talk to Prometheus at all; they depend on a separate, much simpler <strong>Metrics Server</strong> that only holds a few minutes of in-memory CPU/memory data. Prometheus is for historical analysis and alerting; Metrics Server is purely for real-time autoscaling decisions. Confusing the two is a common mistake — installing Prometheus does not make HPA work; you still need Metrics Server.</p>
+
+        <h3>14.2 — Setting up Amazon Managed Prometheus + Grafana</h3>
+        <p>Running your own Prometheus server means you now have to scale, back up, and secure yet another stateful service. Amazon Managed Prometheus (AMP) and Amazon Managed Grafana remove that operational burden while keeping the same open-source query language (PromQL) and dashboards you already know.</p>
+        <pre><code><span class="cmt"># 1. Create an AMP workspace (the managed, durable metrics database)</span>
+aws amp create-workspace --alias eks-prod-metrics
+
+<span class="cmt"># 2. Note the resulting workspace ARN and remoteWriteUrl from the output, then</span>
+<span class="cmt">#    give your cluster's collector permission to write to it via IRSA:</span>
+eksctl create iamserviceaccount \
+  --cluster my-first-cluster \
+  --namespace kube-system \
+  --name amp-iamproxy-ingest-service-account \
+  --attach-policy-arn arn:aws:iam::aws:policy/AmazonPrometheusRemoteWriteAccess \
+  --approve
+
+<span class="cmt"># 3. Install the ADOT (AWS Distro for OpenTelemetry) Collector to scrape</span>
+<span class="cmt">#    cluster metrics and remote_write them into AMP</span>
+helm repo add aws-observability https://aws-observability.github.io/aws-otel-helm-charts
+helm install adot-collector aws-observability/adot-exporter-for-eks-on-ec2 \
+  -n kube-system \
+  --set awsRegion=us-east-1</code></pre>
+
+        <p>Then connect Grafana as the visualization layer on top:</p>
+        <pre><code><span class="cmt"># Create an Amazon Managed Grafana workspace (console or CLI), then add</span>
+<span class="cmt"># your AMP workspace as a data source inside the Grafana UI — no YAML needed.</span>
+aws grafana create-workspace \
+  --workspace-name eks-dashboards \
+  --account-access-type CURRENT_ACCOUNT \
+  --authentication-providers AWS_SSO \
+  --permission-type SERVICE_MANAGED</code></pre>
+
+        <div class="callout tip">
+          <div class="callout-label">Fastest path if you just want dashboards today</div>
+          <p>Skip AMP/Grafana entirely and run <code class="inline">eksctl create addon --name amazon-cloudwatch-observability</code> — it installs the CloudWatch agent and Fluent Bit as DaemonSets automatically and gives you prebuilt Container Insights dashboards in the AWS Console within minutes. Reach for the Prometheus/Grafana path when you need PromQL, existing Grafana dashboards, or multi-cluster/multi-cloud views.</p>
+        </div>
+
+        <h3>14.3 — Logs: how they get from a container to somewhere queryable</h3>
+        <p>By default, anything your application writes to stdout/stderr is captured by the container runtime and stored briefly on the node's local disk — it disappears the moment the node is replaced. To persist logs, you run a log shipper as a <strong>DaemonSet</strong> (one copy per node) that tails those files and forwards them onward.</p>
+        <pre><code><span class="cmt"># Fluent Bit ships as part of the CloudWatch Observability add-on already</span>
+<span class="cmt"># installed above. To confirm it's running:</span>
+kubectl get daemonset -n amazon-cloudwatch
+
+<span class="cmt"># Query shipped logs directly from the CLI with CloudWatch Logs Insights:</span>
+aws logs start-query \
+  --log-group-name /aws/containerinsights/my-first-cluster/application \
+  --start-time $(date -d '-1 hour' +%s) \
+  --end-time $(date +%s) \
+  --query-string 'fields @timestamp, @message | filter @message like /ERROR/'</code></pre>
+
+        <h3>14.4 — Distributed tracing with X-Ray</h3>
+        <p>Metrics tell you <em>that</em> latency spiked; traces tell you <em>where</em> — which of your 12 microservices a slow request actually spent its time in. Tracing requires your application to be instrumented (via an SDK or auto-instrumentation agent) to emit trace spans, which are then collected and stitched together by trace ID.</p>
+        <pre><code><span class="cmt"># Deploy the X-Ray daemon as a DaemonSet so it's available on every node</span>
+<span class="cmt"># to receive trace data over UDP from your app's X-Ray SDK</span>
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/aws-xray-kubernetes/master/xray-k8s-daemonset.yaml
+
+<span class="cmt"># Your application code sends spans to it, e.g. in Node.js:</span>
+<span class="cmt"># const AWSXRay = require('aws-xray-sdk');
+# app.use(AWSXRay.express.openSegment('my-app'));</span></code></pre>
+        <p>Prefer vendor neutrality? Run an <strong>OpenTelemetry Collector</strong> instead — a single agent that can receive traces, metrics, and logs, and export to X-Ray, Jaeger, Tempo, or any combination simultaneously, so switching backends later doesn't mean re-instrumenting every application.</p>
+
+        <h3>14.5 — Alerting: turning metrics into pages</h3>
+        <p>A dashboard nobody is watching at 3am doesn't help. Alerting rules evaluate metrics continuously and fire notifications when thresholds are breached.</p>
+        <pre><code><span class="cmt"># A PromQL alerting rule, evaluated by Prometheus/AMP's rule engine</span>
+<span class="kw">groups</span>:
+  - <span class="kw">name</span>: node-health
+    <span class="kw">rules</span>:
+      - <span class="kw">alert</span>: NodeMemoryPressure
+        <span class="kw">expr</span>: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+        <span class="kw">for</span>: 5m
+        <span class="kw">labels</span>:
+          <span class="kw">severity</span>: warning
+        <span class="kw">annotations</span>:
+          <span class="kw">summary</span>: <span class="str">"Node {{ $labels.instance }} below 10% free memory"</span></code></pre>
+        <p>These rules are typically evaluated by <strong>Amazon Managed Service for Prometheus's rule engine</strong> (or a self-run Alertmanager), which then routes firing alerts to Slack, PagerDuty, or email based on severity labels.</p>
+
+        <h3>What to actually monitor first</h3>
+        <ul>
+          <li><strong>Node pressure:</strong> memory/disk/PID pressure — a node under pressure starts evicting pods unpredictably</li>
+          <li><strong>Pod restart counts:</strong> a sudden spike almost always means a bad deploy or a dependency outage</li>
+          <li><strong>API server latency:</strong> if the control plane itself slows down, everything downstream degrades</li>
+          <li><strong>Ingress/ALB 5xx rate and target response time:</strong> your actual user-facing health signal</li>
+          <li><strong>Pending pods:</strong> a persistent backlog means your autoscaler isn't keeping up with demand</li>
+        </ul>
+
+        <h3>Everyday debugging commands</h3>
+        <pre><code>kubectl logs &lt;pod-name&gt;                    <span class="cmt"># see what a container printed</span>
+kubectl logs &lt;pod-name&gt; --previous          <span class="cmt"># logs from before a crash/restart</span>
+kubectl describe pod &lt;pod-name&gt;             <span class="cmt"># events, scheduling reasons, failures</span>
+kubectl top pods                            <span class="cmt"># live CPU/memory usage (needs metrics-server)</span>
+kubectl get events --sort-by='.lastTimestamp'  <span class="cmt"># cluster-wide recent events</span></code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 15 -->
+    <section id="security">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">15</span> Operating at Scale</div>
+        <h2><span class="num">15</span>Security hardening — the non-negotiables</h2>
+        <p>A short checklist covering the highest-impact, most commonly-missed security controls on real EKS clusters.</p>
+
+        <ul>
+          <li><strong>Private API endpoint where possible.</strong> By default the Kubernetes API server is reachable from the public internet (secured by IAM/RBAC, but still exposed). For production, restrict it: <code class="inline">eksctl utils update-cluster-endpoints --cluster my-first-cluster --private-access=true --public-access=false</code></li>
+          <li><strong>Least-privilege IRSA roles.</strong> Never attach <code class="inline">AdministratorAccess</code> to a pod's role. Scope to exact actions and resource ARNs needed.</li>
+          <li><strong>Enable envelope encryption for Secrets.</strong> By default, Kubernetes Secrets are only base64-encoded in etcd, not encrypted. Enable KMS envelope encryption at cluster creation.</li>
+          <li><strong>Network Policies.</strong> By default, every pod can talk to every other pod. Use Kubernetes NetworkPolicy objects (enforced by the VPC CNI or Calico) to restrict this to only necessary traffic.</li>
+          <li><strong>Scan container images.</strong> Use Amazon ECR's built-in scanning or a tool like Trivy in CI to catch known CVEs before deployment.</li>
+          <li><strong>Keep the control plane version current.</strong> AWS supports a rolling window of Kubernetes versions; unsupported versions stop receiving security patches.</li>
+          <li><strong>Run as non-root.</strong> Set <code class="inline">securityContext.runAsNonRoot: true</code> on every pod spec you can.</li>
+        </ul>
+
+        <pre><code><span class="cmt"># Example: enabling secrets encryption at cluster creation (cluster.yaml)</span>
+<span class="kw">secretsEncryption</span>:
+  <span class="kw">keyARN</span>: arn:aws:kms:us-east-1:123456789012:key/abcd-1234</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 16 -->
+    <section id="cost">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">16</span> Operating at Scale</div>
+        <h2><span class="num">16</span>Cost optimization</h2>
+        <p>EKS bills are almost always dominated by EC2, not the control plane. Where to look first.</p>
+
+        <table>
+          <tr><th>Lever</th><th>Typical savings</th><th>Trade-off</th></tr>
+          <tr><td><strong>Spot instances for stateless workloads</strong></td><td>Up to 70–90% vs. on-demand</td><td>Nodes can be reclaimed with 2-min warning — design for interruption</td></tr>
+          <tr><td><strong>Right-sizing requests/limits</strong></td><td>Highly variable, often 20–40%</td><td>Requires monitoring actual usage, not guessing</td></tr>
+          <tr><td><strong>Karpenter consolidation</strong></td><td>10–30%</td><td>Bin-packs pods onto fewer, better-fit nodes automatically</td></tr>
+          <tr><td><strong>Fargate for spiky/low-traffic</strong></td><td>Avoids paying for idle nodes</td><td>Costs more per-unit at sustained high load</td></tr>
+          <tr><td><strong>Single NAT Gateway (dev only)</strong></td><td>~$32/month per extra NAT Gateway avoided</td><td>Loses AZ-level redundancy — never do this in production</td></tr>
+        </table>
+
+        <div class="callout tip">
+          <div class="callout-label">Mixing Spot and On-Demand safely</div>
+          <p>A common, safe pattern: run baseline capacity on On-Demand or Reserved nodes, and let Karpenter burst extra capacity onto Spot for stateless, horizontally-scaled workloads only. Never put a database's only replica on Spot.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 17 -->
+    <section id="walkthrough">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">17</span> Practice</div>
+        <h2><span class="num">17</span>Full hands-on build — start to finish</h2>
+        <p>Everything above, assembled into one sequence. Run this top to bottom to go from nothing to a real app on the internet.</p>
+
+        <ol>
+          <li><strong>Configure the CLI:</strong> <code class="inline">aws configure</code></li>
+          <li><strong>Create the cluster:</strong> <code class="inline">eksctl create cluster -f cluster.yaml</code> (Section 05)</li>
+          <li><strong>Verify nodes are ready:</strong> <code class="inline">kubectl get nodes</code></li>
+          <li><strong>Install the Load Balancer Controller:</strong> IRSA + Helm (Section 10)</li>
+          <li><strong>Deploy your app:</strong> apply your Deployment and Service YAML (Section 09)</li>
+          <li><strong>Expose it:</strong> apply your Ingress (Section 10), wait for <code class="inline">ADDRESS</code> to populate</li>
+          <li><strong>Add autoscaling:</strong> install metrics-server, apply an HPA (Section 12)</li>
+          <li><strong>Turn on observability:</strong> <code class="inline">eksctl create addon --name amazon-cloudwatch-observability</code> (Section 13)</li>
+          <li><strong>Harden it:</strong> non-root containers, NetworkPolicies, least-privilege IRSA (Section 14)</li>
+          <li><strong>Visit the ALB's DNS name in a browser</strong> — you're serving real traffic from a production-pattern EKS cluster.</li>
+          <li><strong>Clean up:</strong> <code class="inline">eksctl delete cluster --name my-first-cluster</code> to stop billing.</li>
+        </ol>
+
+        <div class="callout">
+          <div class="callout-label">Do this once fully, by hand</div>
+          <p>Resist copy-pasting everything into a script on your first run. Typing each command and reading each output is what turns this from "I read a guide" into "I understand how EKS actually works."</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 18 -->
+    <section id="troubleshooting">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">18</span> Practice</div>
+        <h2><span class="num">18</span>Troubleshooting — the failures you'll actually hit</h2>
+
+        <table>
+          <tr><th>Symptom</th><th>Most likely cause</th><th>Check</th></tr>
+          <tr><td>Pod stuck <code class="inline">Pending</code></td><td>No node has enough free CPU/memory, or no node matches a nodeSelector/taint</td><td><code class="inline">kubectl describe pod &lt;name&gt;</code> — read the Events section</td></tr>
+          <tr><td>Pod stuck <code class="inline">CrashLoopBackOff</code></td><td>The app inside the container is exiting immediately (bad config, missing env var, failed health check)</td><td><code class="inline">kubectl logs &lt;name&gt; --previous</code></td></tr>
+          <tr><td>Pod stuck <code class="inline">ImagePullBackOff</code></td><td>Wrong image name/tag, private registry needs auth, or node has no internet route (missing NAT Gateway)</td><td><code class="inline">kubectl describe pod</code> for the exact pull error</td></tr>
+          <tr><td>Ingress <code class="inline">ADDRESS</code> never populates</td><td>Missing subnet tags, or Load Balancer Controller not installed/misconfigured</td><td><code class="inline">kubectl logs -n kube-system deploy/aws-load-balancer-controller</code></td></tr>
+          <tr><td><code class="inline">kubectl</code> commands time out entirely</td><td>Local kubeconfig not pointing at the right cluster, or your IAM identity isn't in aws-auth</td><td><code class="inline">aws eks update-kubeconfig --name my-first-cluster --region us-east-1</code></td></tr>
+          <tr><td>Nodes never join the cluster</td><td>Node IAM role missing from aws-auth ConfigMap, or nodes in wrong subnets/security groups</td><td><code class="inline">kubectl get nodes</code> stays empty; check EC2 console for instance health</td></tr>
+        </table>
+
+        <div class="callout tip">
+          <div class="callout-label">The universal first move</div>
+          <p><code class="inline">kubectl describe</code> on whatever's broken (pod, service, ingress, node). The Events section at the bottom almost always states the exact reason in plain English.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 19 -->
+    <section id="glossary">
+      <div class="maxw">
+        <div class="eyebrow"><span class="layer-num">19</span> Practice</div>
+        <h2><span class="num">19</span>Glossary — quick reference</h2>
+        <table>
+          <tr><th>Term</th><th>Meaning</th></tr>
+          <tr><td><strong>Pod</strong></td><td>Smallest deployable unit; one or more co-located containers</td></tr>
+          <tr><td><strong>Node</strong></td><td>A machine (EC2 or Fargate) that runs pods</td></tr>
+          <tr><td><strong>Deployment</strong></td><td>Declares desired replica count and rollout strategy for a pod template</td></tr>
+          <tr><td><strong>Service</strong></td><td>Stable network endpoint routing to a dynamic set of pods</td></tr>
+          <tr><td><strong>Ingress</strong></td><td>Host/path-based routing rules for HTTP(S) traffic entering the cluster</td></tr>
+          <tr><td><strong>Namespace</strong></td><td>Virtual partition inside one cluster</td></tr>
+          <tr><td><strong>etcd</strong></td><td>The cluster's state database, managed by AWS in EKS</td></tr>
+          <tr><td><strong>kubelet</strong></td><td>The agent on every node that talks to the control plane and runs containers</td></tr>
+          <tr><td><strong>VPC CNI</strong></td><td>The networking plugin giving each pod a real, routable VPC IP address</td></tr>
+          <tr><td><strong>IRSA</strong></td><td>IAM Roles for Service Accounts — lets pods assume scoped AWS IAM roles</td></tr>
+          <tr><td><strong>aws-auth</strong></td><td>ConfigMap mapping IAM identities to Kubernetes RBAC users/groups</td></tr>
+          <tr><td><strong>HPA / Cluster Autoscaler / Karpenter</strong></td><td>Scale pod replicas / scale ASG nodes / provision right-sized nodes directly</td></tr>
+          <tr><td><strong>PVC</strong></td><td>PersistentVolumeClaim — a request for durable storage backed by EBS or EFS</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Built for zero-to-master learning · every command here is real and runnable · always run <code class="inline" style="background:transparent;border:none;">eksctl delete cluster</code> when you're done experimenting
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  const links = document.querySelectorAll('.navlink');
+  const sections = document.querySelectorAll('section[id]');
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const link = document.querySelector('.navlink[href="#'+e.target.id+'"]');
+        if(link) link.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-20% 0px -70% 0px'});
+  sections.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
